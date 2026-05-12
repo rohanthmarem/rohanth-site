@@ -1,0 +1,61 @@
+---
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+interface Props {
+  title: string;
+  description: string;
+  source: "index.html" | "projects.html" | "writing.html" | "inspiration.html";
+}
+
+const {
+  title,
+  description,
+  source,
+} = Astro.props;
+
+const repoRoot = resolve(process.cwd(), "..");
+const rawCss = readFileSync(resolve(repoRoot, "styles.css"), "utf8");
+const sourceHtml = readFileSync(resolve(repoRoot, source), "utf8");
+const cobaltVars = rawCss.match(/html\[data-orange="cobalt"\]\s*{([\s\S]*?)\n}/)?.[1] ?? "";
+const css = rawCss
+  .replace(/\s*\/\* Default palette: ember \(#EA580C\) — toggle “Rust” for terracotta \*\/\n/, "\n")
+  .replace(/html\[data-orange="rust"\]\s*{[\s\S]*?\n}\n\n/, "")
+  .replace(/html\[data-orange="cobalt"\]\s*{[\s\S]*?\n}\n\n/, "")
+  .replace(/\/\* ── Dev: orange palette toggle[\s\S]*$/, "")
+  .replace(/:root\s*{([\s\S]*?)\n}/, (_match, vars) => `:root {${vars}\n${cobaltVars}\n}`);
+
+const body = sourceHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1] ?? "";
+const brandedBody = body
+  .replaceAll('aria-label="teenbuildersclub home"', 'aria-label="rohanth home"')
+  .replaceAll('<span class="tbc-logo-mark">tbc</span>', '<span class="tbc-logo-mark">rohanth</span>')
+  .replaceAll('<span class="tbc-logo-mark tbc-logo-mark--footer">tbc</span>', '<span class="tbc-logo-mark tbc-logo-mark--footer">rohanth</span>')
+  .replaceAll("About tbc", "About rohanth")
+  .replaceAll("Teen Builders Club", "rohanth")
+  .replaceAll("teen builders club", "rohanth")
+  .replaceAll("teen builders", "builders")
+  .replaceAll("teenbuildersclub", "rohanth")
+  .replaceAll("How TBC changed the way I think about accountability.", "How building in public changed the way I think about accountability.")
+  .replaceAll("— rohanth", "- rohanth")
+  .replaceAll("hello@teenbuilders.club", "hello@rohanth.com")
+  .replaceAll("https://www.teenbuilders.club/events", "/projects/")
+  .replaceAll("https://www.teenbuilders.club/photos/workshop.jpg", "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80")
+  .replaceAll("https://www.teenbuilders.club/photos/hackathon.jpg", "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=80")
+  .replaceAll("https://twitter.com/shayaan_azeem", "https://twitter.com/rohanthmarem")
+  .replaceAll("https://twitter.com/shayaan", "https://twitter.com/rohanthmarem")
+  .replace(/<div\s+class="tbc-orange-toggle"[\s\S]*?<\/script>\s*$/i, "");
+---
+
+<!doctype html>
+<html lang="en" data-orange="cobalt">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#f7e8da" />
+    <title>{title}</title>
+    <style is:global set:html={css}></style>
+  </head>
+  <body set:html={brandedBody}>
+  </body>
+</html>
