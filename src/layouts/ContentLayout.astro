@@ -121,6 +121,75 @@ const arrowSvg = `<svg width="9" height="9" viewBox="0 0 10 10" fill="none" aria
         });
       })();
     </script>
+    <script>
+      (function () {
+        var CHARS = '!#%&*+<=>?@[]^_|~\\/{}';
+        var states = new WeakMap<Element, { nodes: Text[]; originals: string[]; timer: number }>();
+
+        function getState(el: Element) {
+          var existing = states.get(el);
+          if (existing) return existing;
+          var nodes: Text[] = [];
+          var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+          var node = walker.nextNode();
+          while (node) {
+            if (node.nodeValue && node.nodeValue.trim()) nodes.push(node as Text);
+            node = walker.nextNode();
+          }
+          var state = {
+            nodes: nodes,
+            originals: nodes.map(function (textNode) { return textNode.nodeValue || ''; }),
+            timer: 0,
+          };
+          states.set(el, state);
+          return state;
+        }
+
+        function scramble(el: Element) {
+          var state = getState(el);
+          clearInterval(state.timer);
+          var maxLen = Math.max.apply(null, state.originals.map(function (text) { return text.length; }));
+          var tick = 0;
+          state.timer = window.setInterval(function () {
+            var wave = tick * 1.1;
+            if (wave > maxLen + 3) {
+              clearInterval(state.timer);
+              restore(el);
+              return;
+            }
+            state.nodes.forEach(function (textNode, index) {
+              var original = state.originals[index];
+              var out = '';
+              for (var i = 0; i < original.length; i++) {
+                var ch = original[i];
+                if (ch === ' ') { out += ' '; continue; }
+                out += Math.abs(i - wave) < 2.2
+                  ? CHARS[Math.floor(Math.random() * CHARS.length)]
+                  : ch;
+              }
+              textNode.nodeValue = out;
+            });
+            tick++;
+          }, 40);
+        }
+
+        function restore(el: Element) {
+          var state = states.get(el);
+          if (!state) return;
+          clearInterval(state.timer);
+          var active = state;
+          active.nodes.forEach(function (textNode, index) {
+            textNode.nodeValue = active.originals[index];
+          });
+        }
+
+        var links = document.querySelectorAll('a.tbc-nav-link, a.tbc-about-tag, a.tbc-text-link, a.tbc-footer-link, .tbc-prose a');
+        links.forEach(function (link) {
+          link.addEventListener('mouseenter', function () { scramble(link); });
+          link.addEventListener('mouseleave', function () { restore(link); });
+        });
+      })();
+    </script>
   </body>
   <script>import "../colorShuffle.ts"</script>
 </html>
