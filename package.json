@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "@astrojs/check": "latest",
+    "@astrojs/mdx": "^5.0.4",
     "astro": "latest",
+    "randoma11y": "^1.0.0",
     "typescript": "latest"
   },
   "devDependencies": {

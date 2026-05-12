@@ -1,6 +1,7 @@
 ---
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { execSync } from "node:child_process";
 
 interface Props {
   title: string;
@@ -25,16 +26,25 @@ const css = rawCss
   .replace(/\/\* ── Dev: orange palette toggle[\s\S]*$/, "")
   .replace(/:root\s*{([\s\S]*?)\n}/, (_match, vars) => `:root {${vars}\n${cobaltVars}\n}`);
 
+let lastUpdatedDate = "";
+let lastUpdatedUrl = "https://github.com/rohanthmarem/rohanth-site";
+try {
+  const hash = execSync("git log -1 --format=%H").toString().trim();
+  const raw = execSync('git log -1 --format=%cd --date=format:"%b %d, %Y"').toString().trim();
+  lastUpdatedDate = raw;
+  lastUpdatedUrl = `https://github.com/rohanthmarem/rohanth-site/commit/${hash}`;
+} catch {
+  lastUpdatedDate = new Date().toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
+}
+
 const body = sourceHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1] ?? "";
 const brandedBody = body
   .replaceAll('aria-label="teenbuildersclub home"', 'aria-label="rohanth home"')
   .replaceAll('<span class="tbc-logo-mark">tbc</span>', '<span class="tbc-logo-mark">rohanth</span>')
   .replaceAll('<span class="tbc-logo-mark tbc-logo-mark--footer">tbc</span>', '<span class="tbc-logo-mark tbc-logo-mark--footer">rohanth</span>')
-  .replaceAll("About tbc", "About rohanth")
-  .replaceAll("Teen Builders Club", "rohanth")
+.replaceAll("Teen Builders Club", "rohanth")
   .replaceAll("teen builders club", "rohanth")
   .replaceAll("teen builders", "builders")
-  .replaceAll("teenbuildersclub", "rohanth")
   .replaceAll("How TBC changed the way I think about accountability.", "How building in public changed the way I think about accountability.")
   .replaceAll("— rohanth", "- rohanth")
   .replaceAll("hello@teenbuilders.club", "hello@rohanth.com")
@@ -43,7 +53,11 @@ const brandedBody = body
   .replaceAll("https://www.teenbuilders.club/photos/hackathon.jpg", "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=80")
   .replaceAll("https://twitter.com/shayaan_azeem", "https://twitter.com/rohanthmarem")
   .replaceAll("https://twitter.com/shayaan", "https://twitter.com/rohanthmarem")
-  .replace(/<div\s+class="tbc-orange-toggle"[\s\S]*?<\/script>\s*$/i, "");
+  .replace(/<div\s+class="tbc-orange-toggle"[\s\S]*?<\/script>\s*$/i, "")
+  .replaceAll("LAST_UPDATED_DATE", lastUpdatedDate)
+  .replaceAll("LAST_UPDATED_URL", lastUpdatedUrl);
+
+const navGridScript = `<script>(function(){var n=document.querySelector('.tbc-nav');if(!n)return;var O=5000;n.addEventListener('mousemove',function(e){var r=n.getBoundingClientRect();n.style.setProperty('--grid-vx',(e.clientX-r.left+O)+'px');n.style.setProperty('--grid-vy',(e.clientY-r.top)+'px');n.style.setProperty('--grid-op','1')});n.addEventListener('mouseleave',function(){n.style.setProperty('--grid-op','0')})})();<\/script>`;
 ---
 
 <!doctype html>
@@ -56,6 +70,7 @@ const brandedBody = body
     <title>{title}</title>
     <style is:global set:html={css}></style>
   </head>
-  <body set:html={brandedBody}>
+  <body set:html={brandedBody + navGridScript}>
   </body>
+  <script>import "../colorShuffle.ts"</script>
 </html>

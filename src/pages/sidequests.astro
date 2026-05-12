@@ -1,0 +1,54 @@
+---
+import ContentLayout from "../layouts/ContentLayout.astro";
+
+const sidequests = [
+  {
+    title: "karate",
+    description: "training for 10+ years — currently a 2nd degree black belt.",
+  },
+  {
+    title: "formula null",
+    description: "built an e-waste racecar out of a thrifted alarm clock and a drone motor, raced it at daniel liu's flagship grand prix. finished 2nd.",
+  },
+  {
+    title: "thrifting",
+    description: "value village has some insanely cool finds. once stumbled on a fully functional pc, a vhs reader, and a 1tb hard drive in one trip.",
+  },
+  {
+    title: "teen builders club",
+    description: "cultivating a community for young ambitious folk building cool sh*t.",
+    link: "https://www.teenbuilders.club",
+  },
+  {
+    title: "hack the north",
+    description: "won by building a mortal kombat replica that coaches your fighting technique in real time.",
+    link: "https://devpost.com/software/coach-bob",
+  },
+];
+---
+
+<ContentLayout title="sidequests | rohanth marem" description="Side quests, random projects, and things Rohanth does for fun.">
+  <section class="tbc-hero tbc-fu tbc-d2">
+    <h1 class="tbc-hero-text">sidequests</h1>
+    <p class="tbc-about-intro" style="margin-top: 12px">
+      things i do for fun, or just because.
+    </p>
+  </section>
+
+  <section class="tbc-section tbc-fu tbc-d4" style="padding-top: 28px; padding-bottom: 64px">
+    <div class="tbc-about-copy">
+      <ul class="tbc-about-list">
+        {sidequests.map((sq) => (
+          <li>
+            {sq.link ? (
+              <a href={sq.link} target="_blank" rel="noopener" class="tbc-about-tag tbc-tag-a">{sq.title}</a>
+            ) : (
+              <span class="tbc-about-tag tbc-tag-a">{sq.title}</span>
+            )}
+            {" — "}{sq.description}
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+</ContentLayout>

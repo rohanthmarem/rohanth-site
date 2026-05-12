@@ -1,9 +1,38 @@
 ---
-import SiteLayout from "../layouts/SiteLayout.astro";
+import { getCollection } from "astro:content";
+import ContentLayout from "../layouts/ContentLayout.astro";
+
+const allWritings = await getCollection("writings");
+allWritings.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+function fmtDate(d: Date) {
+  return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+}
 ---
 
-<SiteLayout
-  source="writing.html"
-  title="writing - rohanth"
-  description="Writing by Rohanth on building, thinking, and shipping."
-/>
+<ContentLayout title="writing | rohanth marem" description="Writing by Rohanth on building, thinking, and shipping.">
+  <section class="tbc-hero tbc-fu tbc-d2">
+    <h1 class="tbc-hero-text">writing</h1>
+    <div class="tbc-hero-meta">
+      <span class="tbc-label">Notes on building, thinking, shipping</span>
+      <span class="tbc-label">{allWritings.length} entries</span>
+    </div>
+  </section>
+
+  <section class="tbc-section tbc-fu tbc-d3" style="padding-bottom: 64px">
+    <div class="tbc-writing-table">
+      <div class="tbc-writing-header">
+        <span class="tbc-writing-col-head">Title</span>
+        <span class="tbc-writing-col-head">Description</span>
+        <span class="tbc-writing-col-head" style="text-align:right">Date</span>
+      </div>
+      {allWritings.map((entry) => (
+        <a href={`/writing/${entry.id}`} class="tbc-writing-row tbc-writing-row--link">
+          <span class="tbc-writing-title">{entry.data.title}</span>
+          <span class="tbc-writing-desc">{entry.data.description}</span>
+          <span class="tbc-writing-date">{fmtDate(entry.data.date)}</span>
+        </a>
+      ))}
+    </div>
+  </section>
+</ContentLayout>
