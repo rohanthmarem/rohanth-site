@@ -14,9 +14,9 @@ const {
   source,
 } = Astro.props;
 
-const repoRoot = resolve(process.cwd(), "..");
-const rawCss = readFileSync(resolve(repoRoot, "styles.css"), "utf8");
-const sourceHtml = readFileSync(resolve(repoRoot, source), "utf8");
+const sourceRoot = resolve(process.cwd(), "src/source");
+const rawCss = readFileSync(resolve(sourceRoot, "styles.css"), "utf8");
+const sourceHtml = readFileSync(resolve(sourceRoot, source), "utf8");
 const cobaltVars = rawCss.match(/html\[data-orange="cobalt"\]\s*{([\s\S]*?)\n}/)?.[1] ?? "";
 const css = rawCss
   .replace(/\s*\/\* Default palette: ember \(#EA580C\) — toggle “Rust” for terracotta \*\/\n/, "\n")

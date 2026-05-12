@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>teen builders club (tbc) | make cool sh*t</title>
+    <meta
+      name="description"
+      content="Teen Builders Club — a community of curious, ambitious teen builders who love tinkering, creating, and shipping cool stuff together."
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script>
+      try {
+        var o = localStorage.getItem("tbc-orange-palette");
+        document.documentElement.setAttribute(
+          "data-orange",
+          o === "rust" || o === "cobalt" || o === "ember" ? o : "ember"
+        );
+      } catch (e) {
+        document.documentElement.setAttribute("data-orange", "ember");
+      }
+    </script>
+  </head>
+  <body>
+    <div class="tbc-root">
+      <div class="tbc-pad-h">
+        <div class="tbc-wrap">
+          <nav class="tbc-nav tbc-fu tbc-d1" aria-label="Primary">
+            <a href="#" class="tbc-logo" aria-label="teenbuildersclub home">
+              <span class="tbc-logo-mark">tbc</span>
+            </a>
+            <div class="tbc-nav-links">
+              <a href="/projects" class="tbc-nav-link">Projects</a>
+              <a href="/writing" class="tbc-nav-link">Writing</a>
+              <a href="/inspiration" class="tbc-nav-link">Inspiration</a>
+            </div>
+          </nav>
+
+          <section class="tbc-hero tbc-fu tbc-d2">
+            <h1 class="tbc-hero-text">
+              rohanth marem
+            </h1>
+            <div class="tbc-hero-meta">
+              <span class="tbc-label">Teen-led · tinkering · shipping</span>
+              <span class="tbc-label">Meetups · demo nights · co-working</span>
+            </div>
+            <div class="tbc-hero-img-wrap tbc-fu tbc-d3">
+              <img
+                src="https://www.teenbuilders.club/photos/workshop.jpg"
+                class="tbc-hero-img"
+                width="800"
+                height="280"
+                alt="Teens at a coding workshop"
+                onerror="this.src='https://www.teenbuilders.club/photos/hackathon.jpg'"
+              />
+            </div>
+          </section>
+
+          <section class="tbc-section tbc-fu tbc-d4">
+            <div class="tbc-section-head">
+              <span class="tbc-dot" aria-hidden="true"></span>
+              <span class="tbc-label">About tbc</span>
+            </div>
+            <p class="tbc-body" style="max-width: 560px">
+              Teen Builders Club is a community of likeminded, curious, ambitious
+              teen builders. It's for people who love tinkering, creating, and
+              building — and who want to meet others who are just as driven. We
+              host
+              <a href="https://lu.ma/teenbuildersclub" target="_blank" rel="noopener" class="tbc-text-link"
+                >meetups
+                <svg
+                  width="8"
+                  height="8"
+                  viewBox="0 0 10 10"
+                  fill="none"
+                  aria-hidden="true"
+                  style="flex-shrink: 0"
+                >
+                  <path
+                    d="M1 9L9 1M9 1H3M9 1V7"
+                    stroke="currentColor"
+                    stroke-width="1.3"
+                  />
+                </svg>
+              </a>,
+              demo nights, and co-working sessions.
+            </p>
+            <br />
+            <p class="tbc-body" style="max-width: 560px">
+              We also run an online space to share projects, get feedback, and find
+              other builders to jam with. This is a place built by and for young
+              people who just want to ship cool stuff together.
+            </p>
+          </section>
+
+          <section class="tbc-section">
+            <hr class="tbc-divider" style="margin-top: 36px" />
+            <span class="tbc-label" style="display: block; margin-bottom: 18px"
+              >Founded by</span
+            >
+            <div class="tbc-team-grid">
+              <a href="https://twitter.com/shayaan" target="_blank" rel="noopener" class="tbc-team-link"
+                >Shayaan Azeem
+                <svg
+                  width="9"
+                  height="9"
+                  viewBox="0 0 10 10"
+                  fill="none"
+                  aria-hidden="true"
+                  style="flex-shrink: 0"
+                >
+                  <path
+                    d="M1 9L9 1M9 1H3M9 1V7"
+                    stroke="currentColor"
+                    stroke-width="1.3"
+                  />
+                </svg>
+              </a>
+              <a href="https://twitter.com/rohanthmarem" target="_blank" rel="noopener" class="tbc-team-link"
+                >Rohanth Marem
+                <svg
+                  width="9"
+                  height="9"
+                  viewBox="0 0 10 10"
+                  fill="none"
+                  aria-hidden="true"
+                  style="flex-shrink: 0"
+                >
+                  <path
+                    d="M1 9L9 1M9 1H3M9 1V7"
+                    stroke="currentColor"
+                    stroke-width="1.3"
+                  />
+                </svg>
+              </a>
+            </div>
+          </section>
+
+          <section class="tbc-section" id="schedule">
+            <div class="tbc-section-head" style="margin-top: 8px">
+              <span class="tbc-dot" aria-hidden="true"></span>
+              <span class="tbc-label">Event calendar</span>
+            </div>
+            <div
+              class="tbc-sch"
+              data-tbc-schedule
+              role="group"
+              aria-label="Schedule events"
+            >
+              <button
+                type="button"
+                class="tbc-sch-row on"
+                aria-expanded="true"
+              >
+                <div class="tbc-sch-label-wrap">
+                  <span class="tbc-label">Meetups · icebreakers + project ideas</span>
+                  <div class="tbc-sch-desc">
+                    <span class="tbc-sch-desc-inner"
+                      >Regular in-person and online gatherings to meet other
+                      builders, share what you're working on, and find people to
+                      build with. No agenda required — just show up.</span
+                    >
+                  </div>
+                </div>
+                <span class="tbc-sch-arrow" aria-hidden="true"
+                  ><svg
+                    width="9"
+                    height="9"
+                    viewBox="0 0 10 10"
+                    fill="none"
+                    style="flex-shrink: 0"
+                  >
+                    <path
+                      d="M1 9L9 1M9 1H3M9 1V7"
+                      stroke="currentColor"
+                      stroke-width="1.3"
+                    /></svg
+                ></span>
+              </button>
+              <button type="button" class="tbc-sch-row" aria-expanded="false">
+                <div class="tbc-sch-label-wrap">
+                  <span class="tbc-label">Demo nights</span>
+                  <div class="tbc-sch-desc">
+                    <span class="tbc-sch-desc-inner"
+                      >Short demos, honest feedback, and celebration of what got
+                      built — finished or not. If you shipped something, you show
+                      it. No slides required.</span
+                    >
+                  </div>
+                </div>
+                <span class="tbc-sch-arrow" aria-hidden="true"
+                  ><svg
+                    width="9"
+                    height="9"
+                    viewBox="0 0 10 10"
+                    fill="none"
+                    style="flex-shrink: 0"
+                  >
+                    <path
+                      d="M1 9L9 1M9 1H3M9 1V7"
+                      stroke="currentColor"
+                      stroke-width="1.3"
+                    /></svg
+                ></span>
+              </button>
+              <button type="button" class="tbc-sch-row" aria-expanded="false">
+                <div class="tbc-sch-label-wrap">
+                  <span class="tbc-label">Co-working sessions</span>
+                  <div class="tbc-sch-desc">
+                    <span class="tbc-sch-desc-inner"
+                      >Drop-in working blocks — share your screen, ask questions,
+                      and pair on whatever you're stuck on. Bugs, design, ideas,
+                      all welcome.</span
+                    >
+                  </div>
+                </div>
+                <span class="tbc-sch-arrow" aria-hidden="true"
+                  ><svg
+                    width="9"
+                    height="9"
+                    viewBox="0 0 10 10"
+                    fill="none"
+                    style="flex-shrink: 0"
+                  >
+                    <path
+                      d="M1 9L9 1M9 1H3M9 1V7"
+                      stroke="currentColor"
+                      stroke-width="1.3"
+                    /></svg
+                ></span>
+              </button>
+            </div>
+            <div style="margin-top: 18px">
+              <a
+                href="https://www.teenbuilders.club/events"
+                target="_blank"
+                rel="noopener"
+                class="tbc-text-link tbc-label"
+                >View all meetups &amp; attendees
+                <svg
+                  width="8"
+                  height="8"
+                  viewBox="0 0 10 10"
+                  fill="none"
+                  aria-hidden="true"
+                  style="flex-shrink: 0"
+                >
+                  <path
+                    d="M1 9L9 1M9 1H3M9 1V7"
+                    stroke="currentColor"
+                    stroke-width="1.3"
+                  />
+                </svg>
+              </a>
+            </div>
+          </section>
+
+          <section class="tbc-section" style="padding-bottom: 0" id="join">
+            <div class="tbc-section-head" style="margin-top: 44px">
+              <span class="tbc-dot" aria-hidden="true"></span>
+              <span class="tbc-label">Partners</span>
+            </div>
+            <div class="tbc-partners-card">
+              <p class="tbc-partners-cta">Interested in partnering with us?</p>
+              <div class="tbc-partner-btns">
+                <a href="mailto:hello@teenbuilders.club" class="tbc-btn-ghost">Mentors
+                  <svg
+                    width="9"
+                    height="9"
+                    viewBox="0 0 10 10"
+                    fill="none"
+                    aria-hidden="true"
+                    style="flex-shrink: 0"
+                  >
+                    <path
+                      d="M1 9L9 1M9 1H3M9 1V7"
+                      stroke="#f7e8da"
+                      stroke-width="1.3"
+                      class="tbc-btn-arrow"
+                    />
+                  </svg>
+                </a>
+                <a href="mailto:hello@teenbuilders.club" class="tbc-btn-ghost">
+                  Sponsors
+                  <svg
+                    width="9"
+                    height="9"
+                    viewBox="0 0 10 10"
+                    fill="none"
+                    aria-hidden="true"
+                    style="flex-shrink: 0"
+                  >
+                    <path
+                      d="M1 9L9 1M9 1H3M9 1V7"
+                      stroke="#f7e8da"
+                      stroke-width="1.3"
+                      class="tbc-btn-arrow"
+                    />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </section>
+
+          <section class="tbc-section" style="padding-bottom: 64px">
+            <p class="tbc-quote-block">
+              “build. break. iterate.”
+              <span class="tbc-quote-attrib">— teen builders club</span>
+            </p>
+          </section>
+        </div>
+      </div>
+
+      <footer class="tbc-footer">
+        <div class="tbc-pad-h">
+          <div class="tbc-wrap">
+            <div class="tbc-footer-top">
+              <a href="#" aria-label="teenbuildersclub home">
+                <span class="tbc-logo-mark tbc-logo-mark--footer">tbc</span>
+              </a>
+              <div class="tbc-footer-links">
+                <a href="https://lu.ma/teenbuildersclub" target="_blank" rel="noopener" class="tbc-footer-link"
+                  >Events (lu.ma)
+                  <svg
+                    width="9"
+                    height="9"
+                    viewBox="0 0 10 10"
+                    fill="none"
+                    aria-hidden="true"
+                    style="flex-shrink: 0"
+                  >
+                    <path
+                      d="M1 9L9 1M9 1H3M9 1V7"
+                      stroke="currentColor"
+                      stroke-width="1.3"
+                    />
+                  </svg>
+                </a>
+                <a href="https://twitter.com/shayaan_azeem" target="_blank" rel="noopener" class="tbc-footer-link"
+                  >Twitter / X
+                  <svg
+                    width="9"
+                    height="9"
+                    viewBox="0 0 10 10"
+                    fill="none"
+                    aria-hidden="true"
+                    style="flex-shrink: 0"
+                  >
+                    <path
+                      d="M1 9L9 1M9 1H3M9 1V7"
+                      stroke="currentColor"
+                      stroke-width="1.3"
+                    />
+                  </svg>
+                </a>
+                <a href="mailto:hello@teenbuilders.club" class="tbc-footer-link">Email
+                  <svg
+                    width="9"
+                    height="9"
+                    viewBox="0 0 10 10"
+                    fill="none"
+                    aria-hidden="true"
+                    style="flex-shrink: 0"
+                  >
+                    <path
+                      d="M1 9L9 1M9 1H3M9 1V7"
+                      stroke="currentColor"
+                      stroke-width="1.3"
+                    />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="position: relative">
+          <div class="tbc-wordmark-clip tbc-pad-h">
+            <span class="tbc-wordmark" aria-hidden="true">rohanth</span>
+          </div>
+        </div>
+      </footer>
+    </div>
+    <script>
+      (function () {
+        var schedule = document.querySelector("[data-tbc-schedule]");
+        if (!schedule) return;
+        var rows = Array.prototype.slice.call(
+          schedule.querySelectorAll(".tbc-sch-row")
+        );
+        if (!rows.length) return;
+
+        function useHoverAccordion() {
+          return window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+        }
+
+        var active = 0;
+        var lastTouch = 0;
+        document.addEventListener("touchstart", function () {
+          lastTouch = Date.now();
+        }, { passive: true });
+
+        function setActive(i) {
+          if (i < 0) i = 0;
+          if (i >= rows.length) i = rows.length - 1;
+          active = i;
+          rows.forEach(function (row, j) {
+            var on = j === active;
+            row.classList.toggle("on", on);
+            row.setAttribute("aria-expanded", on ? "true" : "false");
+          });
+        }
+
+        rows.forEach(function (row, i) {
+          row.addEventListener("mouseenter", function () {
+            if (useHoverAccordion()) setActive(i);
+          });
+          row.addEventListener("click", function () {
+            setActive(i);
+          });
+          row.addEventListener("focusin", function () {
+            if (useHoverAccordion()) setActive(i);
+          });
+        });
+
+        schedule.addEventListener("mouseleave", function () {
+          if (useHoverAccordion() && Date.now() - lastTouch > 500) {
+            setActive(0);
+          }
+        });
+
+        schedule.addEventListener("focusout", function (e) {
+          var next = e.relatedTarget;
+          if (!schedule.contains(next)) {
+            setActive(0);
+          }
+        });
+
+        setActive(0);
+      })();
+    </script>
+    <div
+      class="tbc-orange-toggle"
+      id="tbc-orange-toggle"
+      role="group"
+      aria-label="Test orange palette"
+    >
+      <span class="tbc-orange-toggle-label">Orange</span>
+      <button
+        type="button"
+        class="tbc-orange-toggle-btn"
+        data-orange="ember"
+        title="Tailwind-style #EA580C"
+      >
+        Ember
+      </button>
+      <button
+        type="button"
+        class="tbc-orange-toggle-btn"
+        data-orange="rust"
+        title="Original terracotta #B84A12"
+      >
+        Rust
+      </button>
+      <button
+        type="button"
+        class="tbc-orange-toggle-btn"
+        data-orange="cobalt"
+        title="Deep blue rgb(31.765% 38.431% 67.451%)"
+      >
+        Cobalt
+      </button>
+    </div>
+    <script>
+      (function () {
+        var KEY = "tbc-orange-palette";
+        var html = document.documentElement;
+        var bar = document.getElementById("tbc-orange-toggle");
+        function apply(v) {
+          v = v === "rust" || v === "cobalt" ? v : "ember";
+          html.setAttribute("data-orange", v);
+          try {
+            localStorage.setItem(KEY, v);
+          } catch (e) {}
+          sync();
+        }
+        function sync() {
+          var cur = html.getAttribute("data-orange") || "ember";
+          bar.querySelectorAll(".tbc-orange-toggle-btn").forEach(function (btn) {
+            var on = btn.getAttribute("data-orange") === cur;
+            btn.setAttribute("aria-pressed", on ? "true" : "false");
+            btn.classList.toggle("is-active", on);
+          });
+        }
+        bar.addEventListener("click", function (e) {
+          var btn = e.target.closest(".tbc-orange-toggle-btn");
+          if (!btn) return;
+          apply(btn.getAttribute("data-orange"));
+        });
+        sync();
+      })();
+    </script>
+  </body>
+</html>
