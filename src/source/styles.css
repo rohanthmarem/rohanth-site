@@ -1149,6 +1149,7 @@ button.tbc-sch-row {
 @media (max-width: 600px) {
   .tbc-project-card {
     grid-template-columns: 1fr;
+    row-gap: 16px;
   }
 
   .tbc-project-img-wrap {
