@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conversation</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #1c1c1e;
+    font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 40px 16px 60px;
+    min-height: 100vh;
+  }
+  .phone { width: 100%; max-width: 420px; }
+  .header {
+    text-align: center;
+    padding: 16px 0 20px;
+    border-bottom: 1px solid #2c2c2e;
+    margin-bottom: 24px;
+  }
+  .header .name { font-size: 17px; font-weight: 600; color: #f2f2f7; letter-spacing: -0.3px; }
+  .header .subtitle { font-size: 12px; color: #8e8e93; margin-top: 2px; }
+  .timestamp {
+    text-align: center;
+    font-size: 11px;
+    color: #8e8e93;
+    margin: 20px 0 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .bubble-row {
+    display: flex;
+    margin-bottom: 3px;
+    align-items: flex-end;
+    gap: 8px;
+  }
+  .bubble-row.me { flex-direction: row-reverse; }
+  .bubble-row.them { flex-direction: row; }
+  .avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    font-size: 11px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-bottom: 2px; letter-spacing: -0.3px;
+  }
+  .avatar.them { background: #3a3a3c; color: #ebebf5; }
+  .avatar.me   { background: #2c5f8a; color: #fff; }
+  .avatar.hidden { visibility: hidden; }
+  .bubble {
+    max-width: 72%;
+    padding: 9px 13px;
+    border-radius: 18px;
+    font-size: 15px;
+    line-height: 1.45;
+    word-break: break-word;
+  }
+  .bubble.me   { background: #0b84ff; color: #fff; border-bottom-right-radius: 5px; }
+  .bubble.them { background: #2c2c2e; color: #f2f2f7; border-bottom-left-radius: 5px; }
+  .bubble-row.new-sender { margin-top: 10px; }
+  .bubble-row + .bubble-row.me,
+  .bubble-row + .bubble-row.them { margin-top: 2px; }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="header">
+    <div class="name">[younger friend]</div>
+    <div class="subtitle">iMessage · 8:05 PM</div>
+  </div>
+  <div class="timestamp">Today 8:05 PM</div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">i didnt apply queens 😭</div>
+  </div>
+  <div class="bubble-row them new-sender">
+    <div class="avatar them">YF</div>
+    <div class="bubble them">lols</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">u wanna start your own business later right</div>
+  </div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">yeah</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">ideally asap but yes</div>
+  </div>
+  <div class="bubble-row them new-sender">
+    <div class="avatar them">YF</div>
+    <div class="bubble them">ncie</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">nice</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">ive also wanted to for years now</div>
+  </div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">just do it</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">dont wait</div>
+  </div>
+  <div class="bubble-row them new-sender">
+    <div class="avatar them">YF</div>
+    <div class="bubble them">uhhh</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">shouldnt i do IA first</div>
+  </div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">honest answer is no</div>
+  </div>
+  <div class="bubble-row them new-sender">
+    <div class="avatar them">YF</div>
+    <div class="bubble them">then IB exam prep 4 april</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">then the ee</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">then the next exam</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">then the next 😭</div>
+  </div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">you are getting, in the grand scheme of this, barely any value out of an ia, ib exam and ee</div>
+  </div>
+  <div class="bubble-row them new-sender">
+    <div class="avatar them">YF</div>
+    <div class="bubble them">but im getting safety ig</div>
+  </div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">like yeah better shot at a good school/program, but that still isnt a guarantee</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">its not a measure of success or like accomplishment or personal growth in any means</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">taking the risk, starting ur own business, or smth along those lines, in the long term has wayyyy more roi than any useless business ia or chem ia or ee</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">obviously, its not the path taken as a result of that risk</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">and society values academic validation</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">but if you genuinelly want to grow as a person, learn invaluable skills and truly become, in a commercial sense, successful</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">dont do ur ia rn and go start a business</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">or build some insanely cool project</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">but yeah do business ia after chem</div>
+  </div>
+  <div class="bubble-row them new-sender">
+    <div class="avatar them">YF</div>
+    <div class="bubble them">hmm</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">lol i dont even know what to say</div>
+  </div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">haha you dont have to say anything</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">also thats just my 2 cents</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">so take them as u wish</div>
+  </div>
+  <div class="bubble-row them new-sender">
+    <div class="avatar them">YF</div>
+    <div class="bubble them">no but its like everything ive been thinking about in the back of my head but it was just too "scary" or out of the societal norm to rlly consider</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">bcuz like this path is safe but its also RLLY slow</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">and every1 takes this path but almost all the inventors and ppl who did cool stuff didn't</div>
+  </div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">exactly</div>
+  </div>
+  <div class="bubble-row them new-sender">
+    <div class="avatar them">YF</div>
+    <div class="bubble them">but also ppl didnt and failed miserably</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">which is scary</div>
+  </div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">yeah i mean, fear is real</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">and i could say a million platitudes which mean nothing coming from me bc i havent done the risky thing either</div>
+  </div>
+  <div class="bubble-row them new-sender">
+    <div class="avatar them">YF</div>
+    <div class="bubble them">uhhhh me searching up platitudes 😂</div>
+  </div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">like, cliches sayings</div>
+  </div>
+  <div class="bubble-row them new-sender">
+    <div class="avatar them">YF</div>
+    <div class="bubble them">ah got it</div>
+  </div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">"if ur scared of something its a sign u should do it"</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">"fortune favours the bold"</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">yeah</div>
+  </div>
+  <div class="bubble-row them new-sender">
+    <div class="avatar them">YF</div>
+    <div class="bubble them">my mom sent me an instagram reel of an mit dropout who has like a 500M biz and she said if every1s doing something, do the opposite just for the heck of it</div>
+  </div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">but if u look at people who've succeeded, and make ur own observations, i think theres an evident trend</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">she aint wrong</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">obv dont drop outta hs rn and go raise like $15mil</div>
+  </div>
+  <div class="bubble-row them new-sender">
+    <div class="avatar them">YF</div>
+    <div class="bubble them">so why didnt u start a biz</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">if u dont mind me asking</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">not like i did anything either lol</div>
+  </div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">that is a very good question haha</div>
+  </div>
+  <div class="bubble-row them new-sender">
+    <div class="avatar them">YF</div>
+    <div class="bubble them">lol why not</div>
+  </div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">a combination of laziness + ambition and sunk cost (which is really just fear)</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">i realized this mainly end of grade 11 year, and last summer, which was like, yeah thats most of my hs time gone, if i just wait a couple more months, i can do whatever w/o worrying ab school</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">and that seemed fine in my head</div>
+  </div>
+  <div class="bubble-row them new-sender">
+    <div class="avatar them">YF</div>
+    <div class="bubble them">yeah</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">i have to wait a little longer tho 😢</div>
+  </div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">but now that those couple months have passed, i realize how much i've missed out on</div>
+  </div>
+  <div class="bubble-row them new-sender">
+    <div class="avatar them">YF</div>
+    <div class="bubble them">oh</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">plot twist</div>
+  </div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">i know friends who've completely turned their lives around in literally 6 months</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">yeah they were out of hs, but if theyre doing that, why cant i</div>
+  </div>
+  <div class="bubble-row them new-sender">
+    <div class="avatar them">YF</div>
+    <div class="bubble them">what did they do</div>
+  </div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">i know folks who've gotten into yc</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">have a high 5 figure job as an intern at a top tech comany for 4 months</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">people who've met and are in deals with vcs</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">a guy heading to intern at nvidia</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">like, you can just make opportunities for yourself</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">idk</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">laziness bc i never took action on my ideas, or saw them thrw</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">or just assumed theyd eventually come to me</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">bc thats how things have always been</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">gifted kid syndrome a little bit</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">and a bit of adhd</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">but mainly just me being lazy</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">so, tldr dont be lazy</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">lazy obv being fear disguised</div>
+  </div>
+  <div class="bubble-row them new-sender">
+    <div class="avatar them">YF</div>
+    <div class="bubble them">could we do something simultaneous to hs</div>
+  </div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">yeah</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">fs</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">i kinda did with tensorforest, but it lost momentum bc it was hard to take that project to another level without majorly sacrificing school</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">and i made that choice</div>
+  </div>
+  <div class="bubble-row them new-sender">
+    <div class="avatar them">YF</div>
+    <div class="bubble them">yeah the drone right</div>
+  </div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">yeah</div>
+  </div>
+  <div class="bubble-row them new-sender">
+    <div class="avatar them">YF</div>
+    <div class="bubble them">that was rlly cool</div>
+  </div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">$10k in funding, we were in talks with vcs and had momentum</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">but it all died bc for us to actually make it viable would mean investing sm time into that</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">which is neccesary for anything worht pursuing like that</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">but the cost was smth i didnt wanna accept</div>
+  </div>
+  <div class="bubble-row them new-sender">
+    <div class="avatar them">YF</div>
+    <div class="bubble them">hm</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">so what do we do now</div>
+  </div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">good question</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">im not sure</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">figuring that out atm for myself icl</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">i'll lyk what i find out</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">but for you, just keep in mind that you got an endless supply of opportunity out there, one that rewards you for your curiosity or innovation or interests rather than the ones imposed on you in school</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">leverage that lol</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">dont do this, thats stupid unless you've shown its a banger idea. but also don't spend the rest of your year studying hl math, writing your EE and stressing out over grades</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">do this more</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">just dont make this your main option</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">you get waht i mean?</div>
+  </div>
+  <div class="bubble-row them new-sender">
+    <div class="avatar them">YF</div>
+    <div class="bubble them">yeah</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">uhh my music is making this conversation too suspensful</div>
+  </div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">hahaha</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">highkey i yapped, but i hope i wasnt too schizo/doomer sounding</div>
+  </div>
+  <div class="bubble-row them new-sender">
+    <div class="avatar them">YF</div>
+    <div class="bubble them">dont know who schizo or doomer is but no</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">it was great</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">now that i think of it doomer prolly isnt a person</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">but whatever</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">lol</div>
+  </div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">like shizophrenic (going mental) or a doomer as in a pessimist</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">haha</div>
+  </div>
+  <div class="bubble-row them new-sender">
+    <div class="avatar them">YF</div>
+    <div class="bubble them">bruhh</div>
+  </div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">dont listen to what i said as advice, but as just, my observations</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">make ur own calls dawg</div>
+  </div>
+  <div class="bubble-row them new-sender">
+    <div class="avatar them">YF</div>
+    <div class="bubble them">no i was like on the fence all this time</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">ur advice sorta nudged me a bit</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">or a little lot bit</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">even if it isnt a trillion dollar company just do somwthing that you are interested in and that allows you to grow as far as you want and in any direction you want without the boundaries of societal expectation and stuffs</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">and who knows maybe someone else will like it and u'll be 🤑</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">or maybe ull just grow and hopefully have some fun chasing ur dreams</div>
+  </div>
+  <div class="bubble-row them">
+    <div class="avatar them hidden">YF</div>
+    <div class="bubble them">but either way don't be stagnant</div>
+  </div>
+  <div class="bubble-row me new-sender">
+    <div class="avatar me">R</div>
+    <div class="bubble me">precisely that [younger peer's name]</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">u said what i said in 10x less words</div>
+  </div>
+  <div class="bubble-row me">
+    <div class="avatar me hidden">R</div>
+    <div class="bubble me">but yes</div>
+  </div>
+</div>
+</body>
+</html>

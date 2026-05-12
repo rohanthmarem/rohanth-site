@@ -1,0 +1,74 @@
+---
+title: "Formula Null"
+date: 2025-06-05
+description: "the most fun hackathon i've been to"
+tags: ["hackathon", "hardware"]
+image: "/projects/final.jpeg"
+---
+
+# A waffle-making RC car drove into our gearbox and robbed us of our first-ever hackathon win—and a Bambu Labs A1 3D printer.
+
+A weekend or two ago, I was at [Daniel Liu's](https://x.com/p1nosaur) flagship e-waste ~~hackathon~~ grand prix: [Formula Null](https://www.formulanull.racing/). This event was the pinnacle of motorsport, engineering, and shenanigans, and honestly, the best time I'd had at a hackathon in a long while.
+
+The objective: build a racecar out of e-waste and race them against each other on the Ring Road racetrack. Winner takes it all.
+
+---
+
+## The plan
+
+Our plan was simple:
+
+> car go fast = #1 victory royale
+
+We focused on building the fastest car possible. What are the characteristics of a fast car? Well...
+
+-   fast motor
+-   lightweight
+-   turns really quick
+-   powered by Red Bull
+
+We achieved all four.
+
+![cad](car_cad.jpeg)
+
+First, we needed a body and chassis. So we took a trip to Value Village in the rain. After a brief sticky rice sidequest, we decided on an old alarm clock as our body, low-profile, and an easy shape to work with. We also stumbled on a hockey goal buzzer. For only $5.99, it was a steal, so we bought that too.
+
+> **sidenote:** Value Village has some insanely cool finds. As someone who'd never gone thrifting before, I was excited by all the weird and random stuff I found: a Monopoly set based on my town, a completely functional PC, a pink Polaroid speaker, a VHS reader, a 1TB hard drive, and so many other things. Gotta go thrifting more icl.
+
+Now all we needed was something to power our car.  
+We _should've_ done some proper research, but our need for speed was too strong, and we ended up choosing the fastest motor we had: a 940KV brushless drone motor. Arguably overkill, but it seemed like the best option in the moment. Surely, right?
+
+With the main components secured, we started CAD’ing our car.
+
+First up: the gearbox. We needed to tame the power of our brushless motor. To bring the RPM down to something semi-controllable, I designed a 6:1 gear ratio, dropping it from 14,000 RPM to about 2,000. Still crazy fast, but just low enough to handle.
+
+Next: the body and front steering axle.  
+The bottom plate (which the alarm and axle sat on) was nothing fancy, just a flat plate with some cutouts. The steering system was based on a YouTube design by some dude (shoutout xPerson), with a modified servo placement to fit our chassis.
+
+![gearbox photo](/projects/gearbox.jpeg)
+
+The design for the gearbox was ~~well thought out and planned~~ 100% on a whim. I started by creating brackets that attached to the back of the alarm clock, then jammed some axles and gears through it. The goal was to slow down the RPM as much as possible. I kind of just chucked in the biggest and smallest gears we had and saw what worked. Ended up with a decent ratio.
+
+To keep the body lightweight and semi-aerodynamic, we gutted the alarm clock and 3D-printed a frame around it. Dry weight came out to about 750 grams, pretty light.
+
+None of us had built a car before, so we just kinda vibe-built the steering system from a YouTube tutorial and adapted it to fit our servo config.
+
+![steering](/projects/steering.JPG)
+In the end, we had the loudest, fastest car at the event. It was borderline uncontrollable, but it worked, and we were _very_ glad it did.
+
+---
+
+## Some Moments of Ingeniousity (or Stupidity)
+
+-   The floor was dusty and we kept losing grip, so we used duct tape to clean the tires and applied hand sanitizer to boost grip.
+-   No drill? Used a soldering iron to make holes for screws.
+-   No saw? Used a drill to cut a piece down (we found the saw later lol).
+-   Added slight camber to help with grip + stability.
+
+## Future Improvements
+
+-   Implement an Ackermann steering system to handle turns better.
+-   **Do NOT** use a drone motor for speed, its way too fast, and it literally melted our gearbox.
+-   Add weight for stability. Also: be more methodical with weight balancing. Our car was front-heavy and had insane oversteer.
+
+## ![redbull](redbull.jpeg)
