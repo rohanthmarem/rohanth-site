@@ -39,7 +39,7 @@ function fmtDate(d: Date) {
           </div>
           <div class="tbc-project-img-wrap">
             {project.data.image && (
-              <img src={project.data.image} class="tbc-project-img" alt="" loading="lazy" />
+              <img src={project.data.image} class="tbc-project-img" alt="" loading="lazy" style={project.data.imagePosition ? `object-position: ${project.data.imagePosition}` : undefined} />
             )}
           </div>
         </a>
