@@ -54,7 +54,7 @@ const arrowSvg = `<svg width="9" height="9" viewBox="0 0 10 10" fill="none" aria
             </a>
             <div class="tbc-nav-links">
               <a href="/projects" class="tbc-nav-link">Projects</a>
-              <a href="/writing" class="tbc-nav-link">Writing</a>
+              <a href="https://rohanth.substack.com/" class="tbc-nav-link">Writing</a>
               <a href="/inspiration" class="tbc-nav-link">Inspiration</a>
               <a href="/sidequests" class="tbc-nav-link">Sidequests</a>
             </div>
@@ -106,17 +106,18 @@ const arrowSvg = `<svg width="9" height="9" viewBox="0 0 10 10" fill="none" aria
     </div>
     <script>
       (function () {
-        var n = document.querySelector('.tbc-nav');
+        var n = document.querySelector<HTMLElement>('.tbc-nav');
         if (!n) return;
+        var nav = n;
         var O = 5000;
-        n.addEventListener('mousemove', function (e) {
-          var r = n.getBoundingClientRect();
-          n.style.setProperty('--grid-vx', (e.clientX - r.left + O) + 'px');
-          n.style.setProperty('--grid-vy', (e.clientY - r.top) + 'px');
-          n.style.setProperty('--grid-op', '1');
+        n.addEventListener('mousemove', function (e: MouseEvent) {
+          var r = nav.getBoundingClientRect();
+          nav.style.setProperty('--grid-vx', (e.clientX - r.left + O) + 'px');
+          nav.style.setProperty('--grid-vy', (e.clientY - r.top) + 'px');
+          nav.style.setProperty('--grid-op', '1');
         });
         n.addEventListener('mouseleave', function () {
-          n.style.setProperty('--grid-op', '0');
+          nav.style.setProperty('--grid-op', '0');
         });
       })();
     </script>
