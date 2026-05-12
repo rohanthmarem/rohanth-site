@@ -1388,6 +1388,46 @@ a.tbc-writing-row--link {
   max-width: 520px;
 }
 
+/* ── Mobile ── */
+
+/* Bigger tap targets on nav links */
+.tbc-nav-link {
+  padding: 6px 0;
+}
+
+/* Nav links: wrap on very narrow screens (< 380px) */
+@media (max-width: 380px) {
+  .tbc-nav-links {
+    flex-wrap: wrap;
+    gap: 8px 16px;
+  }
+}
+
+/* Bigger tap targets on footer links */
+.tbc-footer-link {
+  padding: 4px 0;
+}
+
+/* Footer: stack left/right sections on very small screens */
+@media (max-width: 420px) {
+  .tbc-footer-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tbc-footer-links {
+    align-items: flex-start;
+  }
+}
+
+/* Project cards: image on top when stacked */
+@media (max-width: 600px) {
+  .tbc-project-img-wrap {
+    order: -1;
+    height: 200px;
+  }
+}
+
 /* ── Dev: orange palette toggle (testing) ── */
 .tbc-orange-toggle {
   position: fixed;
