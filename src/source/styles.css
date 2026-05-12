@@ -36,17 +36,17 @@ html[data-orange="rust"] {
 }
 
 html[data-orange="cobalt"] {
-  --ink: color(display-p3 0.239 0.262 0.674);
-  --ink-deep: color(display-p3 0.18 0.19 0.55);
-  --ink-bright: color(display-p3 0.35 0.38 0.80);
-  --divider: rgba(61, 67, 172, 0.2);
-  --overlay-hero-a: rgba(61, 67, 172, 0.55);
-  --overlay-hero-b: rgba(61, 67, 172, 0.45);
-  --overlay-stamp-shadow: rgba(46, 48, 140, 0.12);
-  --overlay-photo-a: rgba(61, 67, 172, 0.45);
-  --overlay-photo-b: rgba(61, 67, 172, 0.35);
-  --overlay-event: rgba(61, 67, 172, 0.3);
-  --overlay-founder: rgba(61, 67, 172, 0.28);
+  --ink: #3d4659;
+  --ink-deep: #272f42;
+  --ink-bright: #5d6882;
+  --divider: rgba(61, 70, 89, 0.2);
+  --overlay-hero-a: rgba(61, 70, 89, 0.55);
+  --overlay-hero-b: rgba(61, 70, 89, 0.45);
+  --overlay-stamp-shadow: rgba(39, 47, 66, 0.12);
+  --overlay-photo-a: rgba(61, 70, 89, 0.45);
+  --overlay-photo-b: rgba(61, 70, 89, 0.35);
+  --overlay-event: rgba(61, 70, 89, 0.3);
+  --overlay-founder: rgba(61, 70, 89, 0.28);
 }
 
 html {
