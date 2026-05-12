@@ -1,30 +1,5 @@
 ---
 import ContentLayout from "../layouts/ContentLayout.astro";
-
-const sidequests = [
-  {
-    title: "karate",
-    description: "training for 10+ years — currently a 2nd degree black belt.",
-  },
-  {
-    title: "formula null",
-    description: "built an e-waste racecar out of a thrifted alarm clock and a drone motor, raced it at daniel liu's flagship grand prix. finished 2nd.",
-  },
-  {
-    title: "thrifting",
-    description: "value village has some insanely cool finds. once stumbled on a fully functional pc, a vhs reader, and a 1tb hard drive in one trip.",
-  },
-  {
-    title: "teen builders club",
-    description: "cultivating a community for young ambitious folk building cool sh*t.",
-    link: "https://www.teenbuilders.club",
-  },
-  {
-    title: "hack the north",
-    description: "won by building a mortal kombat replica that coaches your fighting technique in real time.",
-    link: "https://devpost.com/software/coach-bob",
-  },
-];
 ---
 
 <ContentLayout title="sidequests | rohanth marem" description="Side quests, random projects, and things Rohanth does for fun.">
@@ -38,16 +13,26 @@ const sidequests = [
   <section class="tbc-section tbc-fu tbc-d4" style="padding-top: 28px; padding-bottom: 64px">
     <div class="tbc-about-copy">
       <ul class="tbc-about-list">
-        {sidequests.map((sq) => (
-          <li>
-            {sq.link ? (
-              <a href={sq.link} target="_blank" rel="noopener" class="tbc-about-tag tbc-tag-a">{sq.title}</a>
-            ) : (
-              <span class="tbc-about-tag tbc-tag-a">{sq.title}</span>
-            )}
-            {" — "}{sq.description}
-          </li>
-        ))}
+        <li>
+          <span class="tbc-sidequest-title">speedrunning a quarter-life crisis</span>
+          {" — "}recently ran a{" "}
+          <a href="https://www.strava.com/activities/18363105986" target="_blank" rel="noopener" class="tbc-about-tag tbc-tag-b">half marathon</a>
+          {" "}and have this unreasonably ambitous desire to become ironman by the time i'm 20.
+        </li>
+        <li>
+          <span class="tbc-sidequest-title">living to eat instead of eating to live</span>
+          {" — "}i've always been whatever the opposite of a picky eater is and was satisfied with whatever slop i could make. trying to get out of this habit by trying new foods (check my{" "}
+          <a href="https://beliapp.co/app/rohanth" target="_blank" rel="noopener" class="tbc-about-tag tbc-tag-b">beli</a>
+          {") and cooking real food"}
+        </li>
+        <li>
+          <span class="tbc-sidequest-title">taking more photos</span>
+          {" — "}i don't take enough photos and its a terrible problem, so been trying to take more. dabbling with film, and i love it but its soo expensive
+        </li>
+        <li>
+          <span class="tbc-sidequest-title">buffalo wild wings</span>
+          {" — "}trying wings at every airport buffalo wild wings in the usa (currently done: MSP, DFW, ATL). my order is always the wings with blazin' sauce
+        </li>
       </ul>
     </div>
   </section>
