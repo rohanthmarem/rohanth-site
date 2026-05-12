@@ -279,66 +279,6 @@ body {
   mix-blend-mode: multiply;
 }
 
-.tbc-hero-img-wrap::before,
-.tbc-exp-img-wrap::before,
-.tbc-photo-item::before,
-.tbc-event-img-wrap::before,
-.tbc-founder-img-wrap::before,
-.tbc-demo-img-wrap::before,
-.tbc-project-img-wrap::before {
-  content: "01AZ#/ 7M@NX  *+=QW  9K%&{}\\A4 _|<>  ZR#8  ++M/  @{}  3XQW  &&";
-  position: absolute;
-  inset: -6px;
-  z-index: 2;
-  pointer-events: none;
-  overflow: hidden;
-  color: var(--cream);
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 8px;
-  line-height: 8px;
-  letter-spacing: 1px;
-  white-space: pre-wrap;
-  word-break: break-all;
-  opacity: 0.22;
-  mix-blend-mode: screen;
-  text-shadow:
-    0 8px 0 currentColor,
-    0 16px 0 currentColor,
-    0 24px 0 currentColor,
-    0 32px 0 currentColor,
-    0 40px 0 currentColor,
-    0 48px 0 currentColor,
-    0 56px 0 currentColor,
-    0 64px 0 currentColor,
-    0 72px 0 currentColor,
-    0 80px 0 currentColor,
-    0 88px 0 currentColor,
-    0 96px 0 currentColor,
-    0 104px 0 currentColor,
-    0 112px 0 currentColor,
-    0 120px 0 currentColor,
-    0 128px 0 currentColor,
-    0 136px 0 currentColor,
-    0 144px 0 currentColor,
-    0 152px 0 currentColor,
-    0 160px 0 currentColor,
-    0 168px 0 currentColor,
-    0 176px 0 currentColor,
-    0 184px 0 currentColor,
-    0 192px 0 currentColor,
-    0 200px 0 currentColor,
-    0 208px 0 currentColor,
-    0 216px 0 currentColor,
-    0 224px 0 currentColor,
-    0 232px 0 currentColor,
-    0 240px 0 currentColor,
-    0 248px 0 currentColor,
-    0 256px 0 currentColor,
-    0 264px 0 currentColor,
-    0 272px 0 currentColor,
-    0 280px 0 currentColor;
-  transform: rotate(-2deg) scale(1.04);
-}
 
 .tbc-hero-img-wrap::after,
 .tbc-photo-item::after,
