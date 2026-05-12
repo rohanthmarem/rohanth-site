@@ -1204,18 +1204,6 @@ button.tbc-sch-row {
   height: 100%;
   object-fit: cover;
   display: block;
-  filter: grayscale(1) contrast(1.1) brightness(1.05);
-  mix-blend-mode: luminosity;
-  opacity: 0.88;
-}
-
-.tbc-project-img-wrap::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(135deg, var(--overlay-photo-a), var(--overlay-photo-b));
-  mix-blend-mode: multiply;
 }
 
 @media (max-width: 600px) {
