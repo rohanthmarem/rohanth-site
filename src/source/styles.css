@@ -49,9 +49,14 @@ html[data-orange="cobalt"] {
   --overlay-founder: rgba(61, 67, 172, 0.28);
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
   background: var(--bg);
+  overflow-x: hidden;
 }
 
 *,
@@ -64,6 +69,12 @@ body {
   background: var(--bg);
   color: var(--ink);
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.tbc-root > .tbc-pad-h {
+  flex: 1;
 }
 
 .tbc-wrap {
@@ -112,6 +123,46 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 24px 0 20px;
+  position: relative;
+}
+
+.tbc-logo {
+  position: relative;
+  z-index: 2;
+}
+
+.tbc-nav-links {
+  position: relative;
+  z-index: 2;
+}
+
+.tbc-nav::before {
+  content: '';
+  position: absolute;
+  left: -5000px;
+  right: -5000px;
+  top: 0;
+  bottom: -100px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: var(--grid-op, 0);
+  transition: opacity 0.4s ease;
+  background-image:
+    linear-gradient(var(--divider) 1px, transparent 1px),
+    linear-gradient(90deg, var(--divider) 1px, transparent 1px);
+  background-size: 28px 28px;
+  -webkit-mask-image: radial-gradient(
+    circle 130px at var(--grid-vx, -400px) var(--grid-vy, -400px),
+    black 0%,
+    rgba(0,0,0,0.35) 55%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    circle 130px at var(--grid-vx, -400px) var(--grid-vy, -400px),
+    black 0%,
+    rgba(0,0,0,0.35) 55%,
+    transparent 100%
+  );
 }
 
 .tbc-logo {
@@ -127,10 +178,10 @@ body {
 }
 
 .tbc-nav .tbc-logo-mark {
-  font-family: "Instrument Serif", Georgia, "Times New Roman", serif;
-  font-size: 28px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 16px;
   font-weight: 400;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.05em;
   font-style: normal;
   color: var(--ink);
 }
@@ -159,15 +210,27 @@ body {
   text-decoration: none;
   cursor: crosshair;
   white-space: nowrap;
-  transition: opacity 0.15s;
+  position: relative;
+  padding-bottom: 3px;
 }
 
-.tbc-nav-link:hover {
-  opacity: 0.6;
+.tbc-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0%;
+  height: 1px;
+  background: var(--ink);
+  transition: width 0.25s ease;
+}
+
+.tbc-nav-link:hover::after {
+  width: 100%;
 }
 
 .tbc-hero {
-  padding-bottom: 24px;
+  padding-bottom: 8px;
 }
 
 .tbc-hero-meta {
@@ -283,13 +346,12 @@ body {
 
 .tbc-about-subhead {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: -0.04em;
   text-transform: uppercase;
   color: var(--ink);
-  opacity: 0.55;
   display: block;
-  margin: 0 0 12px;
+  margin: 0 0 14px;
   font-weight: 400;
 }
 
@@ -322,24 +384,20 @@ body {
 
 .tbc-about-tag {
   display: inline;
-  padding: 1px 6px 2px;
+  padding: 0 1px;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 10.5px;
-  letter-spacing: -0.04em;
+  font-size: 10px;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  font-weight: 400;
   vertical-align: baseline;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  background: none;
+  color: inherit;
+  cursor: crosshair;
 }
-
-/* Tag colour palette – pastel chips */
-.tbc-tag-a { background: rgba(255, 230, 115, 0.55); }
-.tbc-tag-b { background: rgba(195, 213, 255, 0.55); }
-.tbc-tag-c { background: rgba(213, 195, 255, 0.55); }
-.tbc-tag-d { background: rgba(255, 200, 155, 0.55); }
-.tbc-tag-e { background: rgba(255, 178, 158, 0.55); }
-.tbc-tag-f { background: rgba(165, 208, 255, 0.55); }
-.tbc-tag-g { background: rgba(178, 218, 242, 0.55); }
-.tbc-tag-h { background: rgba(185, 207, 250, 0.55); }
-.tbc-tag-i { background: rgba(168, 240, 215, 0.55); }
-.tbc-tag-j { background: rgba(195, 218, 250, 0.55); }
 
 .tbc-section-head {
   display: flex;
@@ -349,11 +407,7 @@ body {
 }
 
 .tbc-dot {
-  width: 10px;
-  height: 10px;
-  background: var(--ink);
-  flex-shrink: 0;
-  display: inline-block;
+  display: none;
 }
 
 .tbc-divider {
@@ -499,6 +553,62 @@ button.tbc-sch-row {
   padding-top: 1px;
 }
 
+.tbc-exp-row {
+  display: grid;
+  grid-template-columns: 1fr 110px;
+  align-items: start;
+  gap: 0 16px;
+  padding: 15px 18px;
+  border-bottom: 1px solid rgba(247, 232, 218, 0.14);
+  background: var(--ink);
+  color: var(--cream);
+}
+
+.tbc-exp-row:first-of-type {
+  border-top: 1px solid var(--divider);
+}
+
+.tbc-exp-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tbc-exp-desc {
+  font-family: "Sentient", serif;
+  font-size: 13px;
+  line-height: 1.65;
+  letter-spacing: -0.02em;
+  font-weight: 300;
+  margin: 0;
+}
+
+.tbc-exp-img-wrap {
+  width: 110px;
+  height: 80px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.tbc-exp-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(0.2);
+}
+
+@media (max-width: 480px) {
+  .tbc-exp-row {
+    grid-template-columns: 1fr 72px;
+    gap: 0 12px;
+  }
+  .tbc-exp-img-wrap {
+    width: 72px;
+    height: 60px;
+  }
+}
+
 .tbc-partners-card {
   background: var(--ink);
   padding: 32px;
@@ -543,6 +653,13 @@ button.tbc-sch-row {
 
 .tbc-btn-ghost:hover .tbc-btn-arrow {
   stroke: var(--ink);
+}
+
+.tbc-btn-ghost--sm {
+  padding: 5px 10px;
+  font-size: 10px;
+  margin-top: 10px;
+  align-self: flex-start;
 }
 
 .tbc-btn-filled {
@@ -675,8 +792,9 @@ button.tbc-sch-row {
   color: rgba(247, 232, 218, 1);
   -webkit-text-stroke: 1px rgba(247, 232, 218, 0.22);
   white-space: nowrap;
-  display: block;
-  text-align: center;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 @keyframes tbc-fu {
@@ -1108,6 +1226,128 @@ button.tbc-sch-row {
   .tbc-writing-title { grid-area: title; }
   .tbc-writing-desc  { grid-area: desc; }
   .tbc-writing-date  { grid-area: date; }
+}
+
+/* ── Clickable project card & writing row ── */
+a.tbc-project-card--link {
+  text-decoration: none;
+  color: inherit;
+  cursor: crosshair;
+  transition: opacity 0.15s;
+}
+
+a.tbc-project-card--link:hover {
+  opacity: 0.75;
+}
+
+a.tbc-writing-row--link {
+  text-decoration: none;
+  color: inherit;
+  cursor: crosshair;
+}
+
+/* ── Prose (MDX content) ── */
+.tbc-prose {
+  max-width: 680px;
+}
+
+.tbc-prose h1,
+.tbc-prose h2,
+.tbc-prose h3,
+.tbc-prose h4 {
+  font-family: "Sentient", serif;
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+  color: var(--ink);
+  margin: 2em 0 0.5em;
+}
+
+.tbc-prose h1 { font-size: clamp(22px, 3vw, 30px); }
+.tbc-prose h2 { font-size: clamp(18px, 2.4vw, 24px); }
+.tbc-prose h3 { font-size: 18px; }
+.tbc-prose h4 { font-size: 15px; text-transform: uppercase; letter-spacing: -0.02em; }
+
+.tbc-prose p {
+  font-family: "Sentient", serif;
+  font-weight: 300;
+  font-size: 15px;
+  line-height: 1.75;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 1em 0;
+}
+
+.tbc-prose ul,
+.tbc-prose ol {
+  font-family: "Sentient", serif;
+  font-weight: 300;
+  font-size: 15px;
+  line-height: 1.75;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 1em 0;
+  padding-left: 1.4em;
+}
+
+.tbc-prose li { margin: 0.3em 0; }
+
+.tbc-prose blockquote {
+  border-left: 2px solid var(--ink);
+  margin: 1.5em 0;
+  padding: 0.5em 0 0.5em 1.2em;
+  opacity: 0.72;
+}
+
+.tbc-prose blockquote p { margin: 0; }
+
+.tbc-prose code {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  letter-spacing: -0.04em;
+  background: rgba(0,0,0,0.06);
+  padding: 1px 5px;
+}
+
+.tbc-prose pre {
+  background: var(--ink);
+  color: var(--cream);
+  padding: 20px;
+  overflow-x: auto;
+  margin: 1.5em 0;
+}
+
+.tbc-prose pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  font-size: 12px;
+}
+
+.tbc-prose a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--ink);
+}
+
+.tbc-prose a:hover { opacity: 0.6; }
+
+.tbc-prose img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1.5em 0;
+}
+
+.tbc-prose hr {
+  border: none;
+  border-top: 1px solid var(--divider);
+  margin: 2.5em 0;
+}
+
+.tbc-prose strong {
+  font-weight: 600;
 }
 
 /* ── Inspiration entries ── */
