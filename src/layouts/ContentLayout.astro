@@ -13,13 +13,11 @@ const { title, description = "" } = Astro.props;
 
 const sourceRoot = resolve(process.cwd(), "src/source");
 const rawCss = readFileSync(resolve(sourceRoot, "styles.css"), "utf8");
-const cobaltVars = rawCss.match(/html\[data-orange="cobalt"\]\s*{([\s\S]*?)\n}/)?.[1] ?? "";
 const css = rawCss
   .replace(/\s*\/\* Default palette: ember \(#EA580C\) — toggle "Rust" for terracotta \*\/\n/, "\n")
   .replace(/html\[data-orange="rust"\]\s*{[\s\S]*?\n}\n\n/, "")
   .replace(/html\[data-orange="cobalt"\]\s*{[\s\S]*?\n}\n\n/, "")
-  .replace(/\/\* ── Dev: orange palette toggle[\s\S]*$/, "")
-  .replace(/:root\s*{([\s\S]*?)\n}/, (_match, vars) => `:root {${vars}\n${cobaltVars}\n}`);
+  .replace(/\/\* ── Dev: orange palette toggle[\s\S]*$/, "");
 
 let lastUpdatedDate = "";
 let lastUpdatedUrl = "https://github.com/rohanthmarem/rohanth-site";
@@ -36,12 +34,12 @@ const arrowSvg = `<svg width="9" height="9" viewBox="0 0 10 10" fill="none" aria
 ---
 
 <!doctype html>
-<html lang="en" data-orange="cobalt">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#f7e8da" />
+    <meta name="theme-color" content="#ffffff" />
     <title>{title}</title>
     <style is:global set:html={css}></style>
   </head>
