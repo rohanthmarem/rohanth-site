@@ -1,27 +1,22 @@
-import { defineCollection, z } from "astro:content";
+import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
+import { projectSchema, thoughtSchema, writingSchema } from "./content.schemas";
 
 const projects = defineCollection({
   loader: glob({ pattern: "**/*.{md,mdx}", base: "./content/projects" }),
-  schema: ({ image }) => z.object({
-    title: z.string(),
-    date: z.coerce.date(),
-    description: z.string(),
-    tags: z.array(z.string()).optional(),
-    image: image().optional(),
-    imagePosition: z.string().optional(),
-    link: z.string().optional(),
-  }),
+  // Astro resolves `image` to an optimizable asset; the shared schema keeps it a path string.
+  schema: ({ image }) => projectSchema.extend({ image: image().optional() }),
 });
 
 const writings = defineCollection({
   loader: glob({ pattern: "**/*.{md,mdx}", base: "./content/writings" }),
-  schema: z.object({
-    title: z.string(),
-    date: z.coerce.date(),
-    description: z.string(),
-    tags: z.array(z.string()).optional(),
-  }),
+  schema: writingSchema,
 });
 
-export const collections = { projects, writings };
+// Plain markdown only: rough notes shouldn't have to survive MDX's JSX parsing.
+const thoughts = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "./content/thoughts" }),
+  schema: thoughtSchema,
+});
+
+export const collections = { projects, writings, thoughts };
