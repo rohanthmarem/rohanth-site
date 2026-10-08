@@ -1,0 +1,43 @@
+---
+import { getCollection, render } from "astro:content";
+import ContentLayout from "../layouts/ContentLayout.astro";
+import { fmtThoughtDate } from "../thoughts";
+
+const thoughts = await getCollection("thoughts");
+thoughts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const rendered = await Promise.all(thoughts.map(async (entry) => ({ entry, Content: (await render(entry)).Content })));
+---
+
+<ContentLayout title="chain of thought | rohanth marem" description="Rough notes and half-formed ideas from Rohanth, posted as they happen.">
+  <section class="tbc-hero tbc-fu tbc-d2">
+    <h1 class="tbc-hero-text">chain of thought</h1>
+    <p class="tbc-about-intro" style="margin-top: 12px">
+      rough notes, half-formed ideas, things i'm chewing on. mostly unedited.
+    </p>
+  </section>
+
+  <section class="tbc-section tbc-fu tbc-d3" style="padding-top: 28px; padding-bottom: 64px">
+    {rendered.length === 0 ? (
+      <p class="tbc-thought-empty">nothing here yet.</p>
+    ) : (
+      <ol class="tbc-thought-list">
+        {rendered.map(({ entry, Content }) => (
+          <li class="tbc-thought" id={entry.id}>
+            <div class="tbc-thought-meta">
+              <a href={`/thoughts/${entry.id}`} class="tbc-project-date">
+                <time datetime={entry.data.date.toISOString()}>{fmtThoughtDate(entry.data.date)}</time>
+              </a>
+              {entry.data.tags?.map((tag) => <span class="tbc-project-tag">{tag}</span>)}
+            </div>
+            {entry.data.title && (
+              <p class="tbc-thought-title"><a href={`/thoughts/${entry.id}`}>{entry.data.title}</a></p>
+            )}
+            <div class="tbc-prose tbc-thought-body">
+              <Content />
+            </div>
+          </li>
+        ))}
+      </ol>
+    )}
+  </section>
+</ContentLayout>
