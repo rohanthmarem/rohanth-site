@@ -186,9 +186,13 @@ export function createGitHub(config: RepoConfig) {
         state: string;
         statuses: { context: string; state: string; description: string | null; target_url: string | null }[];
       }>(`/commits/${encodeURIComponent(ref)}/status`);
+      // exe.dev's GitHub App can't read deployments; the Vercel statuses above still say whether it shipped.
       const deployments = await gh<{ id: number; environment: string; statuses_url: string }[]>(
         `/deployments?sha=${status.sha}&per_page=10`,
-      );
+      ).catch((err) => {
+        if (err instanceof GitHubError && err.status === 403) return [];
+        throw err;
+      });
       const deploymentUrls = await Promise.all(
         deployments.map(async (d) => {
           const statuses = await gh<{ state: string; environment_url?: string }[]>(d.statuses_url);

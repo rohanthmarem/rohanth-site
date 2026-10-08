@@ -32,22 +32,22 @@ Tools: `site_overview`, `list_files`, `read_file`, `commit_changes`, `post_thoug
 
 ### Remote (hosted agents)
 
-Runs on the exe.dev VM `rohanth-site-mcp`:
+Runs on the exe.dev VM `rohanth-mcp` (personal account, `ssh exe-personal`):
 
-- Endpoint: `https://rohanth-site-mcp.exe.xyz/mcp` (Streamable HTTP, stateless)
+- Endpoint: `https://rohanth-mcp.exe.xyz/mcp` (Streamable HTTP, stateless)
 - Auth: `Authorization: Bearer <token>`. Get the token with
-  `ssh rohanth-site-mcp.exe.xyz sudo cat /etc/rohanth-site-mcp.env`
+  `ssh rohanth-mcp.exe.xyz sudo cat /etc/rohanth-site-mcp.env`
 - GitHub access comes from exe.dev's GitHub integration, so no GitHub token lives on the VM.
   It must use `--act-as-user`: Vercel only deploys commits authored by you.
 
 ```bash
 # Codex (~/.codex/config.toml)
 [mcp_servers.rohanth-site]
-url = "https://rohanth-site-mcp.exe.xyz/mcp"
+url = "https://rohanth-mcp.exe.xyz/mcp"
 bearer_token_env_var = "ROHANTH_SITE_MCP_TOKEN"
 
 # Claude Code
-claude mcp add --transport http rohanth-site https://rohanth-site-mcp.exe.xyz/mcp \
+claude mcp add --transport http rohanth-site https://rohanth-mcp.exe.xyz/mcp \
   --header "Authorization: Bearer $ROHANTH_SITE_MCP_TOKEN"
 ```
 
@@ -55,7 +55,8 @@ Any other client that supports remote MCP servers over HTTP with a bearer header
 included) takes the same URL and header.
 
 After changing anything in `mcp/`, redeploy with `npm run mcp:deploy`. The script also does
-first-time setup on a fresh VM (Node, systemd service, token).
+first-time setup on a fresh VM (Node, systemd service, token). It SSHes to
+`rohanth-mcp.exe.xyz`, which `~/.ssh/config` maps to the personal exe.dev key.
 
 ### Local (stdio)
 

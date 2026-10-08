@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # Ships the MCP server to its exe.dev VM and (re)starts it.
-# Usage: mcp/deploy-exe.sh [vm-name]   (default: rohanth-site-mcp)
+# Usage: mcp/deploy-exe.sh [vm-name]   (default: rohanth-mcp)
 #
 # GitHub access comes from exe.dev's GitHub integration (no token on the VM):
-#   ssh exe.dev int add github --name rohanth-site --repository rohanthmarem/rohanth-site \
-#     --act-as-user --attach vm:rohanth-site-mcp
+#   ssh exe-personal int add github --name rohanth-site --repository rohanthmarem/rohanth-site \
+#     --act-as-user --attach vm:rohanth-mcp
 # --act-as-user matters: commits must be authored by you or Vercel blocks the deploy.
 set -euo pipefail
 
-VM="${1:-rohanth-site-mcp}"
+VM="${1:-rohanth-mcp}"
 HOST="$VM.exe.xyz"
 cd "$(dirname "$0")/.."
 
