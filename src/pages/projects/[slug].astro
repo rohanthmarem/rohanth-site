@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from "astro:content";
 import ContentLayout from "../../layouts/ContentLayout.astro";
+import ProseImage from "../../components/ProseImage.astro";
 
 export async function getStaticPaths() {
   const projects = await getCollection("projects");
@@ -31,6 +32,6 @@ function fmtDate(d: Date) {
   </section>
 
   <article class="tbc-section tbc-prose" style="padding-bottom: 80px">
-    <Content />
+    <Content components={{ img: ProseImage }} />
   </article>
 </ContentLayout>
