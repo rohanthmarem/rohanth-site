@@ -1,5 +1,6 @@
 ---
 import { getCollection } from "astro:content";
+import { Image } from "astro:assets";
 import ContentLayout from "../layouts/ContentLayout.astro";
 
 const allProjects = await getCollection("projects");
@@ -21,7 +22,7 @@ function fmtDate(d: Date) {
 
   <section class="tbc-section tbc-fu tbc-d3" style="padding-bottom: 64px">
     <div class="tbc-project-list">
-      {allProjects.map((project) => (
+      {allProjects.map((project, i) => (
         <a
           href={project.data.link ?? `/projects/${project.id}`}
           class="tbc-project-card tbc-project-card--link"
@@ -39,7 +40,15 @@ function fmtDate(d: Date) {
           </div>
           <div class="tbc-project-img-wrap">
             {project.data.image && (
-              <img src={project.data.image} class="tbc-project-img" alt="" loading="lazy" style={project.data.imagePosition ? `object-position: ${project.data.imagePosition}` : undefined} />
+              <Image
+                src={project.data.image}
+                class="tbc-project-img"
+                alt=""
+                widths={[220, 440, 660, 900, 1200]}
+                sizes="(max-width: 600px) 100vw, 220px"
+                loading={i === 0 ? "eager" : "lazy"}
+                style={project.data.imagePosition ? `object-position: ${project.data.imagePosition}` : undefined}
+              />
             )}
           </div>
         </a>
