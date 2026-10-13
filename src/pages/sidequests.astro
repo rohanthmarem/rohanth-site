@@ -52,17 +52,17 @@ const photos = [
   </section>
 
   <figure class="wide feature">
-    <Image src={runStart} alt="Runners crossing under the Oakville 21.1 start / finish arch" widths={[640, 960, 1280]} sizes="(max-width: 1023px) 100vw, 640px" loading="eager" decoding="async" />
+    <Image src={runStart} alt="Runners crossing under the Oakville 21.1 start / finish arch" widths={[640, 960, 1280]} sizes="(max-width: 500px) calc(100vw - 40px), (max-width: 1023px) 92vw, 640px" loading="eager" fetchpriority="high" decoding="async" />
     <figcaption>oakville 21.1</figcaption>
   </figure>
 
   <div class="wide duo run-duo">
     <figure>
-      <Image src={runRace} alt="Runners in black mid-race on a tree-lined street during a half marathon" widths={[480, 720, 960, 1280]} sizes="(max-width: 640px) 100vw, (max-width: 1023px) 66vw, 680px" loading="lazy" decoding="async" />
+      <Image src={runRace} alt="Runners in black mid-race on a tree-lined street during a half marathon" widths={[480, 720, 960, 1280]} sizes="(max-width: 500px) calc((100vw - 50px) * 2 / 3), (max-width: 640px) calc((92vw - 10px) * 2 / 3), (max-width: 1023px) calc((92vw - 14px) * 2 / 3), 630px" loading="lazy" decoding="async" />
       <figcaption>mid-race</figcaption>
     </figure>
     <figure>
-      <Image src={bikeTrail} alt="View over a road bike's handlebars down a paved forest trail" widths={[320, 480, 720]} sizes="(max-width: 640px) 100vw, (max-width: 1023px) 33vw, 340px" loading="lazy" decoding="async" />
+      <Image src={bikeTrail} alt="View over a road bike's handlebars down a paved forest trail" widths={[240, 320, 480, 640]} sizes="(max-width: 500px) calc((100vw - 50px) / 3), (max-width: 640px) calc((92vw - 10px) / 3), (max-width: 1023px) calc((92vw - 14px) / 3), 315px" loading="lazy" decoding="async" />
       <figcaption>on the bike</figcaption>
     </figure>
   </div>
@@ -75,7 +75,7 @@ const photos = [
   <div class="span strip food-strip" style={`--cols: ${food.map((f) => `${f.w}fr`).join(" ")}`}>
     {food.map((f) => (
       <figure>
-        <Image src={f.src} alt={f.alt} widths={[320, 480, 720]} sizes="(max-width: 1023px) 60vw, 360px" loading="lazy" decoding="async" />
+        <Image src={f.src} alt={f.alt} widths={[320, 480, 720]} sizes={`(max-width: 640px) ${Math.round((f.src.width / f.src.height) * 240)}px, (max-width: 1023px) ${Math.round((f.src.width / f.src.height) * 300)}px, 360px`} loading="lazy" decoding="async" />
         <figcaption>{f.cap}</figcaption>
       </figure>
     ))}
@@ -102,7 +102,7 @@ const photos = [
   <div class="span strip photo-strip" style={`--cols: ${photos.map((p) => `${p.w}fr`).join(" ")}`}>
     {photos.map((p) => (
       <figure>
-        <Image src={p.src} alt={p.alt} widths={[320, 480, 720, 960]} sizes="(max-width: 1023px) 70vw, 420px" loading="lazy" decoding="async" />
+        <Image src={p.src} alt={p.alt} widths={[320, 480, 720, 960]} sizes={`(max-width: 640px) ${Math.round((p.src.width / p.src.height) * 240)}px, (max-width: 1023px) ${Math.round((p.src.width / p.src.height) * 300)}px, 420px`} loading="lazy" decoding="async" />
         <figcaption>{p.cap}</figcaption>
       </figure>
     ))}
