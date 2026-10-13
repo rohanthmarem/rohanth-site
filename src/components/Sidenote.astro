@@ -1,5 +1,6 @@
 ---
 // MDX: <Sidenote>text</Sidenote>. Markdown: > **sidenote:** text
-// Sits in the right margin on wide screens, inline below the paragraph otherwise.
+// Put it right after the paragraph it annotates: the remark plugin pairs the two, so the note
+// lines up with that paragraph's top in the right margin on wide screens (inline below it otherwise).
 ---
 <aside class="sidenote"><slot /></aside>
