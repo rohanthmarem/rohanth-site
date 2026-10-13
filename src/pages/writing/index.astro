@@ -39,11 +39,11 @@ const artFor = (id: string) => colorsById[id] ?? { bg: "var(--paper-2)", fg: "va
 
     <section id="writing-grid" class="views span" aria-label="Writing cards" data-enter style="--stagger: 4">
         <div class="grid" data-grid>
-          {posts.map((post) => {
+          {posts.map((post, i) => {
             const art = artFor(post.id);
             return <a class="card" href={`/writing/${post.id}`}>
               <div class="card-cover cv cropmarks img-outline">
-                {coverFor(post.id) ? <Image src={coverFor(post.id)!} alt="" widths={[480, 800, 1200]} sizes="(max-width: 720px) 100vw, (max-width: 1023px) 50vw, 420px" class="cover-img" /> : <WritingArt id={post.id} fg={art.fg} bg={art.bg} />}
+                {coverFor(post.id) ? <Image src={coverFor(post.id)!} alt="" widths={[480, 800, 1200]} sizes="(max-width: 500px) calc(100vw - 40px), (max-width: 720px) 92vw, (max-width: 1023px) calc((92vw - 24px) / 2), 400px" loading={i === 0 ? "eager" : "lazy"} fetchpriority={i === 0 ? "high" : undefined} class="cover-img" /> : <WritingArt id={post.id} fg={art.fg} bg={art.bg} />}
                 <CropMarks />
               </div>
               <h2>{post.data.title}</h2>
