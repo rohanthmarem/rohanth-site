@@ -85,8 +85,9 @@ const items = [
   //            section exactly like the content does (above it when scrolling down, below it
   //            when scrolling back up)
   // Handoffs are predicted a frame ahead from the scroll velocity so the menu stops before it
-  // touches a section; any overshoot (fast flicks, async compositor scrolling) is absorbed by a
-  // short glide instead of a jump. Once a section has gone by the menu returns to sticky — with a
+  // touches a section. A small overshoot (into the gap, not the section) is absorbed by a short
+  // glide; a bigger one (very fast wheels, async compositor scrolling) would glide *through* the
+  // section, so the menu snaps to its spot and fades in there instead. Once a section has gone by the menu returns to sticky — with a
   // glide if it is close, with a fade if it is far. A section with no room above it (or one the
   // menu lands deep inside after a jump) hides the menu until the sticky spot is clear again.
   const side = document.querySelector<HTMLElement>(".side");
@@ -96,7 +97,7 @@ const items = [
   const STICK = 40; // sticky offset from the top of the viewport
   const GAP = 40; // clearance kept above/below a full-width section
   const MIN = 24; // highest it may park when a section starts near the top
-  const LOOKAHEAD = 80; // px of next-frame scroll we park ahead of (capped so the gap stays tight)
+  const LOOKAHEAD = 600; // px of next-frame scroll we park ahead of (covers very fast wheels)
   const GLIDE = 200; // handoffs shorter than this glide; longer ones fade
 
   if (side && inner) {
@@ -145,11 +146,16 @@ const items = [
       state = "parked";
       if (Math.abs(offset) > 1) glide(offset);
     };
-    const toCovered = () => {
+    // `now`: the menu already overlaps the section, so hide it this frame instead of fading over it
+    const toCovered = (now = false) => {
       inner.classList.remove("is-back");
+      if (now) inner.style.transition = "none";
       inner.classList.add("is-covered");
       state = "covered";
+      if (now) { void inner.offsetWidth; inner.style.transition = ""; }
     };
+    // jump straight to a parking spot (the way there crosses the section) and fade in on it
+    const snapParked = (y: number) => { toParked(y); fadeIn(); };
 
     // velocity comes from scroll events only: a layout update mid-scroll (lazy images resizing the
     // body) must not read as "stopped" and unpark the menu for a frame
@@ -192,15 +198,19 @@ const items = [
         return;
       }
       if (state === "covered") return;
-      if (above < MIN) { toCovered(); return; } // no room above the section
+      const overlaps = y + h > conflict.top && y < conflict.bottom; // already on top of the section
+      if (above < MIN) { toCovered(overlaps); return; } // no room above the section
       if (follow <= NATURAL) { toParked(Math.min(y, above)); return; } // resting at the top of the page
       const over = y - above; // how far past the upper spot the menu already is
       const under = below - y; // … past the lower spot
+      // glide only while the way back stays in the gap; once it overlaps, snap + fade instead
       if (over <= 0) toParked(y); // scrolling down: stop right here
-      else if (over <= GLIDE) toParked(above, over); // slightly over: ease back up to the spot
+      else if (over <= GAP) toParked(above, over); // slightly over: ease back up to the spot
+      else if (over <= GLIDE) snapParked(above);
       else if (under <= 0) toParked(y); // scrolling up: stop right here
-      else if (under <= GLIDE) toParked(below, -under); // slightly under: ease down to the spot
-      else toCovered(); // deep inside a section (jump, resize, anchor): hide until clear
+      else if (under <= GAP) toParked(below, -under); // slightly under: ease down to the spot
+      else if (under <= GLIDE) snapParked(below);
+      else toCovered(overlaps); // deep inside a section (jump, resize, anchor): hide until clear
     };
 
     addEventListener("scroll", onScroll, { passive: true });
