@@ -34,6 +34,35 @@ const photos = [
   { src: photoConcert, alt: "An arena concert from the upper seats, the stage lit orange", cap: "concert", w: 28 },
   { src: photoSf, alt: "Three friends sitting arm in arm on a San Francisco street, looking out at the skyline", cap: "sf", w: 34 },
 ];
+
+// Responsive sources for a strip image. Phones/tablets show the strip as a scroller at a fixed
+// height (240px / 300px, see the styles below), so the slot is height × aspect; desktop shows it as a
+// grid row whose column is a share (w / total) of the full-width section, which is
+// min(100vw, 1360px) minus the page padding (min(4vw, 64px) per side) and the gaps.
+// widths cover 1–3× of each slot, never beyond the source file.
+type StripImg = { src: ImageMetadata; w: number };
+const stripImage = (img: StripImg, row: StripImg[], gap: number) => {
+  const aspect = img.src.width / img.src.height;
+  const share = img.w / row.reduce((sum, r) => sum + r.w, 0);
+  const gaps = gap * (row.length - 1);
+  const phone = Math.round(240 * aspect);
+  const tablet = Math.round(300 * aspect);
+  const desktop = Math.round((1360 - 128 - gaps) * share); // widest desktop column (≥1600px)
+  const want = [phone, phone * 2, phone * 3, tablet, tablet * 2, desktop, desktop * 2]
+    .map((x) => Math.min(img.src.width, Math.ceil(x / 20) * 20))
+    .sort((a, b) => a - b);
+  // drop candidates within ~10% of the next one up: the bigger file covers both
+  const widths = want.filter((x, i) => i === want.length - 1 || want[i + 1] > x * 1.1);
+  const f = share.toFixed(4);
+  const sizes = [
+    `(max-width: 640px) ${phone}px`,
+    `(max-width: 1023px) ${tablet}px`,
+    `(max-width: 1359px) calc((92vw - ${gaps}px) * ${f})`,
+    `(max-width: 1599px) calc((1360px - 8vw - ${gaps}px) * ${f})`,
+    `${desktop}px`,
+  ].join(", ");
+  return { widths, sizes };
+};
 ---
 
 <Base
@@ -72,10 +101,10 @@ const photos = [
     <p>i've always been the opposite of a picky eater, satisfied with whatever slop i could make. now i'm <a href={links.beli} target="_blank" rel="noopener noreferrer">trying new foods</a> and cooking real food.</p>
   </section>
 
-  <div class="span strip food-strip" style={`--cols: ${food.map((f) => `${f.w}fr`).join(" ")}`}>
+  <div class="span strip food-strip" style={`--cols: ${food.map((f) => `${f.w}fr`).join(" ")}`} role="region" aria-label="food photos" tabindex="0">
     {food.map((f) => (
       <figure>
-        <Image src={f.src} alt={f.alt} widths={[320, 480, 720]} sizes={`(max-width: 640px) ${Math.round((f.src.width / f.src.height) * 240)}px, (max-width: 1023px) ${Math.round((f.src.width / f.src.height) * 300)}px, 360px`} loading="lazy" decoding="async" />
+        <Image src={f.src} alt={f.alt} {...stripImage(f, food, 14)} loading="lazy" decoding="async" />
         <figcaption>{f.cap}</figcaption>
       </figure>
     ))}
@@ -99,10 +128,10 @@ const photos = [
     <p>i don't take enough photos. i've been dabbling with film and i love it, but it's so expensive.</p>
   </section>
 
-  <div class="span strip photo-strip" style={`--cols: ${photos.map((p) => `${p.w}fr`).join(" ")}`}>
+  <div class="span strip photo-strip" style={`--cols: ${photos.map((p) => `${p.w}fr`).join(" ")}`} role="region" aria-label="photos" tabindex="0">
     {photos.map((p) => (
       <figure>
-        <Image src={p.src} alt={p.alt} widths={[320, 480, 720, 960]} sizes={`(max-width: 640px) ${Math.round((p.src.width / p.src.height) * 240)}px, (max-width: 1023px) ${Math.round((p.src.width / p.src.height) * 300)}px, 420px`} loading="lazy" decoding="async" />
+        <Image src={p.src} alt={p.alt} {...stripImage(p, photos, 18)} loading="lazy" decoding="async" />
         <figcaption>{p.cap}</figcaption>
       </figure>
     ))}
@@ -124,6 +153,18 @@ const photos = [
     </figure>
   </div>
 </Base>
+
+<script>
+  // the strips are keyboard scrollers (arrow keys, once focused) only where they scroll; as a
+  // static desktop grid they'd be an empty tab stop, so drop it there
+  for (const strip of document.querySelectorAll<HTMLElement>(".strip")) {
+    const sync = () => {
+      if (strip.scrollWidth > strip.clientWidth + 1) strip.tabIndex = 0;
+      else if (document.activeElement !== strip) strip.removeAttribute("tabindex");
+    };
+    new ResizeObserver(sync).observe(strip);
+  }
+</script>
 
 <style>
   .sidequests-head { padding-top: 0; padding-bottom: 0; }
@@ -182,6 +223,8 @@ const photos = [
     /* edge to edge, snapping to the text column; overscroll stays in the strip (no back-swipe) */
     .strip { display: flex; gap: 10px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding-inline: var(--page-pad); scrollbar-width: none; margin-inline: calc(-1 * var(--page-pad)); padding-inline: var(--page-pad); }
     .strip::-webkit-scrollbar { display: none; }
+    /* the strip runs edge to edge, so the ring reads as a rule above and below it */
+    .strip:focus-visible { outline-offset: 6px; }
     .strip figure { flex: none; scroll-snap-align: start; margin-top: 0 !important; }
     .strip :global(img) { height: 300px; width: auto; }
   }
