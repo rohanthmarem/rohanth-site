@@ -111,6 +111,38 @@ if (post) {
     });
   }
 
+  // remote photos have no known shape until they load; the CSS keeps tall ones within the window
+  for (const img of post.querySelectorAll<HTMLImageElement>("figure.fig-pending img")) {
+    const figure = img.closest<HTMLElement>("figure")!;
+    const setRatio = () => {
+      if (img.naturalWidth && img.naturalHeight) figure.style.setProperty("--ar", (img.naturalWidth / img.naturalHeight).toFixed(4));
+    };
+    if (img.complete) setRatio();
+    else img.addEventListener("load", setRatio, { once: true });
+  }
+
+  // Margin notes start level with their paragraph and run on down the margin; if one would run
+  // into the next, the later one moves down (wide screens only: below 1024px they sit inline).
+  const slots = [...post.querySelectorAll<HTMLElement>(".prose .note-slot")];
+  if (slots.length > 1 && "ResizeObserver" in window) {
+    const wide = matchMedia("(min-width: 1024px)");
+    let stackFrame = 0;
+    const stack = () => {
+      stackFrame = 0;
+      let floor = -Infinity;
+      for (const slot of slots) {
+        slot.style.transform = "";
+        if (!wide.matches) continue;
+        const top = slot.getBoundingClientRect().top + window.scrollY;
+        const shift = Math.max(0, floor + 24 - top);
+        if (shift) slot.style.transform = `translateY(${shift}px)`;
+        const last = slot.lastElementChild as HTMLElement | null;
+        floor = top + shift + (last ? last.offsetTop + last.offsetHeight : 0);
+      }
+    };
+    new ResizeObserver(() => { if (!stackFrame) stackFrame = requestAnimationFrame(stack); }).observe(post.querySelector(".prose")!);
+  }
+
   const figures = [...post.querySelectorAll<HTMLElement>("figure.fig")];
   if (figures.length) {
     if ("IntersectionObserver" in window) {
