@@ -27,7 +27,7 @@ const isShort = (note: (typeof notes)[number]) => note.text.join(" ").length + (
     ))}
   </div>
 
-  <section class="table span" aria-label="Inspiration cards" data-enter style="--stagger:6">
+  <section class="table span" aria-label="Inspiration cards">
     <div class="hand" id="hand" data-span="deep">
       {items.map((item, index) => (
         <button
@@ -97,24 +97,24 @@ const isShort = (note: (typeof notes)[number]) => note.text.join(" ").length + (
   </section>
 
   <dialog class="sheet" id="sheet" aria-labelledby="sheet-title">
-    <div class="sheet-inner">
-      <button type="button" class="close pressable fade" id="close" aria-label="Close reading sheet">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" /></svg>
-      </button>
-      <div class="panel" id="panel">
-        <span class="number num" id="sheet-num" aria-hidden="true"></span>
-        <div class="art" id="sheet-art" aria-hidden="true"></div>
-        <span class="kind fade" id="sheet-kind"></span>
-        <h2 class="title fade" id="sheet-title"></h2>
-        <span class="by fade" id="sheet-by"></span>
+    <button type="button" class="close pressable fade" id="close" aria-label="Close reading sheet">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" /></svg>
+    </button>
+    <div class="flyer" id="flyer">
+      <div class="face" id="face" aria-hidden="true"></div>
+      <div class="panel">
+        <span class="number num fade swap" id="sheet-num" aria-hidden="true"></span>
+        <span class="kind fade swap" id="sheet-kind"></span>
+        <h2 class="title fade swap" id="sheet-title"></h2>
+        <span class="by fade swap" id="sheet-by"></span>
       </div>
-      <div class="read">
-        <p class="fade" id="sheet-why"></p>
-        <div class="sheet-nav fade">
-          <button type="button" class="pressable" id="sheet-prev">← prev</button>
-          <span class="num" id="sheet-pos"></span>
-          <button type="button" class="pressable" id="sheet-next">next →</button>
-        </div>
+    </div>
+    <div class="read" id="sheet-read" tabindex="-1">
+      <p class="fade swap" id="sheet-why"></p>
+      <div class="sheet-nav fade">
+        <button type="button" class="pressable" id="sheet-prev">← prev</button>
+        <span class="num swap" id="sheet-pos"></span>
+        <button type="button" class="pressable" id="sheet-next">next →</button>
       </div>
     </div>
   </dialog>
@@ -166,16 +166,22 @@ const isShort = (note: (typeof notes)[number]) => note.text.join(" ").length + (
 
   .table { position: relative; margin-top: clamp(12px, 2.5vh, 36px); }
   .hand { position: relative; height: var(--hand-height); touch-action: pan-y; }
-  .hand::after { content: ""; position: absolute; left: 10%; right: 10%; bottom: -14px; height: 60px; background: radial-gradient(50% 60% at 50% 50%, var(--hand-pool), transparent 70%); filter: blur(var(--hand-pool-blur)); pointer-events: none; }
-  .card { position: absolute; left: 0; top: 0; width: var(--hand-card-w); height: var(--hand-card-h); overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; text-align: left; background: var(--card-bg); color: var(--card-fg); box-shadow: var(--hand-shadow); transform-origin: 50% 100%; transform: translate3d(var(--tx, 0px), var(--ty, 0px), 0) rotate(var(--rot, 0deg)) scale(var(--sc, 1)); opacity: var(--op, 1); z-index: var(--z, 1); transition: transform 620ms cubic-bezier(.22, 1, .36, 1), opacity 400ms var(--ease-out), background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out); transition-delay: var(--delay, 0ms); will-change: transform; backface-visibility: hidden; -webkit-tap-highlight-color: transparent; }
+  .hand::after { content: ""; position: absolute; left: 10%; right: 10%; bottom: -14px; height: 60px; background: radial-gradient(50% 60% at 50% 50%, var(--hand-pool), transparent 70%); filter: blur(var(--hand-pool-blur)); pointer-events: none; transform: scaleX(var(--pool, 1)); transition: transform 620ms cubic-bezier(.22, 1, .36, 1), opacity 600ms var(--ease-out); }
+  :global(html.js) .hand:not(.is-ready)::after { opacity: 0; }
+  /* the card face: shared by the cards in the hand and the one that flies into the sheet */
+  .card, .face { display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; text-align: left; background: var(--card-bg); color: var(--card-fg); }
+  .card { position: absolute; left: 0; top: 0; width: var(--hand-card-w); height: var(--hand-card-h); box-shadow: var(--hand-shadow); transform-origin: 50% 100%; transition: transform 620ms cubic-bezier(.22, 1, .36, 1), opacity 400ms var(--ease-out), background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out); will-change: transform; backface-visibility: hidden; -webkit-tap-highlight-color: transparent; }
+  /* until the script deals them, the cards wait face-down (no-JS keeps them visible) */
+  :global(html.js) .hand:not(.is-ready) .card { visibility: hidden; }
+  .hand.no-anim .card, .card.is-dragging { transition: none; }
   .card:focus-visible { outline-color: var(--accent); outline-offset: 4px; }
-  .card.is-hidden { pointer-events: none; }
-  .card.is-source { visibility: hidden; }
+  .card.is-hidden, .card.is-back { pointer-events: none; }
+  .card.is-source { visibility: hidden; transition: none; }
   .art { position: absolute; inset: 0 0 42%; overflow: hidden; }
   .art :global(svg) { width: 100%; height: 100%; }
-  .card .body { position: relative; padding: 0 22px 22px; display: flex; flex-direction: column; gap: 10px; }
+  :is(.card, .face) .body { position: relative; padding: 0 22px 22px; display: flex; flex-direction: column; gap: 10px; }
   .kind { font: 500 11px/1 var(--mono); letter-spacing: .06em; text-transform: lowercase; opacity: .9; }
-  .card .title { font: clamp(22px, 1.9vw, 27px)/1.12 var(--serif); letter-spacing: -.01em; }
+  :is(.card, .face) .title { font: clamp(22px, 1.9vw, 27px)/1.12 var(--serif); letter-spacing: -.01em; }
   .by { font: 12px/1.3 var(--mono); opacity: .85; }
   .number { position: absolute; top: 15px; left: 17px; z-index: 1; font: 20px/1 var(--pixel); background: var(--card-bg); padding: 3px 5px; }
   .stack-ui { display: none; justify-content: center; align-items: center; gap: 10px; margin-top: 18px; font: 13px var(--mono); color: var(--ink-2); }
@@ -183,33 +189,45 @@ const isShort = (note: (typeof notes)[number]) => note.text.join(" ").length + (
   .stack-ui button:hover { box-shadow: var(--shadow-border-hover); background: var(--hand-tint); }
   .stack-ui button:disabled { opacity: .35; cursor: default; }
 
-  .sheet { position: fixed; inset: 0; margin: auto; padding: 0; border: 0; width: min(960px, calc(100% - 48px)); height: min(560px, calc(100% - 48px)); max-width: none; max-height: none; overflow: hidden; color: var(--ink); background: var(--surface); box-shadow: var(--hand-sheet-shadow); transform-origin: 0 0; transition: transform 460ms var(--ease-out-strong); }
-  .sheet::backdrop { background: transparent; backdrop-filter: blur(0); transition: background-color 420ms var(--ease-out), backdrop-filter 420ms var(--ease-out); }
-  .sheet.is-open::backdrop { background: var(--hand-scrim); backdrop-filter: blur(6px); }
-  .sheet-inner { width: 100%; height: 100%; display: grid; grid-template-columns: 38% 1fr; transition: grid-template-columns 300ms var(--ease-out-strong), grid-template-rows 300ms var(--ease-out-strong); }
-  /* while flying to/from the card, the art panel fills the sheet and the reading side folds away,
-     so the shrinking sheet always looks like the card it lands on */
-  .sheet:not(.is-open) .sheet-inner { grid-template-columns: 100% 0%; }
-  .sheet:not(.is-open) .read { opacity: 0; }
-  .read { transition: opacity 200ms var(--ease-out); min-width: 0; min-height: 0; }
-  .sheet.is-closing { opacity: 0; transition: transform 460ms var(--ease-out-strong), opacity 160ms var(--ease-out) 300ms; }
-  .panel { position: relative; background: var(--card-bg); color: var(--card-fg); display: flex; flex-direction: column; justify-content: flex-end; padding: 28px; overflow: hidden; }
-  .panel .art { inset: 0 0 38%; }
+  /* reading sheet. The picked card's face (.flyer) flies in and is scaled uniformly to fill the
+     panel, which keeps the card's proportions; the reading side slides in beside it. Only
+     transform and opacity animate. */
+  :global(html:has(#sheet[open])) { overflow: hidden; }
+  .sheet { position: fixed; inset: 0; margin: auto; padding: 0; border: 0; width: min(960px, calc(100% - 48px)); height: min(560px, calc(100% - 48px)); max-width: none; max-height: none; overflow: visible; color: var(--ink); background: transparent; }
+  .sheet::backdrop { background: var(--hand-scrim); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); opacity: 0; transition: opacity 420ms var(--ease-out); }
+  .sheet.is-open::backdrop { opacity: 1; }
+  .sheet.is-instant, .sheet.is-instant * { transition: none !important; }
+  .flyer { position: absolute; left: 0; top: 0; z-index: 1; transform-origin: 0 0; box-shadow: var(--hand-shadow); transition: transform 520ms var(--ease-out-strong); }
+  .face { position: absolute; inset: 0; }
+  .face :global(.fx) { transition: opacity 180ms var(--ease-out) 100ms; }
+  .sheet.is-open .face :global(.fx) { opacity: 0; transition: opacity 110ms var(--ease-out); }
+  .flyer :global(.ghost) { z-index: 1; transition: opacity 280ms var(--ease-out); }
+  .flyer :global(.ghost.is-gone) { opacity: 0; }
+
+  /* the sheet's own type rides on the flyer, undoing its scale so it's 1:1 at rest */
+  .panel { position: absolute; left: 0; top: 0; z-index: 2; width: var(--panel-w); height: var(--panel-h); transform-origin: 0 0; transform: scale(calc(1 / var(--k, 1))); padding: 28px; display: flex; flex-direction: column; justify-content: flex-end; color: var(--card-fg); pointer-events: none; }
   .panel .number { top: 21px; left: 23px; font-size: 24px; }
-  .panel .kind, .panel .title, .panel .by { position: relative; }
   .panel .title { font: clamp(26px, 2.6vw, 38px)/1.1 var(--serif); margin-top: 10px; letter-spacing: -.012em; }
   .panel .by { font-size: 13px; margin-top: 10px; }
   .panel .by:empty { display: none; }
-  .read { padding: 48px 56px 48px 52px; overflow: auto; display: flex; flex-direction: column; gap: 18px; }
+
+  .read { position: absolute; z-index: 0; left: var(--panel-w); right: 0; top: 0; bottom: 0; padding: 48px 56px 48px 52px; overflow: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 18px; background: var(--surface); box-shadow: var(--hand-sheet-shadow); outline: none; opacity: 0; transform: translateX(-28px); transition: opacity 160ms var(--ease-out), transform 480ms var(--ease-out-strong); }
+  .sheet.is-open .read { opacity: 1; transform: none; transition: opacity 280ms var(--ease-out) 130ms, transform 560ms var(--ease-out-strong) 60ms; }
   .read p { font: 300 clamp(18px, 1.5vw, 22px)/1.55 var(--serif); margin: 0; }
   .sheet-nav { margin-top: auto; display: flex; justify-content: space-between; align-items: center; font: 13px var(--mono); color: var(--ink-3); padding-top: 24px; }
   .sheet-nav button { padding: 10px 12px; color: var(--ink-2); min-height: 40px; transition: background-color var(--dur-fast), color var(--dur-fast), transform var(--dur-fast); }
   .sheet-nav button:hover:not(:disabled) { background: var(--hand-tint); color: var(--ink); }
   .sheet-nav button:disabled { opacity: .35; cursor: default; }
-  .close { position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; display: grid; place-items: center; z-index: 2; color: var(--ink-2); background: var(--hand-tint); transition: background-color var(--dur-fast), color var(--dur-fast), transform var(--dur-fast); }
+  .close { position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; display: grid; place-items: center; z-index: 4; color: var(--ink-2); background: var(--hand-tint); transition: background-color var(--dur-fast), color var(--dur-fast), transform var(--dur-fast); }
   .close:hover { background: var(--hand-tint-2); color: var(--ink); }
-  .fade { opacity: 0; transform: translateY(6px); filter: blur(6px); transition: opacity 360ms var(--ease-out) 180ms, transform 360ms var(--ease-out) 180ms, filter 360ms var(--ease-out) 180ms; }
-  .sheet.is-open .fade { opacity: 1; transform: none; filter: none; }
+  /* the sheet's own type hands over from the card's: out fast when closing, in late when opening */
+  .fade { opacity: 0; transform: translateY(6px); transition: opacity 100ms var(--ease-out), transform 100ms var(--ease-out); }
+  .panel .fade { transform: none; }
+  .sheet.is-open .fade { opacity: 1; transform: none; transition: opacity 320ms var(--ease-out) 220ms, transform 380ms var(--ease-out-strong) 220ms; }
+  .close.fade:active { transform: scale(.97); }
+  /* prev / next inside the sheet: the words dip out, change, and come back */
+  .sheet.is-stepping .swap { transition: opacity 220ms var(--ease-out), transform 260ms var(--ease-out-strong); }
+  .sheet.is-stepping.is-swapping .swap { opacity: 0; transition: opacity 120ms var(--ease-out); }
 
 
   /* clippings: a commonplace book, text-first, deliberately unlike the cards above */
@@ -258,6 +276,11 @@ const isShort = (note: (typeof notes)[number]) => note.text.join(" ").length + (
   .slip-cite a:hover { color: var(--ink); text-decoration-color: currentColor; }
   .via { display: block; }
 
+  /* narrow desktop: the margin is too thin for the film credits, so they drop under the scraps */
+  @media (min-width: 1024px) and (max-width: 1279px) {
+    .clippings, .script { grid-template-columns: minmax(0, var(--main-w)); }
+    .script-cap { grid-column: 1; padding: 16px 0 0; }
+  }
   @media (max-width: 1023px) {
     .clippings, .script { grid-template-columns: minmax(0, 1fr); }
     .script-cap { grid-column: 1; padding: 16px 0 0; }
@@ -274,19 +297,24 @@ const isShort = (note: (typeof notes)[number]) => note.text.join(" ").length + (
   }
 
   @media (min-width: 1101px) and (max-height: 940px) { :global(html) { --hand-card-w: 228px; --hand-card-h: 338px; --hand-height: 455px; } }
-  @media (max-width: 1100px) { :global(html) { --hand-card-w: 210px; --hand-card-h: 316px; --hand-height: 430px; } }
+  @media (max-width: 1100px) {
+    :global(html) { --hand-card-w: 210px; --hand-card-h: 316px; --hand-height: 430px; }
+    .read { padding: 44px 36px 32px 36px; }
+  }
   @media (max-width: 720px) {
     :global(html) { --hand-card-w: min(300px, 78vw); --hand-card-h: calc(var(--hand-card-w) * 1.48); --hand-height: calc(var(--hand-card-h) + 70px); }
     .stack-ui { display: flex; }
+    /* the stack runs to the screen edges and is clipped there, so a dragged or dealt card can
+       never widen the page (mobile browsers zoom out to fit any overflow) */
+    .table { margin-inline: calc(-1 * var(--page-pad)); padding-inline: var(--page-pad); overflow-x: clip; }
     .card { transform-origin: 50% 50%; }
-    .card .title { font-size: 26px; }
+    :is(.card, .face) .title { font-size: 26px; }
+    /* phones: the sheet is the whole screen; the card fills the top and the reading side
+       rises from below over its lower half */
     .sheet { width: 100%; height: 100%; }
-    .sheet-inner { grid-template-columns: 1fr; grid-template-rows: 44% 56%; }
-    .sheet:not(.is-open) .sheet-inner { grid-template-columns: 1fr; grid-template-rows: 100% 0%; }
     .panel { padding: 22px; }
-    .panel .art { inset: 0 0 46%; }
-    .read { padding: 28px 24px 32px; }
+    .read { left: 0; top: var(--panel-h); z-index: 3; padding: 28px 24px 32px; box-shadow: none; opacity: 1; transform: translateY(100%); transition: transform 440ms var(--ease-out-strong); }
+    .sheet.is-open .read { opacity: 1; transform: none; transition: transform 540ms var(--ease-out-strong) 30ms; }
     .close { background: color-mix(in srgb, var(--card-bg) 75%, black); color: var(--card-fg); }
   }
-  @media (prefers-reduced-motion: reduce) { .fade { filter: none; } }
 </style>
