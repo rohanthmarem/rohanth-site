@@ -9,6 +9,8 @@ interface Props {
   description?: string;
   current?: string;
   image?: string;
+  /** keep the page out of search results (404, drafts) */
+  noindex?: boolean;
 }
 
 const {
@@ -16,6 +18,7 @@ const {
   description = "Rohanth Marem — cs @ uwaterloo. Projects, writing, inspiration and sidequests.",
   current,
   image,
+  noindex = false,
 } = Astro.props;
 const fullTitle = title ? `${title} | rohanth marem` : "rohanth marem";
 const canonical = new URL(Astro.url.pathname, Astro.site);
@@ -29,8 +32,10 @@ const ogImage = image ? new URL(image, Astro.site).href : undefined;
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="rohanth marem" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
@@ -51,6 +56,8 @@ const ogImage = image ? new URL(image, Astro.site).href : undefined;
           if (t === "dark" || (!t && matchMedia("(prefers-color-scheme: dark)").matches)) d.dataset.theme = "dark";
           var h = localStorage.getItem("accent-h");
           if (h) d.style.setProperty("--accent", d.dataset.theme === "dark" ? "oklch(0.72 0.17 " + h + ")" : "oklch(0.5 0.24 " + h + ")");
+          // browser chrome follows the chosen theme, not just the OS one
+          if (t) document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.content = t === "dark" ? "#0b0e15" : "#f6f7f9"; });
         } catch (e) {}
       })();
     </script>
@@ -74,5 +81,5 @@ const ogImage = image ? new URL(image, Astro.site).href : undefined;
 </html>
 
 <style>
-  .skip:focus { position: fixed; left: 12px; top: 12px; width: auto; height: auto; clip: auto; padding: 8px 12px; background: var(--surface); box-shadow: var(--shadow-border); font: 13px var(--mono); z-index: 100; }
+  .skip:focus { position: fixed; left: 12px; top: 12px; width: auto; height: auto; margin: 0; clip: auto; padding: 12px 14px; background: var(--surface); color: var(--ink); box-shadow: var(--shadow-border-hover); font: 13px/1 var(--mono); z-index: 100; }
 </style>
