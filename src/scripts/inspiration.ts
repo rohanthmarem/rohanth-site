@@ -210,10 +210,10 @@ cards.forEach((card, id) => {
 // whatever is lifted is what opens, even if the press lands on a neighbour's overlapping edge
 hand.addEventListener("click", (event) => {
   const card = (event.target as Element).closest<HTMLButtonElement>(".card");
-  if (performance.now() < suppressClickUntil) return;
+  if (!card || card.classList.contains("is-hidden") || performance.now() < suppressClickUntil) return;
   const keyboard = event.detail === 0;
   if (!mobile.matches && !keyboard && hovered >= 0 && hovered < visible.length) openSheet(visible[hovered], false);
-  else if (card && !card.classList.contains("is-hidden")) openSheet(cards.indexOf(card), keyboard);
+  else openSheet(cards.indexOf(card), keyboard);
 });
 
 tabs.forEach((tab) => tab.addEventListener("click", () => filterTo(tab.dataset.filter!)));
@@ -349,7 +349,8 @@ function settle(then: () => void) {
   const mine = ++generation;
   const running = flyer.getAnimations();
   if (!running.length || reduceMotion.matches) { then(); return; }
-  Promise.all(running.map((animation) => animation.finished)).then(() => { if (mine === generation) then(); }, () => {});
+  // a cancelled transition (e.g. the dialog was closed under it) counts as finished too
+  Promise.allSettled(running.map((animation) => animation.finished)).then(() => { if (mine === generation) then(); });
 }
 
 function liftInHand(id: number) {
@@ -362,7 +363,7 @@ function liftInHand(id: number) {
 function openSheet(id: number, keyboard: boolean) {
   if (state === "open") return;
   if (state === "closing") {
-    if (id === openId) { // changed your mind mid-close: fly back up from wherever it is
+    if (id === openId && sheet.open) { // changed your mind mid-close: fly back up from wherever it is
       state = "open";
       generation++;
       sheet.classList.add("is-open");
@@ -377,6 +378,7 @@ function openSheet(id: number, keyboard: boolean) {
   state = "open";
   generation++;
   pointerInHand = false;
+  lastViewport = `${innerWidth}x${innerHeight}`;
   endStep();
   liftInHand(id);
   cards[id].classList.add("is-source");
@@ -466,6 +468,8 @@ sheet.addEventListener("click", (event) => {
   if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) closeSheet();
 });
 sheet.addEventListener("cancel", (event) => { event.preventDefault(); closeSheet(); });
+// the browser can close the dialog itself (e.g. a second Escape / back gesture that isn't cancelable)
+sheet.addEventListener("close", () => { if (state !== "closed") finishClose(); });
 sheet.addEventListener("keydown", (event) => {
   if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
   event.preventDefault();
@@ -475,6 +479,7 @@ sheet.addEventListener("keydown", (event) => {
 // ── resize ──────────────────────────────────────────────────
 
 let resizeFrame = 0;
+let lastViewport = "";
 function onResize() {
   if (resizeFrame) return;
   resizeFrame = requestAnimationFrame(() => {
@@ -482,6 +487,10 @@ function onResize() {
     if (!hand.classList.contains("is-ready")) return;
     const before = geo.width;
     measure();
+    // ignore notifications that change nothing while the sheet is up (they'd cancel its flight)
+    const viewport = `${innerWidth}x${innerHeight}`;
+    if (state !== "closed" && geo.width === before && viewport === lastViewport) return;
+    lastViewport = viewport;
     if (state === "closing") finishClose();
     if (state === "closed") { if (geo.width !== before) hovered = -1; layout(); return; }
     // keep the open card's slot lifted and refit the sheet without animating the change
