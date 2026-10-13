@@ -16,7 +16,7 @@ const sizes = "(max-width: 500px) calc(100vw - 40px), (max-width: 1023px) min(64
 ---
 <!-- string (remote/public) images have no known size: they stay collapsed until they load, so a
      dead link never flashes an orphan caption that then disappears (dither.ts drops failed figures) -->
-<figure class:list={["fig", typeof src === "string" && "fig-pending"]}>
+<figure class:list={["fig", typeof src === "string" && "fig-pending"]} style={typeof src === "string" ? undefined : `--ar: ${(src.width / src.height).toFixed(4)}`}>
   {typeof src === "string" ? (
     <img src={src} alt={alt} loading="eager" decoding="async" class="img-outline" data-dither />
   ) : (
