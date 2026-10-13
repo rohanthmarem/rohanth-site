@@ -51,14 +51,22 @@ function scrambleIn(el: HTMLElement, speed = 34, count = 6) {
 }
 const scrIn = document.querySelectorAll<HTMLElement>("[data-scramble-in]");
 if (!reduce) {
+  // hidden with opacity (not visibility) so links stay in the tab order; keyboard focus reveals
+  // one straight away instead of waiting for the scroll-in
+  const reveal = (h: HTMLElement) => {
+    if (!h.style.opacity) return;
+    h.style.opacity = "";
+    scrambleIn(h);
+  };
   scrIn.forEach((el) => {
     el.setAttribute("aria-label", el.textContent ?? "");
     el.style.minWidth = `${el.getBoundingClientRect().width}px`;
-    el.style.visibility = "hidden";
+    el.style.opacity = "0";
+    el.addEventListener("focus", () => reveal(el), { once: true });
   });
   inView(scrIn, (el) => {
     const h = el as HTMLElement;
-    setTimeout(() => { h.style.visibility = ""; scrambleIn(h); }, Number(h.dataset.scrambleDelay || 0));
+    setTimeout(() => reveal(h), Number(h.dataset.scrambleDelay || 0));
   }, 0.4);
 }
 
@@ -86,6 +94,10 @@ document.querySelectorAll<HTMLElement>("[data-scramble-hover]").forEach((el) => 
 function syncThemeLabel() {
   const dark = root.dataset.theme === "dark";
   document.querySelectorAll("[data-theme-label]").forEach((n) => (n.textContent = dark ? "light" : "dark"));
+  document.querySelectorAll("[data-theme-toggle]").forEach((b) => b.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode"));
+  // browser chrome (address bar, overscroll) follows the chosen theme
+  const paper = getComputedStyle(root).getPropertyValue("--paper").trim();
+  if (paper) document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((m) => (m.content = paper));
 }
 syncThemeLabel();
 document.querySelectorAll("[data-theme-toggle]").forEach((b) =>
@@ -113,8 +125,9 @@ document.querySelectorAll("[data-accent-shuffle]").forEach((b) =>
   b.addEventListener("click", (e) => {
     try {
       if ((e as MouseEvent).shiftKey) localStorage.removeItem("accent-h");
-      else localStorage.setItem("accent-h", String(Math.round(Math.random() * 360)));
+      else localStorage.setItem("accent-h", String(Math.floor(Math.random() * 360)));
     } catch {}
     applyAccent();
+    document.dispatchEvent(new CustomEvent("accent-change"));
   }),
 );

@@ -21,7 +21,7 @@
   --surface: #ffffff;
   --ink: #11141c;
   --ink-2: rgb(17 20 28 / 0.64);
-  --ink-3: rgb(17 20 28 / 0.44);
+  --ink-3: rgb(17 20 28 / 0.5);
   --rule: rgb(17 24 48 / 0.075);
   --rule-strong: rgb(17 24 48 / 0.15);
 
@@ -62,8 +62,8 @@
   --paper-2: #141823;
   --surface: #181c27;
   --ink: #eef1f6;
-  --ink-2: rgb(238 241 246 / 0.62);
-  --ink-3: rgb(238 241 246 / 0.42);
+  --ink-2: rgb(238 241 246 / 0.66);
+  --ink-3: rgb(238 241 246 / 0.52);
   --rule: rgb(255 255 255 / 0.08);
   --rule-strong: rgb(255 255 255 / 0.16);
   --accent: #7b6dff;
@@ -126,6 +126,12 @@ input, textarea, [contenteditable] { cursor: text; }
 .lines i:last-child { border-right: 1px solid var(--rule); }
 .lines i::before, .lines i:last-child::after { content: ""; position: absolute; top: 8px; left: -1px; width: 1px; height: 8px; background: var(--rule-strong); }
 .lines i:last-child::after { left: auto; right: -1px; }
+/* just past the breakpoint the margin column is only a few px wide: drop its right hairline so the
+   page edge doesn't read as a doubled line */
+@media (min-width: 1024px) and (max-width: 1079px) {
+  .lines i:last-child { border-right: 0; }
+  .lines i:last-child::after { display: none; }
+}
 @media (max-width: 1023px) {
   .frame { grid-template-columns: minmax(0, 1fr); align-content: start; }
   .content { grid-template-columns: [gutter-start main-start] minmax(0, 1fr) [main-end end]; padding-top: 32px; }

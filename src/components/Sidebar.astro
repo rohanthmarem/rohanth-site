@@ -42,8 +42,8 @@ const items = [
   .side { position: relative; z-index: 1; }
   /* Desktop: the menu sticks natively (smooth, compositor-driven). Near a full-width section the
      script pins it in place (position:absolute) so it scrolls away with that section, then hands
-     it back to sticky with a fade once the section has passed. No per-frame JS positioning. */
-  .side-inner { position: sticky; top: 40px; margin-top: 140px; display: flex; flex-direction: column; align-items: flex-start; gap: 22px; padding: 0 24px 0 0; max-height: calc(100vh - 80px); overflow-y: auto; scrollbar-width: none; transition: opacity 260ms var(--ease-out), filter 260ms var(--ease-out); }
+     it back to sticky with a glide or a fade once the section has passed. No per-frame JS positioning. */
+  .side-inner { position: sticky; top: 40px; margin-top: 140px; display: flex; flex-direction: column; align-items: flex-start; gap: 22px; padding: 0 24px 0 0; max-height: calc(100vh - 80px); overflow-y: auto; scrollbar-width: none; transition: opacity 260ms var(--ease-out), filter 260ms var(--ease-out), transform 240ms var(--ease-out-strong); }
   .side-inner.is-parked { position: absolute; left: 0; right: 0; margin-top: 0; }
   .side-inner.is-back { animation: side-in 420ms var(--ease-out) both; }
   @keyframes side-in { from { opacity: 0; filter: blur(6px); transform: translateY(-6px); } }
@@ -60,42 +60,54 @@ const items = [
   .side-extra { width: 100%; margin-top: 18px; }
 
   @media (max-width: 1023px) {
-    .side-inner, .side-inner.is-parked { position: static; margin-top: 0; flex-direction: row; align-items: center; justify-content: flex-end; gap: 16px; padding: 18px 0; max-height: none; overflow: visible; }
+    /* above .content (and the homepage rail) so the open menu is never painted under the page */
+    .side { z-index: 5; }
+    .side-inner, .side-inner.is-parked { position: static; margin-top: 0; flex-direction: row; align-items: center; justify-content: flex-end; gap: 16px; padding: 18px 0; max-height: none; overflow: visible; transform: none; transition: none; }
     .side-nav, .side-extra { display: none; }
     .side-menu { display: block; position: relative; }
-    .side-menu summary { list-style: none; min-height: 40px; display: grid; place-items: center; padding: 0 10px; font: 13px/1 var(--mono); box-shadow: inset 0 0 0 1px var(--ink); }
+    .side-menu summary { list-style: none; min-height: 40px; min-width: 40px; display: grid; place-items: center; padding: 0 12px; font: 13px/1 var(--mono); box-shadow: inset 0 0 0 1px var(--ink); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
     .side-menu summary::-webkit-details-marker { display: none; }
+    .side-menu summary:active { transform: scale(0.96); }
     .side-menu[open] summary { background: var(--ink); color: var(--paper); }
-    .side-menu ul { position: absolute; right: 0; top: calc(100% + 8px); z-index: 20; min-width: 180px; padding: 8px 0; background: var(--surface); box-shadow: var(--shadow-border-hover); }
-    .side-menu a { display: block; padding: 10px 16px; font: 14px/1.2 var(--mono); }
+    .side-menu ul { position: absolute; right: 0; top: calc(100% + 8px); z-index: 20; min-width: 180px; padding: 8px 0; background: var(--surface); box-shadow: var(--shadow-border-hover); animation: menu-in 180ms var(--ease-out) both; }
+    @keyframes menu-in { from { opacity: 0; transform: translateY(-4px); } }
+    .side-menu a { display: block; padding: 11px 16px; min-height: 40px; font: 14px/1.2 var(--mono); transition: color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out); }
+    .side-menu a:hover { background: var(--paper-2); }
+    .side-menu a:focus-visible { outline-offset: -2px; }
     .side-menu a[aria-current="page"] { color: var(--accent); }
   }
 </style>
 
 <script>
-  // Two states, switched only at the handoff points (never per-frame positioning):
+  // Two resting states, switched only at the handoff points (never per-frame positioning):
   //   follow — native position:sticky, glides with the page
   //   parked — position:absolute at the spot it reached, so it scrolls away with a full-width
-  //            section exactly like the content does
-  // When the section has gone by, it returns to sticky with a short fade-in. If a section starts
-  // too high to park above, the menu fades out while covered instead.
+  //            section exactly like the content does (above it when scrolling down, below it
+  //            when scrolling back up)
+  // Handoffs are predicted a frame ahead from the scroll velocity so the menu stops before it
+  // touches a section; any overshoot (fast flicks, async compositor scrolling) is absorbed by a
+  // short glide instead of a jump. Once a section has gone by the menu returns to sticky — with a
+  // glide if it is close, with a fade if it is far. A section with no room above it (or one the
+  // menu lands deep inside after a jump) hides the menu until the sticky spot is clear again.
   const side = document.querySelector<HTMLElement>(".side");
   const inner = side?.querySelector<HTMLElement>(".side-inner");
   const wide = matchMedia("(min-width: 1024px)");
   const NATURAL = 140; // resting offset inside the sidebar
   const STICK = 40; // sticky offset from the top of the viewport
-  const GAP = 40; // clearance kept above a full-width section
+  const GAP = 40; // clearance kept above/below a full-width section
   const MIN = 24; // highest it may park when a section starts near the top
+  const LOOKAHEAD = 80; // px of next-frame scroll we park ahead of (capped so the gap stays tight)
+  const GLIDE = 200; // handoffs shorter than this glide; longer ones fade
 
   if (side && inner) {
     const spans = () => document.querySelectorAll<HTMLElement>(".content > .span, .content > .span-bleed, [data-span]");
+    type Extent = { top: number; bottom: number };
     let state: "follow" | "parked" | "covered" = "follow";
-    let hideTimer = 0;
-    let pending = false; // fading out before pinning above a section
     let parkedTop = 0;
+    let lastY = scrollY;
 
     // vertical extent of a full-width section, in sidebar coordinates, where it reaches the menu column
-    const extent = (el: HTMLElement, sideTop: number, menuRight: number) => {
+    const extent = (el: HTMLElement, sideTop: number, menuRight: number): Extent | null => {
       const rects = [el.getBoundingClientRect()];
       if (el.dataset.span === "deep") for (const c of el.children) rects.push(c.getBoundingClientRect());
       let top = Infinity, bottom = -Infinity;
@@ -106,64 +118,104 @@ const items = [
       return top === Infinity ? null : { top: top + scrollY - sideTop, bottom: bottom + scrollY - sideTop };
     };
 
-    const toFollow = (fade: boolean) => {
-      clearTimeout(hideTimer);
-      pending = false;
+    // start `from` px away from the resting spot and ease to it (interruptible)
+    const glide = (from: number) => {
+      inner.style.transition = "none";
+      inner.style.transform = `translateY(${Math.round(from)}px)`;
+      void inner.offsetWidth;
+      inner.style.transition = "";
+      inner.style.transform = "";
+    };
+    const fadeIn = () => { inner.classList.remove("is-back"); void inner.offsetWidth; inner.classList.add("is-back"); };
+    inner.addEventListener("animationend", (e) => { if (e.target === inner) inner.classList.remove("is-back"); });
+
+    // `offset`: where the menu visually is relative to its new sticky spot (+ = lower)
+    const toFollow = (offset: number) => {
       inner.classList.remove("is-parked", "is-covered");
       inner.style.top = "";
-      if (fade) { inner.classList.remove("is-back"); void inner.offsetWidth; inner.classList.add("is-back"); }
       state = "follow";
+      if (Math.abs(offset) <= 1) return;
+      if (Math.abs(offset) <= GLIDE) glide(offset); else fadeIn();
     };
-    const toParked = (y: number) => {
-      clearTimeout(hideTimer);
-      pending = false;
+    const toParked = (y: number, offset = 0) => {
       parkedTop = y;
       inner.classList.remove("is-back", "is-covered");
       inner.style.top = `${Math.round(y)}px`;
       inner.classList.add("is-parked");
       state = "parked";
+      if (Math.abs(offset) > 1) glide(offset);
+    };
+    const toCovered = () => {
+      inner.classList.remove("is-back");
+      inner.classList.add("is-covered");
+      state = "covered";
     };
 
     const update = () => {
-      if (!wide.matches) { if (state !== "follow") toFollow(false); return; }
+      const vel = scrollY - lastY;
+      lastY = scrollY;
+      if (!wide.matches) { if (state !== "follow") toFollow(0); return; }
       const sideTop = side.getBoundingClientRect().top + scrollY;
       const h = inner.offsetHeight;
       const follow = scrollY + STICK - sideTop; // where sticky would put the menu
       const y = Math.max(NATURAL, follow);
       const menuRight = side.getBoundingClientRect().left + inner.offsetWidth;
+      const ahead = Math.max(0, Math.min(LOOKAHEAD, vel)); // predicted extra travel, scrolling down
+      const behind = Math.max(0, Math.min(LOOKAHEAD, -vel)); // … scrolling up
 
-      let conflict: { top: number; bottom: number } | null = null;
+      let conflict: Extent | null = null;
       for (const el of spans()) {
         const e = extent(el, sideTop, menuRight);
-        if (e && y + h + GAP > e.top && follow < e.bottom + GAP) { conflict = e; break; }
+        if (!e) continue;
+        const predicted = state === "follow";
+        const hitsTop = y + h + GAP + (predicted ? ahead : 0) > e.top;
+        const hitsBottom = follow - (predicted ? behind : 0) < e.bottom + GAP;
+        if (hitsTop && hitsBottom) { conflict = e; break; }
       }
 
       if (!conflict) {
-        // scrolling back up past the pin point is seamless; coming out below a section fades in
-        if (state === "parked") toFollow(follow > parkedTop + 1);
-        else if (state === "covered") toFollow(true);
+        if (state === "parked") toFollow(parkedTop - follow);
+        else if (state === "covered") toFollow(Infinity);
         return;
       }
-      const parkAt = conflict.top - h - GAP;
-      if (parkAt < MIN) { // no room above the section
-        if (state !== "covered") { inner.classList.add("is-covered"); state = "covered"; }
+      const above = conflict.top - h - GAP; // parking spot above the section
+      const below = conflict.bottom + GAP; // … and below it
+      if (state === "parked") {
+        // keep the spot unless a layout change pushed the section onto it
+        if (parkedTop > above + 1 && parkedTop < below - 1) toParked(parkedTop - above < below - parkedTop ? above : below);
         return;
       }
-      if (state === "parked" || pending) return; // already scrolling away / fading out
-      if (state === "follow" && y > parkAt + 4 && follow > NATURAL) {
-        // re-entering a section from below (scrolling up): fade out, then pin above it
-        inner.classList.add("is-covered");
-        pending = true;
-        hideTimer = window.setTimeout(() => toParked(parkAt), 220);
-        state = "covered";
-        return;
-      }
-      toParked(Math.min(y, parkAt)); // pin exactly where it is (or above the section)
+      if (state === "covered") return;
+      if (above < MIN) { toCovered(); return; } // no room above the section
+      if (follow <= NATURAL) { toParked(Math.min(y, above)); return; } // resting at the top of the page
+      const over = y - above; // how far past the upper spot the menu already is
+      const under = below - y; // … past the lower spot
+      if (over <= 0) toParked(y); // scrolling down: stop right here
+      else if (over <= GLIDE) toParked(above, over); // slightly over: ease back up to the spot
+      else if (under <= 0) toParked(y); // scrolling up: stop right here
+      else if (under <= GLIDE) toParked(below, -under); // slightly under: ease down to the spot
+      else toCovered(); // deep inside a section (jump, resize, anchor): hide until clear
     };
 
     addEventListener("scroll", update, { passive: true });
     addEventListener("resize", update);
     new ResizeObserver(update).observe(document.body);
     update();
+  }
+
+  // Narrow screens: the <details> menu closes on Esc (focus back on the button), on a tap outside,
+  // and when the layout widens past the breakpoint.
+  const menu = side?.querySelector<HTMLDetailsElement>(".side-menu");
+  if (menu) {
+    const summary = menu.querySelector<HTMLElement>("summary");
+    const close = (refocus = false) => {
+      if (!menu.open) return;
+      menu.open = false;
+      if (refocus) summary?.focus();
+    };
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && menu.open) { e.preventDefault(); close(true); } });
+    document.addEventListener("pointerdown", (e) => { if (!menu.contains(e.target as Node)) close(); });
+    menu.addEventListener("focusout", (e) => { if (!menu.contains(e.relatedTarget as Node)) close(); });
+    wide.addEventListener("change", () => { if (wide.matches) close(); });
   }
 </script>
