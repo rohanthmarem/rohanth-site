@@ -160,6 +160,7 @@ const sectionHref = (heading: (typeof sections)[number]) => `#${heading.slug}`;
   .js .post .prose figure.fig img:not([data-dither]) { filter: grayscale(1) contrast(1.25); transition: filter 900ms var(--ease-out); }
   .js .post .prose figure.fig.is-in img:not([data-dither]) { filter: none; }
   .post .prose figure.fig[hidden] { display: none; }
+  .js .post .prose figure.fig-pending:not(:has(.is-ready)) { height: 0; margin: 0; overflow: hidden; visibility: hidden; }
   .post .prose .dith-frame { overflow: hidden; background: var(--paper-2); }
   .post .prose .dith-frame:not(.is-ready) > img { opacity: 0; }
   .post .prose .dith-frame > .dith { right: auto; bottom: auto; }

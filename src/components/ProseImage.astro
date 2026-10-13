@@ -11,12 +11,16 @@ interface Props {
 
 const { src, alt = "", title } = Astro.props;
 const caption = title || alt;
+// Matches the figure's rendered width: the text column below 1024px, then the wide figure (≤ ~953px).
+const sizes = "(max-width: 500px) calc(100vw - 40px), (max-width: 1023px) min(640px, 92vw), (max-width: 1100px) 720px, 960px";
 ---
-<figure class="fig">
+<!-- string (remote/public) images have no known size: they stay collapsed until they load, so a
+     dead link never flashes an orphan caption that then disappears (dither.ts drops failed figures) -->
+<figure class:list={["fig", typeof src === "string" && "fig-pending"]}>
   {typeof src === "string" ? (
-    <img src={src} alt={alt} loading="lazy" decoding="async" class="img-outline" data-dither />
+    <img src={src} alt={alt} loading="eager" decoding="async" class="img-outline" data-dither />
   ) : (
-    <Image src={src} alt={alt} widths={[480, 720, 1080, 1440]} sizes="(max-width: 720px) 100vw, 860px" class="img-outline" data-dither />
+    <Image src={src} alt={alt} widths={[480, 720, 1080, 1440]} width={Math.min(1440, src.width)} sizes={sizes} class="img-outline" data-dither />
   )}
   {caption && <figcaption>{caption}</figcaption>}
 </figure>
