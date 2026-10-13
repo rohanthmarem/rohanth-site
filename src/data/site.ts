@@ -2,7 +2,7 @@
 
 export const links = {
   github: "https://github.com/rohanthmarem",
-  x: "https://twitter.com/rohanthmarem",
+  x: "https://x.com/rohanth",
   email: "mailto:hello@rohanth.com",
   emailText: "hello@rohanth.com",
   substack: "https://rohanth.substack.com/",
