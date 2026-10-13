@@ -167,14 +167,14 @@ const items = [
       for (const el of spans()) {
         const e = extent(el, sideTop, menuRight);
         if (!e) continue;
-        const predicted = state === "follow";
-        const hitsTop = y + h + GAP + (predicted ? ahead : 0) > e.top;
-        const hitsBottom = follow - (predicted ? behind : 0) < e.bottom + GAP;
+        // look ahead in every state: a parked menu that would have to park again next frame stays put
+        const hitsTop = y + h + GAP + ahead > e.top;
+        const hitsBottom = follow - behind < e.bottom + GAP;
         if (hitsTop && hitsBottom) { conflict = e; break; }
       }
 
       if (!conflict) {
-        if (state === "parked") toFollow(parkedTop - follow);
+        if (state === "parked") toFollow(parkedTop - y); // y: the sticky spot (its natural spot near the top)
         else if (state === "covered") toFollow(Infinity);
         return;
       }
