@@ -1,0 +1,242 @@
+/* ─────────────────────────────────────────────────────────────
+   rohanth.com — global styles
+   Paper + ink with one accent. Geist Pixel for display, Merriweather
+   for reading, Ioskeley Mono for UI and metadata.
+   Interface details follow jakub.kr/writing/details-that-make-interfaces-feel-better:
+   balanced headings, tabular numbers, shadows over borders, image outlines,
+   interruptible transitions, blur-in entrances, reduced motion.
+   ───────────────────────────────────────────────────────────── */
+
+@font-face { font-family: "Geist Pixel"; src: url("/fonts/geist-pixel-square.77844bda.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Merriweather"; src: url("/fonts/merriweather-latin.6b615f68.woff2") format("woff2"); font-weight: 300 600; font-style: normal; font-display: swap; }
+@font-face { font-family: "Merriweather"; src: url("/fonts/merriweather-italic-latin.c7f43a37.woff2") format("woff2"); font-weight: 300 600; font-style: italic; font-display: swap; }
+@font-face { font-family: "Ioskeley Mono"; src: url("/fonts/ioskeley-mono-regular.d2433ea3.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Ioskeley Mono"; src: url("/fonts/ioskeley-mono-medium.f2ebc565.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+
+:root {
+  color-scheme: light;
+  /* cool white with a faint navy cast; ink is a deep navy-black */
+  --paper: #f6f7f9;
+  --paper-2: #eceef3;
+  --surface: #ffffff;
+  --ink: #11141c;
+  --ink-2: rgb(17 20 28 / 0.64);
+  --ink-3: rgb(17 20 28 / 0.5);
+  --rule: rgb(17 24 48 / 0.075);
+  --rule-strong: rgb(17 24 48 / 0.15);
+
+  --accent: #2200ff;
+  --accent-ink: #ffffff;
+  --hl: oklch(0.9 0.11 95);
+
+  --pixel: "Geist Pixel", "Ioskeley Mono", ui-monospace, monospace;
+  --serif: "Merriweather", Georgia, serif;
+  --mono: "Ioskeley Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --dur-enter: 800ms;
+  --dur-fast: 160ms;
+  --dur: 240ms;
+
+  --shadow-border: 0 0 0 1px rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06), 0 2px 4px 0 rgb(0 0 0 / 0.04);
+  --shadow-border-hover: 0 0 0 1px rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.08), 0 2px 4px 0 rgb(0 0 0 / 0.06);
+  --img-outline: rgb(0 0 0 / 0.1);
+
+  --col: 1240px;
+  /* page frame (after cognition.com): sidebar | gutter | main | margin */
+  --frame-max: 1360px;
+  --side-w: 220px;
+  --gut-w: 72px;
+  --main-w: 640px;
+  --page-pad: clamp(20px, 4vw, 64px);
+  --measure: 620px;
+  /* one page-title size everywhere (cognition-scale, small) */
+  --title: 400 clamp(24px, 2.2vw, 30px)/1.15 var(--pixel);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #0b0e15;
+  --paper-2: #141823;
+  --surface: #181c27;
+  --ink: #eef1f6;
+  --ink-2: rgb(238 241 246 / 0.66);
+  --ink-3: rgb(238 241 246 / 0.52);
+  --rule: rgb(255 255 255 / 0.08);
+  --rule-strong: rgb(255 255 255 / 0.16);
+  --accent: #7b6dff;
+  --hl: oklch(0.45 0.09 95);
+  --shadow-border: 0 0 0 1px rgb(255 255 255 / 0.08);
+  --shadow-border-hover: 0 0 0 1px rgb(255 255 255 / 0.13);
+  --img-outline: rgb(255 255 255 / 0.1);
+}
+
+/* ── reset + base ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scrollbar-gutter: stable; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 17px/1.65 var(--serif);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+img, svg, canvas, video { display: block; max-width: 100%; }
+img { height: auto; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+h1, h2, h3, h4 { text-wrap: balance; margin: 0; font-weight: 400; }
+p, li, figcaption, dd { text-wrap: pretty; }
+::selection { background: var(--accent); color: var(--accent-ink); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.wrap { max-width: var(--col); margin: 0 auto; padding: 0 var(--page-pad); }
+
+/* film grain over the whole page (after casperdong.com): a static fractal-noise tile drawn by
+   the browser from inline SVG (no image request), fixed so it doesn't scroll, never interactive */
+body::after {
+  content: ""; position: fixed; inset: 0; z-index: 90; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 220px 220px;
+  opacity: var(--grain, .06);
+}
+[data-theme="dark"] { --grain: .05; }
+@media print { body::after { display: none; } }
+
+/* the old site's + cursor, everywhere except where you type */
+html, body, *, *::before, *::after { cursor: crosshair; }
+input, textarea, [contenteditable] { cursor: text; }
+
+/* ── page frame ─────────────────────────────────────────────
+   Sidebar on the left, then a content grid with named columns:
+     gutter (labels, left captions) · main (the reading column) · margin (right captions)
+   Children of .content sit in `main` by default; .wide spans main→margin, .full spans
+   gutter→margin, .bleed runs main→the viewport's right edge (for horizontal scrollers),
+   .margin sits in the right margin, .gutter in the gutter, .span / .span-bleed use the
+   full page width (sidebar column included).
+   Faint vertical hairlines mark the column edges. */
+.frame { position: relative; display: grid; grid-template-columns: var(--side-w) minmax(0, 1fr); max-width: var(--frame-max); margin: 0 auto; padding: 0 var(--page-pad); min-height: 100vh; }
+.content { position: relative; z-index: 1; display: grid; grid-template-columns: [gutter-start] var(--gut-w) [main-start] minmax(0, var(--main-w)) [main-end] minmax(0, 1fr) [end]; align-content: start; padding: 140px 0 clamp(88px, 10vw, 144px); min-width: 0; }
+.content > * { grid-column: main; min-width: 0; }
+.content > .wide { grid-column: main-start / end; }
+.content > .full { grid-column: gutter-start / end; }
+.content > .gutter { grid-column: gutter-start / main-start; }
+.content > .margin { grid-column: main-end / end; padding-left: 24px; }
+.content > .bleed { grid-column: main-start / end; margin-right: calc(-1 * (var(--page-pad) + max(0px, (100vw - var(--frame-max)) / 2))); }
+/* full page width (like the homepage projects row): from the sidebar's left edge to the frame's
+   right edge; .span-bleed continues to the viewport edge. The menu scrolls away above it. */
+.content > .span, .content > .span-bleed { grid-column: gutter-start / end; margin-left: calc(-1 * var(--side-w)); }
+.content > .span-bleed { margin-right: calc(-1 * (var(--page-pad) + max(0px, (100vw - var(--frame-max)) / 2))); }
+.lines { position: absolute; inset: 0 var(--page-pad); display: grid; grid-template-columns: var(--side-w) var(--gut-w) minmax(0, var(--main-w)) minmax(0, 1fr); pointer-events: none; z-index: 0; }
+.lines i { position: relative; border-left: 1px solid var(--rule); }
+.lines i:last-child { border-right: 1px solid var(--rule); }
+.lines i::before, .lines i:last-child::after { content: ""; position: absolute; top: 8px; left: -1px; width: 1px; height: 8px; background: var(--rule-strong); }
+.lines i:last-child::after { left: auto; right: -1px; }
+/* just past the breakpoint the margin column is only a few px wide: drop its right hairline so the
+   page edge doesn't read as a doubled line */
+@media (min-width: 1024px) and (max-width: 1079px) {
+  .lines i:last-child { border-right: 0; }
+  .lines i:last-child::after { display: none; }
+}
+@media (max-width: 1023px) {
+  .frame { grid-template-columns: minmax(0, 1fr); align-content: start; }
+  .content { grid-template-columns: [gutter-start main-start] minmax(0, 1fr) [main-end end]; padding-top: 32px; }
+  .content > .margin { padding-left: 0; }
+  .content > .span, .content > .span-bleed { margin-left: 0; margin-right: 0; }
+  .lines { grid-template-columns: minmax(0, 1fr); }
+  .lines i:not(:first-child):not(:last-child) { display: none; }
+  .lines i:first-child { border-right: 1px solid var(--rule); }
+  .lines i:last-child { display: none; }
+}
+.mono { font-family: var(--mono); font-size: 13px; }
+.pixel { font-family: var(--pixel); font-weight: 400; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--ink-2); }
+.faint { color: var(--ink-3); }
+.label { font: 500 12px/1 var(--mono); letter-spacing: 0.06em; text-transform: lowercase; color: var(--ink-3); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.img-outline { outline: 1px solid var(--img-outline); outline-offset: -1px; }
+.pressable { transition: transform var(--dur-fast) var(--ease-out); }
+.pressable:active { transform: scale(0.97); }
+
+/* page title used by every index page */
+.page-head { padding: clamp(48px, 7vw, 96px) 0 clamp(28px, 4vw, 48px); }
+.page-head h1 { font: var(--title); letter-spacing: 0; }
+.page-head p { font: 300 clamp(17px, 1.5vw, 20px)/1.55 var(--serif); color: var(--ink-2); max-width: 46ch; margin: 18px 0 0; }
+
+/* ── entrances (one-shot keyframes, staggered 100ms) ──────── */
+@keyframes enter { from { transform: translateY(8px); filter: blur(8px); opacity: 0; } }
+[data-enter] { animation: enter var(--dur-enter) var(--ease-out) both; animation-delay: calc(100ms * var(--stagger, 0)); }
+
+/* ── underline animations (fancycomponents ports) ─────────── */
+.u { position: relative; display: inline-block; }
+.u::after, .u::before {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -0.06em; height: max(1px, 0.08em);
+  background: currentColor; pointer-events: none;
+}
+.u::before { display: none; }
+.u-center::after { transform: scaleX(0); transform-origin: center; transition: transform 320ms var(--ease-out-strong); }
+:is(a, button):is(:hover, :focus-visible) .u-center::after, .u-center:is(:hover, :focus-visible)::after { transform: scaleX(1); }
+.u-in-out::after { transform: scaleX(0); transform-origin: right; transition: transform 380ms var(--ease-in-out); }
+:is(a, button):is(:hover, :focus-visible) .u-in-out::after, .u-in-out:is(:hover, :focus-visible)::after { transform: scaleX(1); transform-origin: left; }
+.u-out-in::before { display: block; transform-origin: right; transition: transform 300ms var(--ease-in-out); }
+.u-out-in::after { transform: scaleX(0); transform-origin: left; transition: transform 300ms var(--ease-in-out); }
+:is(a, button):is(:hover, :focus-visible) .u-out-in::before, .u-out-in:is(:hover, :focus-visible)::before { transform: scaleX(0); }
+:is(a, button):is(:hover, :focus-visible) .u-out-in::after, .u-out-in:is(:hover, :focus-visible)::after { transform: scaleX(1); transition-delay: 220ms; }
+.u-accent::after, .u-accent::before { background: var(--accent); }
+
+/* ── text highlighter: ==text== in markdown, <Highlight> in MDX ── */
+mark.hl {
+  color: inherit;
+  background-color: transparent;
+  background-image: linear-gradient(var(--hl-color, var(--hl)), var(--hl-color, var(--hl)));
+  background-repeat: no-repeat;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  /* the band overhangs the words; the matching negative margin keeps the text spacing untouched */
+  padding: 0 0.12em;
+  margin: 0 -0.12em;
+  background-size: 0% 100%;
+  background-position: left center;
+  transition: background-size var(--hl-dur, 900ms) var(--ease-out-strong) var(--hl-delay, 0ms);
+}
+mark.hl[data-dir="rtl"] { background-position: right center; }
+mark.hl[data-dir="ttb"] { background-size: 100% 0%; background-position: center top; }
+mark.hl[data-dir="btt"] { background-size: 100% 0%; background-position: center bottom; }
+mark.hl[data-style="marker"] { background-image: linear-gradient(transparent 55%, var(--hl-color, var(--hl)) 55%, var(--hl-color, var(--hl)) 92%, transparent 92%); }
+mark.hl[data-color="accent"] { --hl-color: color-mix(in oklab, var(--accent) 22%, transparent); }
+mark.hl.is-on { background-size: 100% 100%; }
+/* no JS: show highlights immediately */
+html:not(.js) mark.hl { background-size: 100% 100%; }
+
+/* ── crop marks (Cognition hover detail) ──────────────────── */
+.cropmarks { position: relative; }
+.cropmarks > .cm {
+  position: absolute; width: 6px; height: 14px; background: var(--accent);
+  opacity: 0; transform: scale(0.6);
+  transition: opacity 200ms var(--ease-out), transform 260ms var(--ease-out-strong);
+  pointer-events: none; z-index: 2;
+}
+.cropmarks > .cm.tl { top: 0; left: 0; transform-origin: top left; }
+.cropmarks > .cm.tr { top: 0; right: 0; transform-origin: top right; }
+.cropmarks > .cm.bl { bottom: 0; left: 0; transform-origin: bottom left; }
+.cropmarks > .cm.br { bottom: 0; right: 0; transform-origin: bottom right; }
+:is(a, button, .card):is(:hover, :focus-visible) .cropmarks > .cm,
+.cropmarks:is(:hover, :focus-within) > .cm { opacity: 1; transform: scale(1); }
+
+/* ── dithered post figures (see scripts/dither.ts) ─────────── */
+.dith-frame { position: relative; display: block; overflow: hidden; cursor: crosshair; }
+.dith-frame > img { display: block; width: 100%; height: auto; }
+.dith { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; image-rendering: pixelated; }
+
+/* ── scramble-in pending glyphs ───────────────────────────── */
+.scr-pending { color: var(--ink-3); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-delay: 0ms !important; transition-duration: 1ms !important; scroll-behavior: auto !important; }
+}

@@ -1,36 +1,37 @@
 ---
-import { getCollection, render } from "astro:content";
-import ContentLayout from "../../layouts/ContentLayout.astro";
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import Post from "../../layouts/Post.astro";
+import ProseImage from "../../components/ProseImage.astro";
+import Highlight from "../../components/Highlight.astro";
+import Sidenote from "../../components/Sidenote.astro";
 
 export async function getStaticPaths() {
-  const writings = await getCollection("writings");
-  return writings.map((entry) => ({
+  const entries = (await getCollection("writings")).sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+  return entries.map((entry, index) => ({
     params: { slug: entry.id },
-    props: { entry },
+    props: {
+      entry,
+      previous: entries[index - 1],
+      next: entries[index + 1],
+    },
   }));
 }
 
-const { entry } = Astro.props;
-const { Content } = await render(entry);
-
-function fmtDate(d: Date) {
-  return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+interface Props {
+  entry: CollectionEntry<"writings">;
+  previous?: CollectionEntry<"writings">;
+  next?: CollectionEntry<"writings">;
 }
+
+const { entry, previous, next } = Astro.props;
+const { Content, headings } = await render(entry);
+const neighbor = (other?: CollectionEntry<"writings">) => other && ({
+  title: other.data.title,
+  date: other.data.date,
+  href: `/writing/${other.id}`,
+});
 ---
 
-<ContentLayout title={`${entry.data.title} | rohanth marem`} description={entry.data.description}>
-  <section class="tbc-hero tbc-fu tbc-d2">
-    <div style="margin-bottom: 16px">
-      <a href="/writing" class="tbc-text-link tbc-label">← Writing</a>
-    </div>
-    <h1 class="tbc-hero-text">{entry.data.title}</h1>
-    <div class="tbc-hero-meta">
-      <span class="tbc-label">{fmtDate(entry.data.date)}</span>
-      {entry.data.tags?.map((tag) => <span class="tbc-label">{tag}</span>)}
-    </div>
-  </section>
-
-  <article class="tbc-section tbc-prose" style="padding-bottom: 80px">
-    <Content />
-  </article>
-</ContentLayout>
+<Post entry={entry} kind="writing" headings={headings} previous={neighbor(previous)} next={neighbor(next)}>
+  <Content components={{ img: ProseImage, Highlight, Sidenote }} />
+</Post>

@@ -1,0 +1,108 @@
+---
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import Analytics from "@vercel/analytics/astro";
+import Sidebar from "../components/Sidebar.astro";
+import Footer from "../components/Footer.astro";
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  current?: string;
+  image?: string;
+  /** keep the page out of search results (404, drafts) */
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description = "Rohanth Marem — cs @ uwaterloo. Projects, writing, inspiration and sidequests.",
+  current,
+  image,
+  noindex = false,
+} = Astro.props;
+const fullTitle = title ? `${title} | rohanth marem` : "rohanth marem";
+const canonical = new URL(Astro.url.pathname, Astro.site);
+
+// Share image: public/og/<slug>.jpg from the path ("/" -> home, "/projects/x" -> projects-x),
+// made by scripts/og.mjs. Home is the square avatar ("summary" card); everything else is a
+// 1200x630 card; pages without one fall back to og/default.jpg. An explicit `image` prop wins.
+const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/+$/, "");
+const ogSlug = path === "" ? "home" : path.slice(1).replaceAll("/", "-");
+const ogFile = (slug: string) => existsSync(join(process.cwd(), "public/og", `${slug}.jpg`));
+const isHome = ogSlug === "home";
+const og = image
+  ? { src: image, width: undefined, height: undefined }
+  : isHome
+    ? { src: "/og/home.jpg", width: 460, height: 460 }
+    : { src: `/og/${ogFile(ogSlug) ? ogSlug : "default"}.jpg`, width: 1200, height: 630 };
+const ogImage = new URL(og.src, Astro.site).href;
+// Vercel serves /_vercel/insights only on its own deployments; skip the script elsewhere
+// (local dev / preview) so it doesn't 404 on every page.
+const onVercel = Boolean(process.env.VERCEL);
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="rohanth marem" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    {og.width && <meta property="og:image:width" content={String(og.width)} />}
+    {og.height && <meta property="og:image:height" content={String(og.height)} />}
+    <meta property="og:image:alt" content={isHome ? "Rohanth Marem" : fullTitle} />
+    <meta name="twitter:card" content={isHome ? "summary" : "summary_large_image"} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="theme-color" content="#f6f7f9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b0e15" media="(prefers-color-scheme: dark)" />
+    <link rel="preload" href="/fonts/geist-pixel-square.77844bda.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/merriweather-latin.6b615f68.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/ioskeley-mono-regular.d2433ea3.woff2" as="font" type="font/woff2" crossorigin />
+    <script is:inline>
+      // Theme before first paint: saved choice, else the OS preference.
+      (function () {
+        var d = document.documentElement;
+        d.classList.add("js");
+        try {
+          var t = localStorage.getItem("theme");
+          if (t === "dark" || (!t && matchMedia("(prefers-color-scheme: dark)").matches)) d.dataset.theme = "dark";
+          // browser chrome follows the chosen theme, not just the OS one
+          if (t) document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.content = t === "dark" ? "#0b0e15" : "#f6f7f9"; });
+        } catch (e) {}
+      })();
+    </script>
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip sr-only" href="#main">skip to content</a>
+    <div class="frame">
+      <div class="lines" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <Sidebar current={current}><slot name="sidebar" /></Sidebar>
+      <main id="main" class="content">
+        <slot />
+      </main>
+    </div>
+    <Footer />
+    {onVercel && <Analytics />}
+    <script>
+      import "../scripts/site";
+    </script>
+  </body>
+</html>
+
+<style>
+  .skip:focus { position: fixed; left: 12px; top: 12px; width: auto; height: auto; margin: 0; clip: auto; padding: 12px 14px; background: var(--surface); color: var(--ink); box-shadow: var(--shadow-border-hover); font: 13px/1 var(--mono); z-index: 100; }
+</style>

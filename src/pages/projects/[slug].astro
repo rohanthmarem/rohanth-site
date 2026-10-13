@@ -1,37 +1,45 @@
 ---
-import { getCollection, render } from "astro:content";
-import ContentLayout from "../../layouts/ContentLayout.astro";
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import { Image } from "astro:assets";
+import Post from "../../layouts/Post.astro";
 import ProseImage from "../../components/ProseImage.astro";
+import Highlight from "../../components/Highlight.astro";
+import Sidenote from "../../components/Sidenote.astro";
 
 export async function getStaticPaths() {
-  const projects = await getCollection("projects");
-  return projects.map((entry) => ({
+  const entries = (await getCollection("projects")).sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+  return entries.map((entry, index) => ({
     params: { slug: entry.id },
-    props: { entry },
+    props: {
+      entry,
+      previous: entries[index - 1],
+      next: entries[index + 1],
+    },
   }));
 }
 
-const { entry } = Astro.props;
-const { Content } = await render(entry);
-
-function fmtDate(d: Date) {
-  return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+interface Props {
+  entry: CollectionEntry<"projects">;
+  previous?: CollectionEntry<"projects">;
+  next?: CollectionEntry<"projects">;
 }
+
+const { entry, previous, next } = Astro.props;
+const { Content, headings } = await render(entry);
+const hasBody = Boolean(entry.body?.trim());
+const showLeadImage = Boolean(entry.data.image && (!hasBody || entry.id === "formulanull"));
+const duplicateBodyTitle = entry.body?.trimStart().split("\n", 1)[0]?.replace(/^#\s*/, "").trim().toLowerCase() === entry.data.title.toLowerCase();
+const neighbor = (other?: CollectionEntry<"projects">) => other && ({
+  title: other.data.title,
+  date: other.data.date,
+  href: `/projects/${other.id}`,
+});
 ---
 
-<ContentLayout title={`${entry.data.title} | rohanth marem`} description={entry.data.description}>
-  <section class="tbc-hero tbc-fu tbc-d2">
-    <div style="margin-bottom: 16px">
-      <a href="/projects" class="tbc-text-link tbc-label">← Projects</a>
-    </div>
-    <h1 class="tbc-hero-text">{entry.data.title}</h1>
-    <div class="tbc-hero-meta">
-      <span class="tbc-label">{fmtDate(entry.data.date)}</span>
-      {entry.data.tags?.map((tag) => <span class="tbc-label">{tag}</span>)}
-    </div>
-  </section>
-
-  <article class="tbc-section tbc-prose" style="padding-bottom: 80px">
-    <Content components={{ img: ProseImage }} />
-  </article>
-</ContentLayout>
+<Post entry={entry} kind="projects" headings={headings} previous={neighbor(previous)} next={neighbor(next)} hasBody={hasBody} duplicateBodyTitle={duplicateBodyTitle}>
+  {showLeadImage && entry.data.image && <figure class="fig lead-figure">
+    <Image src={entry.data.image} alt={entry.id === "formulanull" ? "Formula Null racecar on a worktable" : `${entry.data.title} project image`} widths={[480, 720, 1080, 1440]} width={Math.min(1440, entry.data.image.width)} sizes="(max-width: 500px) calc(100vw - 40px), (max-width: 1023px) min(640px, 92vw), (max-width: 1100px) 720px, 960px" loading="eager" fetchpriority="high" class="img-outline" style={`object-position: ${entry.data.imagePosition ?? (entry.id === "formulanull" ? "50% 74%" : "center")}`} />
+    <figcaption>{entry.data.title}</figcaption>
+  </figure>}
+  {hasBody && <Content components={{ img: ProseImage, Highlight, Sidenote }} />}
+</Post>

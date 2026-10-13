@@ -1,9 +1,132 @@
 ---
-import SiteLayout from "../layouts/SiteLayout.astro";
+import { getCollection } from "astro:content";
+import { Image } from "astro:assets";
+import Base from "../layouts/Base.astro";
+import CropMarks from "../components/CropMarks.astro";
+import { links } from "../data/site";
+import { fmtDot } from "../lib/format";
+
+const projects = (await getCollection("projects"))
+  .filter((entry) => entry.data.image)
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const hasWriteup = (entry: (typeof projects)[number]) => Boolean(entry.body?.trim());
+const href = (entry: (typeof projects)[number]) => (hasWriteup(entry) ? `/projects/${entry.id}` : entry.data.link || `/projects/${entry.id}`);
 ---
 
-<SiteLayout
-  source="index.html"
-  title="rohanth marem"
-  description="Rohanth's personal site for projects, writing, inspiration, and notes on building."
-/>
+<Base current="home" description="rohanth marem — cs at uwaterloo. i like to sidequest.">
+  <section class="hero" aria-label="about">
+    <h1 data-enter style="--stagger:0">rohanth marem</h1>
+    <p class="tagline" data-enter style="--stagger:1">cs @ uwaterloo — i like to sidequest.</p>
+
+    <ul class="jots" data-enter style="--stagger:3">
+      <li>prev. eng at <span class="org"><svg class="logo" viewBox="0 0 16 16" aria-hidden="true"><path fill="#5533EE" class="phoebe" d="M11.4287 0C13.9533 0 16 2.04668 16 4.57129C16 5.9367 15.4013 7.16235 14.4521 8C15.4013 8.83765 16 10.0633 16 11.4287C16 13.9533 13.9533 16 11.4287 16C10.0633 16 8.83765 15.4013 8 14.4521C7.16235 15.4013 5.9367 16 4.57129 16C2.04668 16 0 13.9533 0 11.4287C0 10.0633 .598733 8.83765 1.54785 8C.598723 7.16235 0 5.93671 0 4.57129C0 2.04667 2.04667 0 4.57129 0C5.93671 0 7.16235 .598723 8 1.54785C8.83765 .598733 10.0633 0 11.4287 0ZM10.4131 3.04785C9.28765 3.04788 8.33326 3.78002 8 4.79395C7.66673 3.78001 6.71237 3.04785 5.58691 3.04785C4.18455 3.04807 3.04798 4.18453 3.04785 5.58691C3.04787 6.71235 3.78003 7.66673 4.79395 8C3.78014 8.33324 3.04802 9.28683 3.04785 10.4121C3.04785 11.8146 4.18447 12.9519 5.58691 12.9521C6.71235 12.9521 7.66672 12.22 8 11.2061C8.33328 12.2199 9.28767 12.9521 10.4131 12.9521C11.8155 12.9519 12.9521 11.8146 12.9521 10.4121C12.952 9.2868 12.2199 8.33321 11.2061 8C12.2201 7.66679 12.9521 6.71242 12.9521 5.58691C12.952 4.18455 11.8154 3.04809 10.4131 3.04785ZM8 6.06934C9.06599 6.06934 9.92969 6.93401 9.92969 8C9.9296 9.06592 9.06594 9.92969 8 9.92969C6.93406 9.92968 6.0704 9.06592 6.07031 8C6.07031 6.93401 6.93401 6.06934 8 6.06934Z"/></svg>phoebe</span> ($9m seed) — built the agent layer for home healthcare scheduling + back-office work; youngest employee</li>
+      <li>prev. swe at <a class="org" href="https://extrian.com" target="_blank" rel="noopener"><svg class="logo" viewBox="0 0 160 106" aria-hidden="true"><path d="M14 62C70 57 110 42 146 18" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round"/><line x1="14" y1="80" x2="146" y2="80" stroke="currentColor" stroke-width="14" stroke-linecap="round"/></svg><span class="u u-in-out">extrian</span></a> — scaled voice data collection platform for 10k users</li>
+      <li>built (and crashed) autonomous drones to predict soil organic carbon content for town/provincial parks, backed by bloomberg philanthropies</li>
+      <li>won <a href="https://hackthenorth.com" target="_blank" rel="noopener"><span class="u u-in-out">@hackthenorth</span></a> by building a mortal kombat replica that coaches you while you fight</li>
+    </ul>
+
+    <p class="reach" data-enter style="--stagger:4">want to <a href={links.email}><span class="u u-in-out">chat</span></a>?</p>
+
+  </section>
+
+  <section class="projects" data-span aria-label="projects" data-enter style="--stagger:5">
+    <div class="phead">
+      <h2 class="plabel">projects</h2>
+      <div class="ctl">
+        <button type="button" data-scroll="-1" aria-label="previous projects"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
+        <button type="button" data-scroll="1" aria-label="next projects"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
+      </div>
+    </div>
+    <ul class="rail" data-rail>
+      {projects.map((project, i) => (
+        <li>
+          <a class="card" href={href(project)} {...(hasWriteup(project) ? {} : { target: "_blank", rel: "noopener" })}>
+            <div class="ph cropmarks img-outline">
+              <Image src={project.data.image!} alt="" widths={[320, 480, 760]} sizes="(max-width: 1023px) 78vw, 380px"
+                loading={i < 3 ? "eager" : "lazy"} fetchpriority={i === 0 ? "high" : undefined} decoding="async" draggable="false"
+                style={project.data.imagePosition ? `object-position: ${project.data.imagePosition}` : undefined} />
+              <CropMarks />
+            </div>
+            <h3>{project.data.title}</h3>
+            <time class="num" datetime={project.data.date.toISOString().slice(0, 10)}>{fmtDot(project.data.date)}</time>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+</Base>
+
+<style>
+  .hero h1 { font: var(--title); }
+  .hero .tagline { margin: 12px 0 0; font: 400 19px/1.45 var(--serif); }
+  .jots { list-style: none; margin: 26px 0 0; padding: 0; max-width: 62ch; }
+  .jots li { position: relative; padding: 7px 0 7px 22px; font: 300 16px/1.6 var(--serif); }
+  .jots li::before { content: ""; position: absolute; left: 2px; top: 1.05em; width: 6px; height: 6px; background: var(--ink-3); transition: background-color var(--dur-fast) var(--ease-out); }
+  .jots li:hover::before { background: var(--accent); }
+  .hero p { margin: 22px 0 0; font: 300 17px/1.7 var(--serif); color: var(--ink); max-width: 62ch; }
+  .hero .reach { color: var(--ink-2); font-size: 15px; }
+  .hero a { color: var(--ink); }
+  .org { white-space: nowrap; font-weight: 400; }
+  .org .logo { display: inline-block; width: 0.95em; height: 0.95em; margin: 0 0.3em 0 0.08em; vertical-align: -0.12em; object-fit: contain; }
+  :global([data-theme="dark"]) .phoebe { fill: #ffffff; }
+
+  /* full-bleed row, after cognition.com: starts at the sidebar's left edge, runs off the right */
+  .projects {
+    --edge-r: calc(var(--page-pad) + max(0px, (100vw - var(--frame-max)) / 2));
+    grid-column: gutter-start / end; position: relative; z-index: 2;
+    margin: 48px calc(-1 * var(--edge-r)) 0 calc(-1 * var(--side-w));
+    padding-top: 28px;
+  }
+  .phead { display: flex; align-items: center; justify-content: space-between; padding-right: var(--edge-r); margin-bottom: 18px; }
+  .plabel { display: flex; align-items: center; gap: 10px; margin: 0; font: 300 15px/1 var(--serif); color: var(--ink-2); }
+  .plabel::before { content: ""; width: 2px; height: 14px; background: var(--rule-strong); }
+  .ctl { display: flex; gap: 6px; }
+  .ctl button { width: 34px; height: 34px; display: grid; place-items: center; box-shadow: inset 0 0 0 1px var(--rule-strong); color: var(--ink); transition: box-shadow var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
+  .ctl button:hover { box-shadow: inset 0 0 0 1px var(--ink); }
+  .ctl button:active { transform: scale(0.94); }
+  .ctl button:disabled { opacity: 0.35; pointer-events: none; }
+  @media (pointer: coarse) { .ctl button { width: 40px; height: 40px; } }
+  .ctl svg { width: 14px; height: 14px; }
+  .rail { list-style: none; margin: 0; padding: 0 var(--edge-r) 6px 0; display: grid; grid-auto-flow: column; grid-auto-columns: clamp(240px, 24vw, 380px); gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
+  .rail::-webkit-scrollbar { display: none; }
+  .rail li { scroll-snap-align: start; }
+  .card { display: block; }
+  .ph { position: relative; aspect-ratio: 16 / 9; background: var(--paper-2); }
+  .ph :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  .ph :global(.cm) { width: 7px; height: 16px; }
+  .card h3 { margin: 14px 12px 0 0; font: 400 16px/1.4 var(--serif); }
+  .card time { display: block; margin-top: 2px; font: 300 15px/1.4 var(--serif); color: var(--ink-3); }
+  @media (max-width: 1023px) {
+    .projects { --edge-r: var(--page-pad); margin-left: 0; grid-column: 1 / -1; }
+    .rail { grid-auto-columns: 78vw; }
+  }
+</style>
+
+<script>
+  const rail = document.querySelector<HTMLElement>("[data-rail]");
+  const [prev, next] = document.querySelectorAll<HTMLButtonElement>("[data-scroll]");
+  if (rail && prev && next) {
+    const sync = () => {
+      const atStart = rail.scrollLeft < 4;
+      const atEnd = rail.scrollLeft + rail.clientWidth > rail.scrollWidth - 4;
+      // a button that just became disabled hands keyboard focus to its partner
+      if (atStart && document.activeElement === prev) next.focus();
+      if (atEnd && document.activeElement === next) prev.focus();
+      prev.disabled = atStart;
+      next.disabled = atEnd;
+    };
+    // one page = as many whole cards as fit (min 1), landing on a snap point
+    const page = () => {
+      const card = rail.firstElementChild as HTMLElement | null;
+      const gap = parseFloat(getComputedStyle(rail).columnGap) || 0;
+      const step = (card?.offsetWidth ?? 340) + gap;
+      return step * Math.max(1, Math.floor((rail.clientWidth + gap) / step));
+    };
+    [prev, next].forEach((b) => b.addEventListener("click", () => {
+      rail.scrollBy({ left: Number(b.dataset.scroll) * page(), behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+    }));
+    rail.addEventListener("scroll", sync, { passive: true });
+    addEventListener("resize", sync);
+    sync();
+  }
+</script>

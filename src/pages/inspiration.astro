@@ -1,9 +1,341 @@
 ---
-import SiteLayout from "../layouts/SiteLayout.astro";
+import Base from "../layouts/Base.astro";
+import InspoArt from "../components/InspoArt.astro";
+import { inspiration, clippings } from "../data/site";
+
+// blue, orange, charcoal, cream, mint — repeating
+const palettes = [2, 0, 4, 1, 3];
+const items = [
+  ...inspiration.people.map((item) => ({ ...item, kind: "person", category: "people", by: "" })),
+  ...inspiration.readings.map((item) => ({ ...item, category: "readings" })),
+  ...inspiration.media.map((item) => ({ ...item, category: "media", by: "" })),
+];
+const pad = (index: number) => String(index + 1).padStart(2, "0");
+const { scripts, notes } = clippings;
+// short lines get set larger, like a pull quote
+const isShort = (note: (typeof notes)[number]) => note.text.join(" ").length + (note.lead?.length ?? 0) < 150;
 ---
 
-<SiteLayout
-  source="inspiration.html"
-  title="inspiration | rohanth marem"
-  description="People, writing, and media that shape how Rohanth thinks."
-/>
+<Base title="inspiration" current="inspiration" description="people, readings and youtube rabbit-holes that rewired how i think.">
+  <section class="page-head hero" aria-labelledby="page-title">
+    <h1 id="page-title" data-enter style="--stagger:1">inspirations</h1>
+    <p data-enter style="--stagger:4">people, readings and youtube rabbit-holes that rewired how i think. pick a card.</p>
+  </section>
+
+  <div class="filters" role="group" aria-label="Filter inspiration" data-enter style="--stagger:5">
+    {(["all", "people", "readings", "media"] as const).map((filter) => (
+      <button type="button" class="filter pressable" data-filter={filter} aria-pressed={filter === "all"}>{filter}</button>
+    ))}
+  </div>
+
+  <section class="table span" aria-label="Inspiration cards">
+    <div class="hand" id="hand" data-span="deep">
+      {items.map((item, index) => (
+        <button
+          type="button"
+          class="card"
+          data-index={index}
+          data-category={item.category}
+          data-palette={palettes[index % palettes.length]}
+          data-why={item.why}
+          aria-label={`${item.name}, ${item.kind}. Open to read why.`}
+        >
+          <span class="number num" aria-hidden="true">{pad(index)}</span>
+          <span class="art" aria-hidden="true"><InspoArt id={item.art} /></span>
+          <span class="body">
+            <span class="kind">{item.kind}</span>
+            <span class="title">{item.name}</span>
+            {item.by && <span class="by">{item.by}</span>}
+          </span>
+        </button>
+      ))}
+    </div>
+    <div class="stack-ui" aria-label="Browse cards">
+      <button type="button" class="pressable" id="prev" aria-label="Previous card">←</button>
+      <button type="button" class="pressable" id="next" aria-label="Next card">→</button>
+    </div>
+  </section>
+
+  <section class="clippings wide" aria-labelledby="clippings-title">
+    <header class="clip-head">
+      <h2 class="clip-title" id="clippings-title">clippings</h2>
+    </header>
+
+    {scripts.map((script) => (
+      <figure class="script">
+        <div class="scraps">
+          {script.fragments.map((fragment, i) => (
+            <div class:list={["scrap", i > 0 && "scrap-next"]}>
+              {fragment.map((line) => <p class={`sl sl-${line.kind}`}>{line.text}</p>)}
+            </div>
+          ))}
+        </div>
+        <figcaption class="script-cap">
+          <span class="cap-film">{script.href ? <a href={script.href} target="_blank" rel="noopener">{script.film}</a> : script.film}{script.year && ` (${script.year})`}</span>
+          <span>{script.credit}</span>
+        </figcaption>
+      </figure>
+    ))}
+
+    <div class="slips">
+      {notes.map((note) => (
+        <figure class:list={["slip", isShort(note) && "slip-short"]}>
+          <blockquote cite={note.href}>
+            {note.text.map((para, i) => (
+              <>
+                {i > 0 && note.elided && <p class="elide" aria-label="lines omitted">[…]</p>}
+                <p>{i === 0 && note.lead && <><b>{note.lead}</b> - </>}{para}</p>
+              </>
+            ))}
+          </blockquote>
+          <figcaption class="slip-cite">
+            — <a href={note.href} target="_blank" rel="noopener">{note.who}</a>{note.source && <span>, {note.source}</span>}
+            {note.via && <span class="via">via <a href={note.via.href} target="_blank" rel="noopener">{note.via.who}</a></span>}
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+  </section>
+
+  <dialog class="sheet" id="sheet" aria-labelledby="sheet-title">
+    <button type="button" class="close pressable fade" id="close" aria-label="Close reading sheet">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" /></svg>
+    </button>
+    <div class="flyer" id="flyer">
+      <div class="face" id="face" aria-hidden="true"></div>
+      <div class="panel">
+        <span class="number num fade swap" id="sheet-num" aria-hidden="true"></span>
+        <span class="kind fade swap" id="sheet-kind"></span>
+        <h2 class="title fade swap" id="sheet-title"></h2>
+        <span class="by fade swap" id="sheet-by"></span>
+      </div>
+    </div>
+    <div class="read" id="sheet-read">
+      <p class="why fade swap" id="sheet-why" tabindex="-1"></p>
+      <div class="sheet-nav fade">
+        <button type="button" class="pressable" id="sheet-prev">← prev</button>
+        <span class="num swap" id="sheet-pos"></span>
+        <button type="button" class="pressable" id="sheet-next">next →</button>
+      </div>
+    </div>
+  </dialog>
+  <script>import "../scripts/inspiration";</script>
+</Base>
+
+<style>
+  :global(html) {
+    --hand-card-w: 250px; --hand-card-h: 372px; --hand-height: 490px;
+    --hand-tint: rgb(0 0 0 / .05); --hand-tint-2: rgb(0 0 0 / .09);
+    --hand-edge: 0 0 0 1px rgb(0 0 0 / .12), 0 -1px 0 rgb(255 255 255 / .35) inset;
+    --hand-shadow: var(--hand-edge), 0 1px 1px rgb(0 0 0 / .14), 2px 3px 4px -2px rgb(0 0 0 / .2), 0 10px 22px -12px rgb(0 0 0 / .26), 0 26px 40px -22px rgb(0 0 0 / .2);
+    --hand-shadow-hover: var(--hand-edge), 0 1px 1px rgb(0 0 0 / .14), 2px 4px 6px -2px rgb(0 0 0 / .22), 0 16px 30px -12px rgb(0 0 0 / .28), 0 44px 70px -26px rgb(0 0 0 / .3);
+    --hand-pool: rgb(0 0 0 / .16); --hand-pool-blur: 12px;
+    --hand-scrim: rgb(246 247 249 / .78);
+    --hand-sheet-shadow: 0 0 0 1px rgb(0 0 0 / .06), 0 8px 24px -8px rgb(0 0 0 / .12), 0 40px 90px -30px rgb(0 0 0 / .35);
+    --hand-p0-bg: #dd4b0c; --hand-p0-fg: #fff6e8;
+    --hand-p1-bg: #f4ecdc; --hand-p1-fg: #4a4335;
+    --hand-p2-bg: #0b7cc0; --hand-p2-fg: #eaf7ff;
+    --hand-p3-bg: #52f29a; --hand-p3-fg: #063d18;
+    --hand-p4-bg: #202020; --hand-p4-fg: #e8e3da;
+  }
+  :global(html[data-theme="dark"]) {
+    --hand-tint: rgb(255 255 255 / .05); --hand-tint-2: rgb(255 255 255 / .1);
+    --hand-edge: 0 0 0 1px rgb(255 255 255 / .12), 0 -1px 0 rgb(255 255 255 / .08) inset;
+    --hand-shadow: var(--hand-edge), 0 1px 0 rgb(255 255 255 / .06) inset, 0 20px 50px -20px rgb(0 0 0 / .8), 0 2px 6px rgb(0 0 0 / .4);
+    --hand-shadow-hover: var(--hand-edge), 0 1px 0 rgb(255 255 255 / .1) inset, 0 40px 70px -24px rgb(0 0 0 / .9), 0 4px 10px rgb(0 0 0 / .4);
+    --hand-pool: rgb(0 0 0 / .55); --hand-pool-blur: 10px;
+    --hand-scrim: rgb(11 14 21 / .72);
+    --hand-sheet-shadow: 0 60px 120px -40px rgb(0 0 0 / .9), 0 0 0 1px rgb(255 255 255 / .06);
+    --hand-p0-bg: #e4510f; --hand-p0-fg: #fff3c4;
+    --hand-p1-bg: #f4ecdc; --hand-p1-fg: #57503f;
+    --hand-p2-bg: #0a8bd0; --hand-p2-fg: #eaf7ff;
+    --hand-p3-bg: #52f29a; --hand-p3-fg: #063d18;
+    --hand-p4-bg: #262626; --hand-p4-fg: #cfcac2;
+  }
+  [data-palette="0"] { --card-bg: var(--hand-p0-bg); --card-fg: var(--hand-p0-fg); }
+  [data-palette="1"] { --card-bg: var(--hand-p1-bg); --card-fg: var(--hand-p1-fg); }
+  [data-palette="2"] { --card-bg: var(--hand-p2-bg); --card-fg: var(--hand-p2-fg); }
+  [data-palette="3"] { --card-bg: var(--hand-p3-bg); --card-fg: var(--hand-p3-fg); }
+  [data-palette="4"] { --card-bg: var(--hand-p4-bg); --card-fg: var(--hand-p4-fg); }
+
+  .hero { padding-top: 0; padding-bottom: 0; }
+  .hero h1 { font: var(--title); }
+  .filters { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: clamp(20px, 3.5vh, 44px); }
+  .filter { min-height: 40px; padding: 12px 14px; font: 500 13px/1 var(--mono); color: var(--ink-2); transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
+  .filter:hover { color: var(--ink); background: var(--hand-tint); }
+  .filter[aria-pressed="true"] { color: var(--ink); background: var(--hand-tint-2); }
+
+  .table { position: relative; margin-top: clamp(12px, 2.5vh, 36px); }
+  .hand { position: relative; height: var(--hand-height); touch-action: pan-y; }
+  .hand::after { content: ""; position: absolute; left: 10%; right: 10%; bottom: -14px; height: 60px; background: radial-gradient(50% 60% at 50% 50%, var(--hand-pool), transparent 70%); filter: blur(var(--hand-pool-blur)); pointer-events: none; transform: scaleX(var(--pool, 1)); transition: transform 620ms cubic-bezier(.22, 1, .36, 1), opacity 600ms var(--ease-out); }
+  :global(html.js) .hand:not(.is-ready)::after { opacity: 0; }
+  /* the card face: shared by the cards in the hand and the one that flies into the sheet */
+  .card, .face { display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; text-align: left; background: var(--card-bg); color: var(--card-fg); }
+  .card { position: absolute; left: 0; top: 0; width: var(--hand-card-w); height: var(--hand-card-h); box-shadow: var(--hand-shadow); transform-origin: 50% 100%; transition: transform 620ms cubic-bezier(.22, 1, .36, 1), opacity 400ms var(--ease-out), background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out); will-change: transform; backface-visibility: hidden; -webkit-tap-highlight-color: transparent; }
+  /* until the script deals them, the cards wait face-down (no-JS keeps them visible) */
+  :global(html.js) .hand:not(.is-ready) .card { visibility: hidden; }
+  .hand.no-anim .card, .card.is-dragging { transition: none; }
+  .card:focus-visible { outline-color: var(--accent); outline-offset: 4px; }
+  .card.is-hidden, .card.is-back { pointer-events: none; }
+  .card.is-source { visibility: hidden; transition: none; }
+  /* phones: while the sheet is up the rest of the stack waits out of sight (nothing shows behind
+     the card as it lifts off), and settles back in once it has landed */
+  .hand.is-reading .card.is-back { opacity: 0 !important; transition: none; }
+  /* the drawing takes the top of the card and gives way to a long title, always keeping a clear
+     gap above the label. The svg covers the box like `slice`, but shrinks rather than crop its
+     lower edge when the box gets short. */
+  .art { position: relative; flex: 0 1 58%; min-height: 0; margin-bottom: auto; overflow: hidden; container-type: size; }
+  .art :global(svg) { position: absolute; top: 0; left: 50%; width: min(max(100cqw, 133.34cqh), 177.78cqh); height: auto; aspect-ratio: 4 / 3; translate: -50% 0; transform-origin: 50% 0; }
+  :is(.card, .face) .body { position: relative; flex: none; padding: 24px 22px 22px; display: flex; flex-direction: column; gap: 10px; }
+  .kind { font: 500 11px/1 var(--mono); letter-spacing: .06em; text-transform: lowercase; opacity: .9; }
+  :is(.card, .face) .title { font: clamp(22px, 1.9vw, 27px)/1.12 var(--serif); letter-spacing: -.01em; }
+  .by { font: 12px/1.3 var(--mono); opacity: .85; }
+  .number { position: absolute; top: 15px; left: 17px; z-index: 1; font: 20px/1 var(--pixel); background: var(--card-bg); padding: 3px 5px; }
+  .stack-ui { display: none; justify-content: center; align-items: center; gap: 10px; margin-top: 18px; font: 13px var(--mono); color: var(--ink-2); }
+  .stack-ui button { width: 44px; height: 44px; display: grid; place-items: center; box-shadow: var(--shadow-border); transition: box-shadow var(--dur-fast), transform var(--dur-fast), background-color var(--dur-fast); }
+  .stack-ui button:hover { box-shadow: var(--shadow-border-hover); background: var(--hand-tint); }
+  .stack-ui button:disabled { opacity: .35; cursor: default; }
+
+  /* reading sheet. The picked card's face (.flyer) flies in and is scaled uniformly to fill the
+     panel, which keeps the card's proportions; the reading side slides in beside it. Only
+     transform and opacity animate. */
+  :global(html:has(#sheet[open])) { overflow: hidden; }
+  .sheet { position: fixed; inset: 0; margin: auto; padding: 0; border: 0; width: min(960px, calc(100% - 48px)); height: min(560px, calc(100% - 48px)); max-width: none; max-height: none; overflow: visible; color: var(--ink); background: transparent; }
+  .sheet::backdrop { background: var(--hand-scrim); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); opacity: 0; transition: opacity 420ms var(--ease-out); }
+  .sheet.is-open::backdrop { opacity: 1; }
+  .sheet.is-instant, .sheet.is-instant * { transition: none !important; }
+  .flyer { position: absolute; left: 0; top: 0; z-index: 1; transform-origin: 0 0; box-shadow: var(--hand-shadow); transition: transform 520ms var(--ease-out-strong); }
+  .face { position: absolute; inset: 0; }
+  .face :global(.fx) { transition: opacity 180ms var(--ease-out) 100ms; }
+  .sheet.is-open .face :global(.fx) { opacity: 0; transition: opacity 110ms var(--ease-out); }
+  /* where the sheet's label would crowd the drawing, the drawing shrinks a touch as it flies in */
+  .face :global(.art svg) { transition: transform 520ms var(--ease-out-strong); }
+  .sheet.is-open .face :global(.art svg) { transform: var(--art-fit, none); }
+  .flyer :global(.ghost) { z-index: 1; transition: opacity 280ms var(--ease-out); }
+  .flyer :global(.ghost.is-gone) { opacity: 0; }
+
+  /* the sheet's own type rides on the flyer, undoing its scale so it's 1:1 at rest */
+  .panel { position: absolute; left: 0; top: 0; z-index: 2; width: var(--panel-w); height: var(--panel-h); transform-origin: 0 0; transform: scale(calc(1 / var(--k, 1))); padding: 28px; display: flex; flex-direction: column; justify-content: flex-end; color: var(--card-fg); pointer-events: none; }
+  .panel .number { top: 21px; left: 23px; font-size: 24px; }
+  .panel .title { font: clamp(26px, 2.6vw, 38px)/1.1 var(--serif); margin-top: 10px; letter-spacing: -.012em; }
+  .panel .by { font-size: 13px; margin-top: 10px; }
+  .panel .by:empty { display: none; }
+
+  /* the reading side: the text scrolls in its own region if it's long, prev / next stay put */
+  .read { position: absolute; z-index: 0; left: var(--panel-w); right: 0; top: 0; bottom: 0; padding: 48px 56px 48px 52px; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); box-shadow: var(--hand-sheet-shadow); opacity: 0; transform: translateX(-28px); transition: opacity 160ms var(--ease-out), transform 480ms var(--ease-out-strong); }
+  .sheet.is-open .read { opacity: 1; transform: none; transition: opacity 280ms var(--ease-out) 130ms, transform 560ms var(--ease-out-strong) 60ms; }
+  .why { flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; font: 300 clamp(18px, 1.5vw, 22px)/1.55 var(--serif); margin: 0; }
+  .why:focus:not(:focus-visible) { outline: none; }
+  .why.is-clipped { -webkit-mask: linear-gradient(#000 calc(100% - 32px), transparent); mask: linear-gradient(#000 calc(100% - 32px), transparent); }
+  .sheet-nav { flex: none; margin-top: auto; display: flex; justify-content: space-between; align-items: center; font: 13px var(--mono); color: var(--ink-3); padding-top: 24px; }
+  .sheet-nav button { padding: 10px 12px; color: var(--ink-2); min-height: 40px; transition: background-color var(--dur-fast), color var(--dur-fast), transform var(--dur-fast); }
+  @media (hover: hover) { .sheet-nav button:hover:not(:disabled) { background: var(--hand-tint); color: var(--ink); } }
+  .sheet-nav button:disabled { opacity: .35; cursor: default; }
+  .close { position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; display: grid; place-items: center; z-index: 4; color: var(--ink-2); background: var(--hand-tint); transition: background-color var(--dur-fast), color var(--dur-fast), transform var(--dur-fast); }
+  .close:hover { background: var(--hand-tint-2); color: var(--ink); }
+  /* the sheet's own type hands over from the card's: out fast when closing, in late when opening */
+  .fade { opacity: 0; transform: translateY(6px); transition: opacity 100ms var(--ease-out), transform 100ms var(--ease-out); }
+  .panel .fade { transform: none; }
+  .sheet.is-open .fade { opacity: 1; transform: none; transition: opacity 320ms var(--ease-out) 220ms, transform 380ms var(--ease-out-strong) 220ms; }
+  .close.fade:active { transform: scale(.97); }
+  /* prev / next inside the sheet: the words dip out, change, and come back */
+  .sheet.is-stepping .swap { transition: opacity 220ms var(--ease-out), transform 260ms var(--ease-out-strong); }
+  .sheet.is-stepping.is-swapping .swap { opacity: 0; transition: opacity 120ms var(--ease-out); }
+
+
+  /* clippings: a commonplace book, text-first, deliberately unlike the cards above */
+  :global(html) { --clip-edge: rgb(17 24 48 / .2); --clip-lift: rgb(17 24 48 / .06); }
+  :global(html[data-theme="dark"]) { --clip-edge: rgb(255 255 255 / .16); --clip-lift: rgb(0 0 0 / .5); }
+  .clippings { display: grid; grid-template-columns: minmax(0, var(--main-w)) minmax(0, 1fr); margin-top: clamp(104px, 15vh, 176px); }
+  .clip-head { grid-column: 1; display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; padding-bottom: 28px; }
+  .clip-title { font: 400 22px/1 var(--pixel); }
+
+  .script { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; margin: 0 0 clamp(48px, 7vw, 72px); }
+  .script:has(+ .script) { margin-bottom: 20px; }
+  .scraps { grid-column: 1; filter: drop-shadow(0 0 .6px var(--clip-edge)) drop-shadow(0 8px 14px var(--clip-lift)); }
+  .scrap {
+    --t: 5px;
+    padding: 40px 8% 44px;
+    background: var(--surface);
+    font: 15px/1.4 "Courier Prime", "Courier New", Courier, var(--mono);
+    color: var(--ink);
+    -webkit-mask: conic-gradient(from -45deg at bottom, #000 90deg, #0000 0) bottom / calc(2 * var(--t)) var(--t) repeat-x, linear-gradient(#000 0 0) top / 100% calc(100% - var(--t) + 1px) no-repeat;
+    mask: conic-gradient(from -45deg at bottom, #000 90deg, #0000 0) bottom / calc(2 * var(--t)) var(--t) repeat-x, linear-gradient(#000 0 0) top / 100% calc(100% - var(--t) + 1px) no-repeat;
+  }
+  .scrap-next {
+    margin: 14px 0 0;
+    padding-top: 40px; padding-bottom: 44px;
+    -webkit-mask: conic-gradient(from 135deg at top, #000 90deg, #0000 0) top / calc(2 * var(--t)) var(--t) repeat-x, conic-gradient(from -45deg at bottom, #000 90deg, #0000 0) bottom / calc(2 * var(--t)) var(--t) repeat-x, linear-gradient(#000 0 0) center / 100% calc(100% - 2 * var(--t) + 2px) no-repeat;
+    mask: conic-gradient(from 135deg at top, #000 90deg, #0000 0) top / calc(2 * var(--t)) var(--t) repeat-x, conic-gradient(from -45deg at bottom, #000 90deg, #0000 0) bottom / calc(2 * var(--t)) var(--t) repeat-x, linear-gradient(#000 0 0) center / 100% calc(100% - 2 * var(--t) + 2px) no-repeat;
+  }
+  .sl { margin: 0; text-wrap: wrap; }
+  .sl-character { margin: 1.4em 0 0 38%; }
+  .sl-character:first-child { margin-top: 0; }
+  .sl-paren { margin-left: 28%; }
+  .sl-dialogue { margin-left: 17%; max-width: 62%; }
+  .script-cap { grid-column: 2; align-self: start; padding: 4px 0 0 24px; display: flex; flex-direction: column; gap: 6px; font: 12px/1.45 var(--mono); color: var(--ink-3); }
+  .cap-film { color: var(--ink-2); }
+
+  /* plain text sections in the reading column, separated by hairlines */
+  .slips { grid-column: 1; }
+  .slip { margin: 0; padding: 32px 0; border-top: 1px solid var(--rule); }
+  .slip:last-child { padding-bottom: 0; }
+  .slip blockquote { margin: 0; }
+  .slip p { margin: 0; font: 300 17px/1.7 var(--serif); }
+  .slip p + p { margin-top: .7em; }
+  .slip b { font-weight: 700; }
+  .slip-short p { font-size: 20px; line-height: 1.45; letter-spacing: -.005em; }
+  .slip .elide { font: 12px/1 var(--mono); color: var(--ink-3); }
+  .slip-cite { margin-top: 18px; font: 12px/1.5 var(--mono); color: var(--ink-3); text-transform: lowercase; }
+  .slip-cite a { color: var(--ink-2); text-decoration: underline; text-decoration-color: var(--rule-strong); text-underline-offset: 3px; transition: color var(--dur-fast), text-decoration-color var(--dur-fast); }
+  .slip-cite a:hover { color: var(--ink); text-decoration-color: currentColor; }
+  .via { display: block; }
+
+  /* narrow desktop: the margin is too thin for the film credits, so they drop under the scraps */
+  @media (min-width: 1024px) and (max-width: 1279px) {
+    .clippings, .script { grid-template-columns: minmax(0, var(--main-w)); }
+    .script-cap { grid-column: 1; padding: 16px 0 0; }
+  }
+  @media (max-width: 1023px) {
+    .clippings, .script { grid-template-columns: minmax(0, 1fr); }
+    .script-cap { grid-column: 1; padding: 16px 0 0; }
+  }
+  @media (max-width: 720px) {
+    .scrap { padding: 30px 18px 34px; font-size: 13.5px; }
+    .scrap-next { margin-left: 0; padding-top: 30px; }
+    .sl-character { margin-left: 30%; }
+    .sl-paren { margin-left: 18%; }
+    .sl-dialogue { margin-left: 8%; max-width: 88%; }
+    .slip { padding: 26px 0; }
+    .slip-short p { font-size: 19px; }
+  }
+
+  @media (min-width: 1101px) and (max-height: 940px) { :global(html) { --hand-card-w: 228px; --hand-card-h: 338px; --hand-height: 455px; } }
+  @media (max-width: 1100px) {
+    /* tablets: smaller cards (the fan flattens itself in the script) so each one shows more of
+       its face and its title */
+    :global(html) { --hand-card-w: clamp(176px, 20.5vw, 210px); --hand-card-h: calc(var(--hand-card-w) * 1.5); --hand-height: calc(var(--hand-card-h) + 114px); }
+    :is(.card, .face) .body { padding: 22px 18px 18px; gap: 8px; }
+    :is(.card, .face) .title { font-size: clamp(19px, 2.2vw, 22px); }
+    .read { padding: 44px 36px 32px 36px; }
+  }
+  @media (max-width: 720px) {
+    :global(html) { --hand-card-w: min(300px, 78vw); --hand-card-h: calc(var(--hand-card-w) * 1.48); --hand-height: calc(var(--hand-card-h) + 70px); }
+    .stack-ui { display: flex; }
+    /* the stack runs to the screen edges and is clipped there, so a dragged or dealt card can
+       never widen the page (mobile browsers zoom out to fit any overflow) */
+    .table { margin-inline: calc(-1 * var(--page-pad)); padding-inline: var(--page-pad); overflow-x: clip; }
+    .card { transform-origin: 50% 50%; }
+    :is(.card, .face) .body { padding: 24px 22px 22px; gap: 10px; }
+    :is(.card, .face) .title { font-size: 26px; }
+    /* phones: the sheet is the whole screen; the card fills the top and the reading side
+       rises from below over its lower half, prev / next pinned to the bottom edge */
+    .sheet { width: 100%; height: 100%; }
+    .panel { padding: 22px; }
+    .read { left: 0; top: var(--panel-h); z-index: 3; padding: 24px 24px 0; box-shadow: none; opacity: 1; transform: translateY(100%); transition: transform 440ms var(--ease-out-strong); }
+    .sheet-nav { padding: 10px 0 max(12px, env(safe-area-inset-bottom)); }
+    .sheet-nav button { min-height: 44px; }
+    .sheet.is-open .read { opacity: 1; transform: none; transition: transform 540ms var(--ease-out-strong) 30ms; }
+    .close { background: color-mix(in srgb, var(--card-bg) 75%, black); color: var(--card-fg); }
+  }
+</style>
