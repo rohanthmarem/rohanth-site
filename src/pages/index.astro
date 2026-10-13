@@ -43,7 +43,7 @@ const href = (entry: (typeof projects)[number]) => (hasWriteup(entry) ? `/projec
           <a class="card" href={href(project)} {...(hasWriteup(project) ? {} : { target: "_blank", rel: "noopener" })}>
             <div class="ph cropmarks img-outline">
               <Image src={project.data.image!} alt="" widths={[320, 480, 760]} sizes="(max-width: 1023px) 78vw, 380px"
-                loading={i < 3 ? "eager" : "lazy"} decoding="async" draggable="false"
+                loading={i < 3 ? "eager" : "lazy"} fetchpriority={i === 0 ? "high" : undefined} decoding="async" draggable="false"
                 style={project.data.imagePosition ? `object-position: ${project.data.imagePosition}` : undefined} />
               <CropMarks />
             </div>
@@ -85,6 +85,7 @@ const href = (entry: (typeof projects)[number]) => (hasWriteup(entry) ? `/projec
   .ctl button:hover { box-shadow: inset 0 0 0 1px var(--ink); }
   .ctl button:active { transform: scale(0.94); }
   .ctl button:disabled { opacity: 0.35; pointer-events: none; }
+  @media (pointer: coarse) { .ctl button { width: 40px; height: 40px; } }
   .ctl svg { width: 14px; height: 14px; }
   .rail { list-style: none; margin: 0; padding: 0 var(--edge-r) 6px 0; display: grid; grid-auto-flow: column; grid-auto-columns: clamp(240px, 24vw, 380px); gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
   .rail::-webkit-scrollbar { display: none; }
@@ -103,17 +104,29 @@ const href = (entry: (typeof projects)[number]) => (hasWriteup(entry) ? `/projec
 
 <script>
   const rail = document.querySelector<HTMLElement>("[data-rail]");
-  const buttons = document.querySelectorAll<HTMLButtonElement>("[data-scroll]");
-  if (rail) {
+  const [prev, next] = document.querySelectorAll<HTMLButtonElement>("[data-scroll]");
+  if (rail && prev && next) {
     const sync = () => {
-      buttons[0].disabled = rail.scrollLeft < 4;
-      buttons[1].disabled = rail.scrollLeft + rail.clientWidth > rail.scrollWidth - 4;
+      const atStart = rail.scrollLeft < 4;
+      const atEnd = rail.scrollLeft + rail.clientWidth > rail.scrollWidth - 4;
+      // a button that just became disabled hands keyboard focus to its partner
+      if (atStart && document.activeElement === prev) next.focus();
+      if (atEnd && document.activeElement === next) prev.focus();
+      prev.disabled = atStart;
+      next.disabled = atEnd;
     };
-    buttons.forEach((b) => b.addEventListener("click", () => {
-      const step = (rail.firstElementChild as HTMLElement)?.offsetWidth ?? 340;
-      rail.scrollBy({ left: Number(b.dataset.scroll) * (step + 2) * 2, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+    // one page = as many whole cards as fit (min 1), landing on a snap point
+    const page = () => {
+      const card = rail.firstElementChild as HTMLElement | null;
+      const gap = parseFloat(getComputedStyle(rail).columnGap) || 0;
+      const step = (card?.offsetWidth ?? 340) + gap;
+      return step * Math.max(1, Math.floor((rail.clientWidth + gap) / step));
+    };
+    [prev, next].forEach((b) => b.addEventListener("click", () => {
+      rail.scrollBy({ left: Number(b.dataset.scroll) * page(), behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
     }));
     rail.addEventListener("scroll", sync, { passive: true });
+    addEventListener("resize", sync);
     sync();
   }
 </script>
