@@ -1,0 +1,87 @@
+---
+import { Image } from "astro:assets";
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import CropMarks from "../../components/CropMarks.astro";
+
+const projects = (await getCollection("projects")).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime() || a.id.localeCompare(b.id),
+);
+const host = (url: string) => new URL(url).hostname.replace(/^www\./, "");
+---
+
+<Base title="projects" current="projects" description="things i've built, crashed, raced and occasionally won with.">
+  <header class="page-head hero">
+    <h1 data-enter style="--stagger:1">projects</h1>
+    <p data-enter style="--stagger:3">things i've <b>built</b>, <b>crashed</b>, <b>raced</b> and occasionally <b>won</b> with. hackathon hardware, drones that predict soil carbon, a discord bot from covid, and a robotics program that raised $30k.</p>
+  </header>
+
+  <div class="grid span" data-enter style="--stagger:5">
+      {projects.map((project, index) => {
+        const { title, description, image, imagePosition, link } = project.data;
+        const projectTags = project.data.tags ?? [];
+        const hasWriteup = Boolean(project.body?.trim()) && !link;
+        const href = hasWriteup ? `/projects/${project.id}` : link ?? `/projects/${project.id}`;
+        return (
+          <a
+            class="card"
+            href={href}
+            target={link ? "_blank" : undefined}
+            rel={link ? "noopener noreferrer" : undefined}
+          >
+            <div class="ph cropmarks img-outline">
+              {image && (
+                <Image
+                  src={image}
+                  alt={title}
+                  class="photo"
+                  width={800}
+                  height={600}
+                  widths={[400, 600, 800, 1200]}
+                  sizes="(max-width: 720px) calc(100vw - 40px), (max-width: 1199px) calc((100vw - 120px) / 2), 420px"
+                  loading={index < 3 ? "eager" : "lazy"}
+                  fetchpriority={index === 0 ? "high" : undefined}
+                  style={`object-position: ${imagePosition ?? "center"}`}
+                />
+              )}
+              {projectTags[0] && <span class="tag">{projectTags[0]}</span>}
+              <span class="plate num">{String(index + 1).padStart(2, "0")}</span>
+              <CropMarks />
+            </div>
+            <h2><span>{title}</span><span class:list={["destination", { writeup: hasWriteup }]}>{hasWriteup ? "write-up →" : `${host(href)} ↗`}</span></h2>
+            <p>{description}</p>
+          </a>
+        );
+      })}
+  </div>
+</Base>
+
+<style>
+  .hero { padding-top: 0; padding-bottom: 24px; border-bottom: 1px solid var(--rule); }
+  .hero h1 { font: var(--title); }
+  .hero b { color: var(--ink); font-weight: 400; }
+
+  .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px 24px; margin-top: 40px; }
+  .card { display: block; min-width: 0; transition: transform 520ms var(--ease-out-strong); }
+  .card[hidden] { display: none; }
+  .card:active { scale: .985; }
+  .ph { position: relative; aspect-ratio: 4/3; overflow: hidden; background: var(--paper-2); isolation: isolate; }
+  .photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scale(1.04); transition: filter 520ms var(--ease-out), transform 900ms var(--ease-out-strong); }
+  .tag { position: absolute; z-index: 3; left: 12px; top: 12px; font: 500 10px/1 var(--mono); letter-spacing: .06em; text-transform: lowercase; color: var(--ink); background: color-mix(in oklab, var(--paper) 85%, transparent); padding: 6px 7px; transition: opacity 320ms var(--ease-out), transform 320ms var(--ease-out-strong); }
+  .plate { position: absolute; z-index: 3; right: 12px; top: 10px; font: 22px/1 var(--pixel); color: var(--ink); transition: opacity 320ms var(--ease-out); }
+  .ph :global(.cm) { z-index: 4; }
+  .card:is(:hover, :focus-visible) .photo { transform: scale(1); }
+  .card:is(:hover, :focus-visible) .plate { opacity: 0; }
+  .card:is(:hover, :focus-visible) .tag { opacity: 0; transform: translateY(-4px); }
+
+  .card h2 { font: 300 22px/1.3 var(--serif); margin-top: 16px; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .destination { font: 13px/1 var(--mono); color: var(--ink-3); flex: none; transition: color var(--dur-fast) var(--ease-out), transform 320ms var(--ease-out-strong); }
+  .card:is(:hover, :focus-visible) .destination { color: var(--accent); transform: translate(2px, -2px); }
+  .card:is(:hover, :focus-visible) .destination.writeup { transform: translateX(3px); }
+  .card p { margin: 10px 0 0; font-size: 15px; color: var(--ink-2); line-height: 1.55; }
+
+  @media (max-width: 1199px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 720px) {
+    .grid { grid-template-columns: 1fr; gap: 36px; margin-top: 28px; }
+  }
+</style>

@@ -1,0 +1,14 @@
+---
+// MDX: <Highlight dir="rtl" color="accent">text</Highlight>. Markdown: ==text==.
+interface Props {
+  dir?: "ltr" | "rtl" | "ttb" | "btt";
+  color?: string; // "accent" or any CSS colour
+  style?: "fill" | "marker";
+  trigger?: "inView" | "hover" | "auto";
+  delay?: number;
+}
+const { dir, color, style, trigger, delay } = Astro.props;
+const named = color === "accent";
+const css = [!named && color ? `--hl-color:${color}` : "", delay ? `--hl-delay:${delay}ms` : ""].filter(Boolean).join(";");
+---
+<mark class="hl" data-dir={dir} data-color={named ? "accent" : undefined} data-style={style === "marker" ? "marker" : undefined} data-trigger={trigger} style={css || undefined}><slot /></mark>

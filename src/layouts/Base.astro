@@ -1,0 +1,78 @@
+---
+import Analytics from "@vercel/analytics/astro";
+import Sidebar from "../components/Sidebar.astro";
+import Footer from "../components/Footer.astro";
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  current?: string;
+  image?: string;
+}
+
+const {
+  title,
+  description = "Rohanth Marem — cs @ uwaterloo. Projects, writing, inspiration and sidequests.",
+  current,
+  image,
+} = Astro.props;
+const fullTitle = title ? `${title} | rohanth marem` : "rohanth marem";
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = image ? new URL(image, Astro.site).href : undefined;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content={ogImage ? "summary_large_image" : "summary"} />
+    <meta name="theme-color" content="#f6f7f9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b0e15" media="(prefers-color-scheme: dark)" />
+    <link rel="preload" href="/fonts/geist-pixel-square.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/merriweather-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/ioskeley-mono-regular.woff2" as="font" type="font/woff2" crossorigin />
+    <script is:inline>
+      // Theme + accent before first paint: saved choice, else the OS preference.
+      (function () {
+        var d = document.documentElement;
+        d.classList.add("js");
+        try {
+          var t = localStorage.getItem("theme");
+          if (t === "dark" || (!t && matchMedia("(prefers-color-scheme: dark)").matches)) d.dataset.theme = "dark";
+          var h = localStorage.getItem("accent-h");
+          if (h) d.style.setProperty("--accent", d.dataset.theme === "dark" ? "oklch(0.72 0.17 " + h + ")" : "oklch(0.5 0.24 " + h + ")");
+        } catch (e) {}
+      })();
+    </script>
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip sr-only" href="#main">skip to content</a>
+    <div class="frame">
+      <div class="lines" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <Sidebar current={current}><slot name="sidebar" /></Sidebar>
+      <main id="main" class="content">
+        <slot />
+      </main>
+    </div>
+    <Footer />
+    <Analytics />
+    <script>
+      import "../scripts/site";
+    </script>
+  </body>
+</html>
+
+<style>
+  .skip:focus { position: fixed; left: 12px; top: 12px; width: auto; height: auto; clip: auto; padding: 8px 12px; background: var(--surface); box-shadow: var(--shadow-border); font: 13px var(--mono); z-index: 100; }
+</style>

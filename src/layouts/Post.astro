@@ -1,0 +1,213 @@
+---
+import type { CollectionEntry } from "astro:content";
+import Base from "./Base.astro";
+import WritingArt from "../components/WritingArt.astro";
+import { fmtDot, readingTime, wordCount } from "../lib/format";
+
+type Kind = "projects" | "writing";
+type PostEntry = CollectionEntry<"projects"> | CollectionEntry<"writings">;
+type Neighbor = { title: string; date: Date; href: string };
+interface Props {
+  entry: PostEntry;
+  kind: Kind;
+  headings: { depth: number; slug: string; text: string }[];
+  previous?: Neighbor;
+  next?: Neighbor;
+  hasBody?: boolean;
+  duplicateBodyTitle?: boolean;
+}
+
+const { entry, kind, headings, previous, next, hasBody = true, duplicateBodyTitle = false } = Astro.props;
+const date = fmtDot(entry.data.date);
+const minutes = readingTime(entry.body);
+const words = wordCount(entry.body);
+const tags = entry.data.tags ?? [];
+const sections = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+const hasToc = sections.some((heading) => heading.depth === 2);
+const link = kind === "projects" && "link" in entry.data ? entry.data.link : undefined;
+const sectionHref = (heading: (typeof sections)[number]) => `#${heading.slug}`;
+---
+
+<Base title={entry.data.title} description={entry.data.description} current={kind}>
+  <Fragment slot="sidebar">
+    {(hasToc || hasBody || link) && <nav class="post-sidebar" aria-label="Post details">
+      {hasToc && <>
+        <div class="toc-label">contents</div>
+        <ol class="toc-list">
+          {sections.map((heading) => <li class:list={[heading.depth === 3 && "toc-sub"]}>
+            <a href={sectionHref(heading)} data-heading={heading.slug}>{heading.text}</a>
+          </li>)}
+        </ol>
+      </>}
+      <div class="stats">
+        {hasBody && <><span>words <b class="num">{words.toLocaleString("en-US")}</b></span><span>read <b class="num">{minutes} min</b></span></>}
+        <span>posted <b class="num">{date}</b></span>
+        {tags.length > 0 && <span>tags <b>{tags.join(", ")}</b></span>}
+      </div>
+      {link && <a class="external" href={link} target="_blank" rel="noopener noreferrer"><span class="u u-in-out">visit project ↗</span></a>}
+    </nav>}
+  </Fragment>
+  <div class:list={["post", kind === "writing" ? "post-writing" : "post-project", duplicateBodyTitle && "duplicate-body-title"]}>
+    <div class="progress" aria-hidden="true"><i></i></div>
+    <header class="mast page-head">
+      <div class="eyebrow" data-enter style="--stagger:0">
+        {kind === "writing" && <WritingArt id={entry.id} class="eyebrow-cover" />}
+        <b>{kind === "writing" ? "writing" : "project"}</b>
+        {tags.length > 0 && <span>{tags.join(" · ")}</span>}
+      </div>
+      <h1 data-enter style="--stagger:1">{entry.data.title}</h1>
+      <p class="deck" data-enter style="--stagger:2">{entry.data.description}</p>
+      <div class="byline" data-enter style="--stagger:3">
+        <span>By Rohanth Marem</span><span class="dot" aria-hidden="true">·</span>
+        <time class="num" datetime={entry.data.date.toISOString().slice(0, 10)}>{date}</time>
+        {hasBody && <><span class="dot" aria-hidden="true">·</span><span class="num">{minutes} min read</span></>}
+      </div>
+    </header>
+
+    <article class="post-content" aria-label={entry.data.title}>
+      {hasToc && <details class="toc-mobile">
+        <summary>contents</summary>
+        <ol>{sections.map((heading) => <li class:list={[heading.depth === 3 && "toc-sub"]}>
+          <a href={sectionHref(heading)}>{heading.text}</a>
+        </li>)}</ol>
+      </details>}
+      <div class="prose"><slot /></div>
+      {link && <p class="project-link"><a href={link} target="_blank" rel="noopener noreferrer" class="pressable">visit project <span aria-hidden="true">↗</span></a></p>}
+      <div class="endmark num">{date} · {entry.data.title} · rohanth.com</div>
+      {(previous || next) && <nav class="more" aria-label={`More ${kind}`}>
+        {previous && <a href={previous.href} class="previous pressable"><span class="more-label">← newer</span><span class="more-title">{previous.title}</span><time class="more-date num" datetime={previous.date.toISOString().slice(0, 10)}>{fmtDot(previous.date)}</time></a>}
+        {next && <a href={next.href} class="next pressable"><span class="more-label">older →</span><span class="more-title">{next.title}</span><time class="more-date num" datetime={next.date.toISOString().slice(0, 10)}>{fmtDot(next.date)}</time></a>}
+      </nav>}
+    </article>
+  </div>
+</Base>
+
+<script>import "../scripts/post";</script>
+
+<style is:global>
+  .post .prose :is(h2, h3, h4), .post-sidebar .toc-list a, .post .toc-mobile a { text-transform: lowercase; }
+  .post { display: contents; }
+  .post .progress { position: fixed; inset: 0 0 auto; height: 2px; z-index: 50; pointer-events: none; }
+  .post .progress i { display: block; height: 100%; background: var(--accent); transform: scaleX(0); transform-origin: left; }
+  .post > .mast { grid-column: main; min-width: 0; }
+  .post > .post-content { grid-column: main-start / end; min-width: 0; }
+  .post .mast { padding: 0 0 34px; border-bottom: 1px solid var(--rule-strong); }
+  .post .eyebrow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-bottom: 22px; font: 500 12px/1.5 var(--mono); color: var(--ink-3); text-transform: lowercase; letter-spacing: .06em; }
+  .post .eyebrow b { color: var(--accent); font-weight: 500; }
+  .post .eyebrow-cover { width: 36px; height: 24px; overflow: hidden; color: var(--accent); background: var(--paper-2); }
+  .post .eyebrow-cover svg { width: 100%; height: 100%; }
+  .post .eyebrow-cover svg * { vector-effect: non-scaling-stroke; stroke-width: .75px; }
+  .post .mast h1 { font: var(--title); letter-spacing: 0; overflow-wrap: anywhere; }
+  .post-writing .mast h1 { font: 400 clamp(24px, 2.2vw, 30px)/1.3 var(--serif); letter-spacing: -.01em; }
+  .post .deck { max-width: 40ch; margin: 18px 0 0; color: var(--ink-2); font: 300 clamp(17px, 1.6vw, 20px)/1.45 var(--serif); }
+  .post .byline { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 24px; color: var(--ink-2); font: 13px/1.35 var(--mono); }
+  .post .byline .dot { color: var(--ink-3); }
+  .post .post-content { padding-top: 40px; container-type: inline-size; }
+  .post-sidebar { font: 12px/1.5 var(--mono); color: var(--ink-2); }
+  .post-sidebar .toc-label { margin-bottom: 12px; font: 500 11px/1 var(--mono); color: var(--ink-3); text-transform: lowercase; letter-spacing: .06em; }
+  .post-sidebar .toc-list, .post .toc-mobile ol { list-style: none; margin: 0; padding: 0; }
+  .post-sidebar .toc-list { border-left: 1px solid var(--rule-strong); }
+  .post-sidebar .toc-list a { display: block; padding: 7px 4px 7px 12px; border-left: 2px solid transparent; margin-left: -1px; transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out); }
+  .post-sidebar .toc-list a:hover, .post-sidebar .toc-list a:focus-visible, .post-sidebar .toc-list a.is-active { color: var(--ink); }
+  .post-sidebar .toc-list a.is-active { border-left-color: var(--accent); }
+  .post-sidebar .toc-sub a { padding-left: 24px; font-size: 11px; }
+  .post-sidebar .stats { display: grid; gap: 4px; margin-top: 24px; padding-top: 14px; border-top: 1px solid var(--rule); font-size: 11px; color: var(--ink-3); }
+  .post-sidebar .stats span { display: flex; justify-content: space-between; gap: 8px; }
+  .post-sidebar .stats b { font-weight: 500; color: var(--ink-2); text-align: right; }
+  .post-sidebar .external { display: inline-flex; align-items: center; min-height: 40px; margin-top: 12px; color: var(--accent); font-size: 12px; }
+  .post .toc-mobile { display: none; }
+  .post .prose { width: min(var(--main-w), 100%); min-width: 0; font: 300 17.5px/1.72 var(--serif); }
+  .post-writing .prose { font-size: 20px; }
+  .post .prose p, .post .prose ul, .post .prose ol { margin: 0 0 1.35em; }
+  .post .prose > :first-child { margin-top: 0; }
+  .post .prose p:has(> strong:only-child):first-child { font-size: 1.12em; line-height: 1.55; }
+  .post .prose a { color: var(--accent); text-decoration: underline; text-decoration-color: color-mix(in oklab, var(--accent) 38%, transparent); text-underline-offset: .16em; transition: text-decoration-color var(--dur-fast) var(--ease-out); overflow-wrap: anywhere; }
+  .post .prose a:hover { text-decoration-color: var(--accent); }
+  .post .prose ul { padding-left: 1.3em; }
+  .post .prose li { padding-left: .2em; margin: .3em 0; }
+  .post .prose ul li::marker { color: var(--accent); }
+  .post .prose ol { padding-left: 1.5em; }
+  .post .prose ol:has(> li:nth-child(10)) { padding-left: 2.1em; }
+  .post .prose ol li::marker { color: var(--accent); font: 500 .75em var(--mono); }
+  .post .prose h1 { font: 300 italic clamp(20px, 2.2vw, 26px)/1.45 var(--serif); color: var(--ink-2); margin: 0 0 1.4em; letter-spacing: 0; }
+  .post.duplicate-body-title .prose > h1:first-child { display: none; }
+  .post .prose h2 { position: relative; margin: 56px 0 18px; font: 400 clamp(21px, 2vw, 24px)/1.3 var(--serif); letter-spacing: -.01em; scroll-margin-top: 44px; }
+  .post-writing .prose h2 { font: 500 12px/1.4 var(--mono); text-transform: lowercase; letter-spacing: .06em; color: var(--ink-3); }
+  .post .prose h3 { position: relative; margin: 38px 0 14px; font: 400 19px/1.4 var(--serif); scroll-margin-top: 44px; }
+  .post .prose h2:first-child, .post .prose h3:first-child { margin-top: 0; }
+  .post .prose .heading-anchor { position: absolute; left: -42px; top: 50%; display: grid; place-items: center; width: 40px; height: 40px; transform: translateY(-50%); font: 500 13px/1 var(--mono); text-decoration: none; opacity: .35; transition: opacity var(--dur-fast) var(--ease-out); }
+  .post .prose :is(h2,h3):hover .heading-anchor, .post .prose .heading-anchor:focus-visible { opacity: 1; }
+  .post .prose .heading-anchor .toast { position: absolute; bottom: calc(100% + 2px); left: 50%; transform: translate(-50%, 5px); padding: 7px 9px; white-space: nowrap; background: var(--ink); color: var(--paper); font: 500 11px/1 var(--mono); opacity: 0; pointer-events: none; transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
+  .post .prose .heading-anchor .toast.is-on { opacity: 1; transform: translate(-50%, 0); }
+  .post .prose blockquote { margin: 32px 0; padding-left: 20px; border-left: 2px solid var(--accent); font: 300 clamp(20px, 2vw, 24px)/1.45 var(--serif); }
+  .post .prose blockquote p { margin: 0; }
+  .post .prose hr { border: 0; margin: 44px 0; text-align: center; }
+  .post .prose hr::after { content: "· · ·"; color: var(--ink-3); font: 14px/1 var(--mono); letter-spacing: .4em; }
+  .post .prose del, .post .prose s { text-decoration-color: var(--ink-2); text-decoration-thickness: 1.5px; }
+  .post .prose :not(pre) > code { padding: .12em .3em; background: var(--paper-2); font: .8em/1.3 var(--mono); }
+  .post .prose pre { margin: 32px 0; padding: 18px 20px; overflow-x: auto; background: var(--paper-2); font: 13px/1.7 var(--mono); }
+  .post .prose .astro-code, .post .prose .astro-code span { color: var(--shiki-light); background-color: var(--paper-2) !important; }
+  [data-theme="dark"] .post .prose .astro-code, [data-theme="dark"] .post .prose .astro-code span { color: var(--shiki-dark) !important; }
+  .post .prose table { display: block; width: 100%; margin: 32px 0; border-collapse: collapse; overflow-x: auto; font: 13px/1.5 var(--mono); }
+  .post .prose th, .post .prose td { padding: 9px 16px 9px 0; border-top: 1px solid var(--rule); text-align: left; white-space: nowrap; }
+  .post .prose th { color: var(--ink-3); font-weight: 500; }
+  .post .prose figure.fig { width: 100cqw; margin: 36px 0; }
+  .post .prose > figure.fig:first-child { margin-top: 0; }
+  .post .prose figure.fig img { width: 100%; height: auto; background: var(--paper-2); }
+  .post .prose figure.lead-figure img { aspect-ratio: 16 / 9; height: auto; object-fit: cover; }
+  .js .post .prose figure.fig img:not([data-dither]) { filter: grayscale(1) contrast(1.25); transition: filter 900ms var(--ease-out); }
+  .js .post .prose figure.fig.is-in img:not([data-dither]) { filter: none; }
+  .post .prose figure.fig figcaption { margin-top: 10px; color: var(--ink-2); font: 12px/1.5 var(--mono); }
+  .post .prose aside.sidenote { float: right; clear: right; width: calc(100cqw - var(--main-w) - 24px); margin: 0 calc(var(--main-w) - 100cqw) 18px 18px; padding-left: 14px; border-left: 1px solid var(--rule-strong); color: var(--ink-2); font: 300 14px/1.55 var(--serif); }
+  .post .prose aside.sidenote::before { content: "note"; display: block; margin-bottom: 6px; color: var(--accent); font: 500 11px/1 var(--mono); }
+  .post .prose aside.sidenote p { margin: 0; }
+  .post-writing .prose > p:has(> a:only-child[href*="x.com/rohanthmarem/status/"]) { float: right; width: calc(100cqw - var(--main-w) - 24px); margin: 0 calc(var(--main-w) - 100cqw) 18px 18px; padding: 12px 14px; background: var(--surface); box-shadow: var(--shadow-border); font: 12px/1.6 var(--mono); overflow-wrap: anywhere; }
+  .post-writing .prose > p:has(> a:only-child[href*="x.com/rohanthmarem/status/"])::before { content: "the tweet ↗"; display: block; margin-bottom: 8px; color: var(--ink-3); font: 500 11px/1 var(--mono); }
+  .post .prose h2[id="references"] { padding-top: 24px; border-top: 1px solid var(--rule); font: 500 12px/1 var(--mono); text-transform: lowercase; letter-spacing: .06em; color: var(--ink-3); }
+  .post .prose h2[id="references"] + ol { list-style: none; padding: 0; counter-reset: reference; }
+  .post .prose h2[id="references"] + ol li { display: grid; grid-template-columns: 2.5em 1fr; counter-increment: reference; padding: 0; font-size: 15px; }
+  .post .prose h2[id="references"] + ol li::before { content: "[" counter(reference) "]"; color: var(--accent); font: 500 12px/1.9 var(--mono); }
+  .post .project-link { width: min(var(--main-w), 100%); margin: 40px 0 0; }
+  .post .project-link a { display: inline-flex; gap: 20px; align-items: center; justify-content: space-between; min-height: 44px; padding: 11px 16px; background: var(--accent); color: var(--accent-ink); font: 500 13px/1 var(--mono); }
+  .post .endmark { display: flex; align-items: center; gap: 14px; width: min(var(--main-w), 100%); margin: 56px 0 0; color: var(--ink-3); font: 12px/1.3 var(--mono); text-align: center; }
+  .post .endmark::before, .post .endmark::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
+  .post .more { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; width: min(var(--main-w), 100%); margin-top: 40px; }
+  .post .more a { display: block; min-height: 100px; padding: 16px 18px; background: var(--surface); box-shadow: var(--shadow-border); transition: box-shadow var(--dur) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
+  .post .more a:hover { box-shadow: var(--shadow-border-hover); }
+  .post .more .next { grid-column: 2; text-align: right; }
+  .post .more span, .post .more time { display: block; }
+  .post .more-label { color: var(--ink-3); font: 500 11px/1 var(--mono); text-transform: lowercase; letter-spacing: .06em; }
+  .post .more-title { margin-top: 8px; font: 400 18px/1.3 var(--serif); }
+  .post .more-date { margin-top: 10px; color: var(--ink-3); font: 12px/1 var(--mono); }
+  @media (min-width: 1024px) and (max-width: 1259px) {
+    .frame:has(.post) { --main-w: clamp(440px, calc(100vw - 584px), 640px); }
+  }
+  @media (max-width: 1023px) {
+    .post .prose figure.fig { width: 100%; }
+    .post .prose aside.sidenote { float: none; clear: none; width: auto; margin: 10px 0 24px; padding: 12px 14px; border-left: 0; background: var(--surface); box-shadow: var(--shadow-border); }
+    .post-writing .prose > p:has(> a:only-child[href*="x.com/rohanthmarem/status/"]) { float: none; width: auto; margin: 0 0 24px; }
+    .post .eyebrow .eyebrow-cover { display: none; }
+    .post .deck { max-width: none; }
+    .post .toc-mobile { display: block; margin-bottom: 28px; color: var(--ink-2); font: 13px/1.6 var(--mono); }
+    .post .toc-mobile summary { display: flex; gap: 10px; align-items: center; min-height: 40px; list-style: none; cursor: pointer; color: var(--ink-3); font: 500 11px/1 var(--mono); text-transform: lowercase; letter-spacing: .06em; }
+    .post .toc-mobile summary::-webkit-details-marker { display: none; }
+    .post .toc-mobile summary::after { content: "+"; color: var(--accent); font-size: 14px; }
+    .post .toc-mobile[open] summary::after { content: "−"; }
+    .post .toc-mobile li a { display: flex; align-items: center; min-height: 40px; }
+    .post .toc-mobile .toc-sub { padding-left: 14px; }
+    .post .prose :is(h2,h3) { padding-right: 40px; }
+    .post .prose .heading-anchor { left: auto; right: 0; }
+    .post .prose .heading-anchor .toast { left: auto; right: 0; transform: translateY(5px); }
+    .post .prose .heading-anchor .toast.is-on { transform: translateY(0); }
+  }
+  @media (max-width: 640px) {
+    .post .more { grid-template-columns: 1fr; }
+    .post .more .next { grid-column: 1; text-align: left; }
+  }
+  @media (max-width: 480px) {
+    .post .byline { gap: 6px 14px; }
+    .post .byline .dot { display: none; }
+    .post .prose, .post-writing .prose { font-size: 18px; }
+    .post .endmark { font-size: 11px; }
+  }
+</style>

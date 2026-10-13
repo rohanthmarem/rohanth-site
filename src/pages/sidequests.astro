@@ -1,39 +1,200 @@
 ---
-import ContentLayout from "../layouts/ContentLayout.astro";
+import { Image } from "astro:assets";
+import Base from "../layouts/Base.astro";
+import { links } from "../data/site";
+import runStart from "../assets/sidequests/run-start.webp";
+import runRace from "../assets/sidequests/run-race.webp";
+import bikeTrail from "../assets/sidequests/bike-trail.webp";
+import foodKatsu from "../assets/sidequests/food-katsu.webp";
+import foodIndian from "../assets/sidequests/food-indian.webp";
+import foodBrunch from "../assets/sidequests/food-brunch.webp";
+import foodDinner from "../assets/sidequests/food-dinner.webp";
+import foodUdon from "../assets/sidequests/food-udon.webp";
+import photoDumbo from "../assets/sidequests/photo-dumbo.webp";
+import photoWindow from "../assets/sidequests/photo-window.webp";
+import photoConcert from "../assets/sidequests/photo-concert.webp";
+import photoSf from "../assets/sidequests/photo-sf.webp";
+import wingsFilm from "../assets/sidequests/wings-film.webp";
+import wingsBww from "../assets/sidequests/wings-bww.webp";
+import karateReady from "../assets/sidequests/karate-ready.webp";
+import karateJump from "../assets/sidequests/karate-jump.webp";
+
+// strip images: `w` is a relative column width (≈ display height × aspect ratio), so the row
+// keeps mixed heights without cropping and scales with the page.
+const food = [
+  { src: foodKatsu, alt: "Overhead view of a table of katsu plates, chopsticks and orange slices", cap: "katsu", w: 26 },
+  { src: foodIndian, alt: "An indian dinner spread with naan, curries and rice, a friend making peace signs behind it", cap: "indian", w: 35 },
+  { src: foodBrunch, alt: "A brunch table with egg bowls, roast potatoes and glasses of juice", cap: "brunch", w: 29 },
+  { src: foodDinner, alt: "A group of friends eating dinner around a long restaurant table", cap: "group dinner", w: 38 },
+  { src: foodUdon, alt: "A tray with udon and a plate of japanese curry rice at a busy counter", cap: "udon + curry", w: 32 },
+];
+const photos = [
+  { src: photoDumbo, alt: "The Manhattan Bridge framed between brick buildings on a crowded street in Dumbo", cap: "dumbo", w: 33 },
+  { src: photoWindow, alt: "The New York skyline at dusk, seen through a car window", cap: "nyc, through the window", w: 40 },
+  { src: photoConcert, alt: "An arena concert from the upper seats, the stage lit orange", cap: "concert", w: 28 },
+  { src: photoSf, alt: "Three friends sitting arm in arm on a San Francisco street, looking out at the skyline", cap: "sf", w: 34 },
+];
 ---
 
-<ContentLayout title="sidequests | rohanth marem" description="Side quests, random projects, and things Rohanth does for fun.">
-  <section class="tbc-hero tbc-fu tbc-d2">
-    <h1 class="tbc-hero-text">sidequests</h1>
-    <p class="tbc-about-intro" style="margin-top: 12px">
-      things i do for fun, or just because.
-    </p>
+<Base
+  title="sidequests"
+  description="things i do for fun, or just because — running, food, photos, airport wings and karate."
+  current="sidequests"
+>
+  <header class="page-head sidequests-head">
+    <h1>sidequests</h1>
+    <p>things i do for fun, or just because. lately that means running further than i should, eating things i've never tried, and shooting film i can't really afford. plus airport wings, and a decade of karate.</p>
+  </header>
+
+  <section class="entry first" aria-labelledby="running-title">
+    <h2 id="running-title">speedrunning a quarter-life crisis</h2>
+    <p>i have ran (edit: <a href={links.strava2} target="_blank" rel="noopener noreferrer">two</a>) <a href={links.strava} target="_blank" rel="noopener noreferrer">half-marathons</a> and now i have an unreasonably ambitious desire to become an ironman by 21.</p>
   </section>
 
-  <section class="tbc-section tbc-fu tbc-d4" style="padding-top: 28px; padding-bottom: 64px">
-    <div class="tbc-about-copy">
-      <ul class="tbc-about-list">
-        <li>
-          <span class="tbc-sidequest-title">speedrunning a quarter-life crisis</span>
-          {" — "}recently ran a{" "}
-          <a href="https://www.strava.com/activities/18363105986" target="_blank" rel="noopener" class="tbc-about-tag tbc-tag-b">half marathon</a>
-          {" "}and have this unreasonably ambitous desire to become ironman by the time i'm 20.
-        </li>
-        <li>
-          <span class="tbc-sidequest-title">living to eat instead of eating to live</span>
-          {" — "}i've always been whatever the opposite of a picky eater is and was satisfied with whatever slop i could make. trying to get out of this habit by trying new foods (check my{" "}
-          <a href="https://beliapp.co/app/rohanth" target="_blank" rel="noopener" class="tbc-about-tag tbc-tag-b">beli</a>
-          {") and cooking real food"}
-        </li>
-        <li>
-          <span class="tbc-sidequest-title">taking more photos</span>
-          {" — "}i don't take enough photos and its a terrible problem, so been trying to take more. dabbling with film, and i love it but its soo expensive
-        </li>
-        <li>
-          <span class="tbc-sidequest-title">buffalo wild wings</span>
-          {" — "}trying wings at every airport buffalo wild wings in the usa (currently done: MSP, DFW, ATL). my order is always the wings with blazin' sauce
-        </li>
-      </ul>
-    </div>
+  <figure class="wide feature">
+    <Image src={runStart} alt="Runners crossing under the Oakville 21.1 start / finish arch" widths={[640, 960, 1280]} sizes="(max-width: 1023px) 100vw, 640px" loading="eager" decoding="async" />
+    <figcaption>oakville 21.1</figcaption>
+  </figure>
+
+  <div class="wide duo run-duo">
+    <figure>
+      <Image src={runRace} alt="Runners in black mid-race on a tree-lined street during a half marathon" widths={[480, 720, 960, 1280]} sizes="(max-width: 640px) 100vw, (max-width: 1023px) 66vw, 680px" loading="lazy" decoding="async" />
+      <figcaption>mid-race</figcaption>
+    </figure>
+    <figure>
+      <Image src={bikeTrail} alt="View over a road bike's handlebars down a paved forest trail" widths={[320, 480, 720]} sizes="(max-width: 640px) 100vw, (max-width: 1023px) 33vw, 340px" loading="lazy" decoding="async" />
+      <figcaption>on the bike</figcaption>
+    </figure>
+  </div>
+
+  <section class="entry" aria-labelledby="food-title">
+    <h2 id="food-title">living to eat instead of eating to live</h2>
+    <p>i've always been the opposite of a picky eater, satisfied with whatever slop i could make. now i'm <a href={links.beli} target="_blank" rel="noopener noreferrer">trying new foods</a> and cooking real food.</p>
   </section>
-</ContentLayout>
+
+  <div class="span strip food-strip" style={`--cols: ${food.map((f) => `${f.w}fr`).join(" ")}`}>
+    {food.map((f) => (
+      <figure>
+        <Image src={f.src} alt={f.alt} widths={[320, 480, 720]} sizes="(max-width: 1023px) 60vw, 360px" loading="lazy" decoding="async" />
+        <figcaption>{f.cap}</figcaption>
+      </figure>
+    ))}
+  </div>
+
+  <section class="entry" aria-labelledby="karate-title">
+    <h2 id="karate-title">karate</h2>
+    <p>i've trained karate for 10+ years, and i'm currently a 2nd degree black belt.</p>
+  </section>
+
+  <div class="wide karate-set">
+    <div class="karate-pair">
+      <Image src={karateReady} alt="Rohanth in a white gi and blue belt standing ready at a national tournament, a Canada banner behind him" widths={[320, 480, 640]} sizes="(max-width: 1023px) 50vw, 314px" loading="lazy" decoding="async" />
+      <Image src={karateJump} alt="Rohanth mid-air during a jumping kata at a tournament, judges seated behind him" widths={[320, 480, 640]} sizes="(max-width: 1023px) 50vw, 314px" loading="lazy" decoding="async" />
+    </div>
+    <p class="karate-cap">nationals 2026<br />10+ years, 2nd degree black belt.</p>
+  </div>
+
+  <section class="entry" aria-labelledby="photos-title">
+    <h2 id="photos-title">taking more photos</h2>
+    <p>i don't take enough photos. i've been dabbling with film and i love it, but it's so expensive.</p>
+  </section>
+
+  <div class="span strip photo-strip" style={`--cols: ${photos.map((p) => `${p.w}fr`).join(" ")}`}>
+    {photos.map((p) => (
+      <figure>
+        <Image src={p.src} alt={p.alt} widths={[320, 480, 720, 960]} sizes="(max-width: 1023px) 70vw, 420px" loading="lazy" decoding="async" />
+        <figcaption>{p.cap}</figcaption>
+      </figure>
+    ))}
+  </div>
+
+  <section class="entry" aria-labelledby="wings-title">
+    <h2 id="wings-title">buffalo wild wings</h2>
+    <p>i'm trying wings at every airport buffalo wild wings in the usa. so far: MSP, DFW, and ATL. always the wings with blazin' sauce.</p>
+  </section>
+
+  <div class="wide wings-set">
+    <figure>
+      <Image src={wingsFilm} alt="Film photo of Rohanth biting into a wing at the DFW airport Buffalo Wild Wings" widths={[640, 960, 1280]} sizes="(max-width: 1023px) 100vw, 640px" loading="lazy" decoding="async" />
+      <figcaption>DFW, on film</figcaption>
+    </figure>
+    <figure>
+      <Image src={wingsBww} alt="Rohanth at the MSP airport Buffalo Wild Wings behind a basket of wings with ranch" widths={[320, 480, 720]} sizes="(max-width: 640px) 70vw, (max-width: 1023px) 50vw, 280px" loading="lazy" decoding="async" />
+      <figcaption>MSP</figcaption>
+    </figure>
+  </div>
+</Base>
+
+<style>
+  .sidequests-head { padding-top: 0; padding-bottom: 0; }
+  .sidequests-head p { max-width: 44ch; margin-top: 24px; }
+
+  .entry { margin-top: clamp(48px, 5vw, 72px); }
+  .entry.first { margin-top: clamp(56px, 6vw, 88px); }
+  .entry h2 { font: 400 clamp(20px, 2vw, 22px)/1.45 var(--serif); letter-spacing: -0.012em; }
+  .entry p { max-width: 58ch; margin: 13px 0 0; color: var(--ink-2); font: 300 16px/1.85 var(--serif); }
+  .entry a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--ink-3); text-underline-offset: 4px; transition: color var(--dur-fast) var(--ease-out), text-decoration-color var(--dur-fast) var(--ease-out); }
+  .entry a:hover { color: var(--accent); text-decoration-color: var(--accent); }
+
+  figure { margin: 0; }
+  figure :global(img), .karate-pair :global(img) { display: block; width: 100%; height: auto; background: var(--paper-2); }
+  figcaption, .karate-cap { color: var(--ink-3); font: 11px/1.55 var(--mono); }
+  figcaption { margin-top: 9px; }
+
+  /* image in the reading column, caption in the right margin */
+  .feature { display: grid; grid-template-columns: minmax(0, var(--main-w)) minmax(0, 1fr); align-items: start; margin-top: clamp(34px, 4vw, 52px); }
+  .feature figcaption { margin: 0; padding: 2px 24px 0; font-size: 12px; }
+
+  /* landscape + portrait at one height: columns proportional to aspect ratio */
+  .duo { display: grid; gap: 14px; align-items: start; margin-top: 14px; }
+  .run-duo { grid-template-columns: 1.5fr 0.75fr; }
+  .run-duo figure:first-child :global(img) { aspect-ratio: 3 / 2; object-fit: cover; }
+  .run-duo figure:last-child :global(img) { aspect-ratio: 3 / 4; object-fit: cover; object-position: 50% 70%; }
+
+  /* full-width rows, mixed heights */
+  .strip { display: grid; grid-template-columns: var(--cols); gap: 14px; margin-top: clamp(44px, 5vw, 64px); }
+  .food-strip { align-items: end; }
+  .photo-strip { align-items: start; gap: 18px; }
+  .photo-strip figure:nth-child(2) { margin-top: 72px; }
+  .photo-strip figure:nth-child(3) { margin-top: 28px; }
+  .photo-strip figure:nth-child(4) { margin-top: 40px; }
+
+  /* landscape film shot in the column, the bww portrait in the margin */
+  .wings-set { display: grid; grid-template-columns: minmax(0, var(--main-w)) minmax(220px, 1fr); align-items: start; margin-top: clamp(34px, 4vw, 52px); }
+  .wings-set figure:last-child { padding-left: 24px; max-width: 304px; margin-top: 96px; }
+
+  .karate-set { display: grid; grid-template-columns: minmax(0, var(--main-w)) minmax(0, 1fr); align-items: end; margin-top: clamp(34px, 4vw, 52px); }
+  .karate-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .karate-pair :global(img) { aspect-ratio: 3 / 4; object-fit: cover; }
+  .karate-pair :global(img:last-child) { object-position: 50% 0%; }
+  .karate-cap { margin: 0; padding: 0 24px 0; font-size: 12px; }
+
+  /* narrow desktop: the margin is too thin for captions, so they drop under the images */
+  @media (min-width: 1024px) and (max-width: 1279px) {
+    .feature, .karate-set { grid-template-columns: minmax(0, var(--main-w)); }
+    .feature figcaption, .karate-cap { padding: 9px 0 0; font-size: 11px; }
+  }
+  @media (max-width: 1023px) {
+    .feature, .wings-set, .karate-set { grid-template-columns: minmax(0, 1fr); }
+    .feature figcaption, .karate-cap { padding: 9px 0 0; }
+    .wings-set figure:last-child { padding-left: 0; margin: 28px 0 0 auto; width: 60%; max-width: none; }
+    /* strips become horizontal scrollers at a shared height */
+    .strip { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin-right: calc(-1 * var(--page-pad)); padding-right: var(--page-pad); }
+    .strip::-webkit-scrollbar { display: none; }
+    .strip figure { flex: none; scroll-snap-align: start; margin-top: 0 !important; }
+    .strip :global(img) { height: 300px; width: auto; }
+  }
+  @media (max-width: 640px) {
+    .sidequests-head p { margin-top: 18px; }
+    .entry { margin-top: 44px; }
+    .entry.first { margin-top: 52px; }
+    .entry p { font-size: 15px; line-height: 1.8; }
+    .feature, .wings-set, .karate-set { margin-top: 28px; }
+    .duo { gap: 10px; margin-top: 10px; }
+    .run-duo { grid-template-columns: 1.5fr 0.75fr; }
+    .strip { margin-top: 32px; }
+    .strip :global(img) { height: 240px; }
+    .karate-pair { gap: 8px; }
+    figcaption { font-size: 10px; margin-top: 7px; }
+  }
+</style>

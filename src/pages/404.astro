@@ -1,0 +1,24 @@
+---
+import Base from "../layouts/Base.astro";
+---
+
+<Base title="not found">
+  <section class="page-head missing">
+    <h1 data-enter>404</h1>
+    <p data-enter style="--stagger:1">looks like this page wandered off.</p>
+    <nav aria-label="Other pages" data-enter style="--stagger:2">
+      <a href="/"><span class="u u-in-out">home</span> ↗</a>
+      <a href="/projects"><span class="u u-in-out">projects</span> ↗</a>
+      <a href="/writing"><span class="u u-in-out">writing</span> ↗</a>
+    </nav>
+  </section>
+</Base>
+
+<style>
+  .missing { min-height: min(500px, 60vh); padding-top: 0; }
+  .missing h1 { font: var(--title); }
+  p { margin: 24px 0 28px; color: var(--ink-2); font: 300 clamp(18px, 2vw, 22px)/1.5 var(--serif); }
+  nav { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+  a { min-height: 40px; display: inline-flex; align-items: center; gap: 3px; font: 500 13px/1 var(--mono); color: var(--ink); transition: color var(--dur-fast) var(--ease-out); }
+  a:hover { color: var(--accent); }
+</style>
