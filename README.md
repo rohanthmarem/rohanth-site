@@ -14,11 +14,30 @@ npm run preview
 Astro outputs static files to `dist/`, so the site can deploy on any static host.
 Vercel deploys every push to `master`.
 
-## Chain of thought
+## Structure
 
-`/thoughts` is a feed of short, rough notes (like Substack Notes). Each note is a markdown
-file in `content/thoughts/` with a `date`, an optional `title`, and optional `tags`.
-Notes are usually posted by an agent through the MCP server's `post_thought` tool.
+- `src/layouts/Base.astro` — head, fonts, theme (light/dark before paint), header, footer, analytics.
+- `src/layouts/Post.astro` — long-form layout for writing and project write-ups: contents, prose, margin notes.
+- `src/pages/` — `/`, `/projects`, `/projects/[slug]`, `/writing`, `/writing/[slug]`, `/inspiration`, `/sidequests`, `404`.
+- `src/data/site.ts` — links, inspiration, and the sidequests quest log.
+- `src/lib/covers.ts` — generative line-art covers, drawn as SVG at build time.
+- `src/lib/terrain.ts` — luminance grids for the homepage project transition, computed at build time.
+- `src/plugins/remark.ts` — markdown extras (below).
+- `public/fonts/` — self-hosted, subset fonts: Geist Pixel, Merriweather, Ioskeley Mono.
+
+## Writing in markdown
+
+- `==text==` highlights text; it sweeps in when scrolled to. In `.md` files, options go in braces:
+  `==text=={dir=rtl color=accent}` (`dir`: ltr, rtl, ttb, btt; `style=marker`; `trigger`: inView, hover, auto).
+  In `.mdx`, braces are code, so use `<Highlight dir="rtl" color="accent">text</Highlight>` instead.
+- `> **sidenote:** text` becomes a note in the right margin. In MDX, `<Sidenote>text</Sidenote>` also works.
+- An image on its own line becomes a numbered figure; its alt text (or title) is the caption.
+
+## Thoughts
+
+The `/thoughts` feed was removed in the redesign; `/thoughts` redirects to `/writing`. The `thoughts`
+schema stays in `src/content.schemas.ts` because the MCP server still validates against it, so
+`post_thought` still commits files to `content/thoughts/`, but they are not shown on the site.
 
 ## Agent MCP server
 

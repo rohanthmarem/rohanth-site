@@ -1,0 +1,74 @@
+---
+import { execSync } from "node:child_process";
+import { links } from "../data/site";
+import { fmtDot } from "../lib/format";
+
+// "last updated" comes from the latest commit at build time.
+let updated = fmtDot(new Date());
+let commitUrl = links.repo;
+try {
+  const [hash, iso] = execSync("git log -1 --format=%H%n%cI").toString().trim().split("\n");
+  updated = fmtDot(new Date(iso.slice(0, 10)));
+  commitUrl = `${links.repo}/commit/${hash}`;
+} catch {}
+
+const external = (href: string) => /^https?:/.test(href);
+const cols = [
+  { title: "contact", items: [["GitHub", links.github], ["X [Twitter]", links.x], ["Substack", links.substack], [links.emailText, links.email]] },
+  { title: "site", items: [["Projects", "/projects"], ["Writing", "/writing"], ["Inspiration", "/inspiration"], ["Sidequests", "/sidequests"]] },
+  { title: "offline", items: [["Beli", links.beli], ["Strava", links.strava]] },
+];
+const mark = "rohanth marem".split("");
+---
+<footer class="site-footer">
+  <div class="foot-wrap">
+    <div class="mark" aria-hidden="true">{mark.map((ch) => <span>{ch === " " ? " " : ch}</span>)}</div>
+    <div class="frow">
+      <div class="meta">
+        <p>© {new Date().getFullYear()} rohanth marem. all rights reserved.</p>
+        <p><a href={commitUrl} target="_blank" rel="noopener" class="num"><span class="u u-in-out">last updated {updated}</span></a></p>
+        <p class="toggles">
+          <button type="button" data-theme-toggle aria-label="Toggle dark mode"><span class="u u-in-out" data-theme-label>dark</span></button>
+          <button type="button" data-accent-shuffle aria-label="Shuffle the accent colour" title="shuffle the accent">✦</button>
+        </p>
+      </div>
+      {cols.map((col, ci) => (
+        <div>
+          <h2>{col.title}</h2>
+          <ul>
+            {col.items.map(([label, href]) => (
+              <li>
+                <a href={href} {...(external(href) ? { target: "_blank", rel: "noopener" } : {})} data-scramble-in data-scramble-delay={ci * 120}>{label}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer { position: relative; z-index: 1; background: var(--paper); border-top: 1px solid var(--rule); padding: 48px 0 clamp(48px, 8vw, 96px); }
+  .foot-wrap { max-width: var(--frame-max); margin: 0 auto; padding: 0 var(--page-pad); }
+  .mark { font: clamp(40px, 8vw, 112px)/0.95 var(--pixel); letter-spacing: -0.01em; margin: 0 0 36px; white-space: nowrap; }
+  .mark span { display: inline-block; transition: color var(--dur-fast) var(--ease-out); }
+  .mark:hover span:nth-child(odd) { color: var(--accent); }
+  .frow { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; gap: 28px; }
+  h2 { font: 500 11px/1 var(--mono); letter-spacing: 0.06em; text-transform: lowercase; color: var(--ink-3); margin: 0 0 12px; }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  ul a { font: 13px/1.6 var(--mono); color: var(--ink-2); display: inline-block; padding: 4px 0; transition: color var(--dur-fast) var(--ease-out); }
+  ul a:hover { color: var(--ink); }
+  .meta p { font: 12px/1.7 var(--mono); color: var(--ink-3); margin: 0; }
+  .meta a { transition: color var(--dur-fast) var(--ease-out); }
+  .meta a:hover { color: var(--ink); }
+  .toggles { display: flex; gap: 14px; align-items: center; margin-top: 10px !important; }
+  .toggles button { font: 12px/1 var(--mono); color: var(--ink-3); min-height: 32px; transition: color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
+  .toggles button:hover { color: var(--ink); }
+  .toggles button:active { transform: scale(0.94); }
+  [data-accent-shuffle] { color: var(--accent) !important; font-size: 14px !important; }
+  @media (max-width: 720px) {
+    .frow { grid-template-columns: 1fr 1fr; gap: 28px 20px; }
+    .meta { grid-column: 1 / -1; }
+  }
+</style>
