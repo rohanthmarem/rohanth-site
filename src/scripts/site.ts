@@ -121,6 +121,16 @@ function applyAccent() {
   if (h) root.style.setProperty("--accent", accentFor(Number(h)));
   else root.style.removeProperty("--accent");
 }
+// With no saved choice the theme follows the OS, live (e.g. scheduled dark mode at sunset).
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+  let saved: string | null = null;
+  try { saved = localStorage.getItem("theme"); } catch {}
+  if (saved) return;
+  if (e.matches) root.dataset.theme = "dark"; else delete root.dataset.theme;
+  applyAccent();
+  syncThemeLabel();
+  document.dispatchEvent(new CustomEvent("theme-change"));
+});
 document.querySelectorAll("[data-accent-shuffle]").forEach((b) =>
   b.addEventListener("click", (e) => {
     try {
