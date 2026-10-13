@@ -7,11 +7,11 @@
    interruptible transitions, blur-in entrances, reduced motion.
    ───────────────────────────────────────────────────────────── */
 
-@font-face { font-family: "Geist Pixel"; src: url("/fonts/geist-pixel-square.woff2") format("woff2"); font-display: swap; }
-@font-face { font-family: "Merriweather"; src: url("/fonts/merriweather-latin.woff2") format("woff2"); font-weight: 300 600; font-style: normal; font-display: swap; }
-@font-face { font-family: "Merriweather"; src: url("/fonts/merriweather-italic-latin.woff2") format("woff2"); font-weight: 300 600; font-style: italic; font-display: swap; }
-@font-face { font-family: "Ioskeley Mono"; src: url("/fonts/ioskeley-mono-regular.woff2") format("woff2"); font-weight: 400; font-display: swap; }
-@font-face { font-family: "Ioskeley Mono"; src: url("/fonts/ioskeley-mono-medium.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Geist Pixel"; src: url("/fonts/geist-pixel-square.77844bda.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Merriweather"; src: url("/fonts/merriweather-latin.6b615f68.woff2") format("woff2"); font-weight: 300 600; font-style: normal; font-display: swap; }
+@font-face { font-family: "Merriweather"; src: url("/fonts/merriweather-italic-latin.c7f43a37.woff2") format("woff2"); font-weight: 300 600; font-style: italic; font-display: swap; }
+@font-face { font-family: "Ioskeley Mono"; src: url("/fonts/ioskeley-mono-regular.d2433ea3.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Ioskeley Mono"; src: url("/fonts/ioskeley-mono-medium.f2ebc565.woff2") format("woff2"); font-weight: 500; font-display: swap; }
 
 :root {
   color-scheme: light;
