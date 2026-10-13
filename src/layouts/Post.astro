@@ -109,7 +109,9 @@ const sectionHref = (heading: (typeof sections)[number]) => `#${heading.slug}`;
   .post-sidebar .toc-list { border-left: 1px solid var(--rule-strong); }
   .post-sidebar .toc-list a { display: block; padding: 7px 4px 7px 12px; border-left: 2px solid transparent; margin-left: -1px; transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out); }
   .post-sidebar .toc-list a:hover, .post-sidebar .toc-list a:focus-visible, .post-sidebar .toc-list a.is-active { color: var(--ink); }
-  .post-sidebar .toc-list a.is-active { border-left-color: var(--accent); }
+  .post-sidebar .toc-list { position: relative; }
+  .post-sidebar .toc-marker { position: absolute; left: -1px; top: 0; width: 2px; height: 0; background: var(--accent); pointer-events: none; }
+  .post-sidebar .toc-list.has-marker .toc-marker { transition: transform 420ms var(--ease-out-strong), height 420ms var(--ease-out-strong); }
   .post-sidebar .toc-sub a { padding-left: 24px; font-size: 11px; }
   .post-sidebar .stats { display: grid; gap: 4px; margin-top: 24px; padding-top: 14px; border-top: 1px solid var(--rule); font-size: 11px; color: var(--ink-3); }
   .post-sidebar .stats span { display: flex; justify-content: space-between; gap: 8px; }
@@ -157,6 +159,11 @@ const sectionHref = (heading: (typeof sections)[number]) => `#${heading.slug}`;
   .post .prose figure.lead-figure img { aspect-ratio: 16 / 9; height: auto; object-fit: cover; }
   .js .post .prose figure.fig img:not([data-dither]) { filter: grayscale(1) contrast(1.25); transition: filter 900ms var(--ease-out); }
   .js .post .prose figure.fig.is-in img:not([data-dither]) { filter: none; }
+  .post .prose figure.fig[hidden] { display: none; }
+  .post .prose .dith-frame { overflow: hidden; background: var(--paper-2); }
+  .post .prose .dith-frame:not(.is-ready) > img { opacity: 0; }
+  .post .prose .dith-frame > .dith { right: auto; bottom: auto; }
+  .post .prose :is(h2, h3):focus { outline: none; }
   .post .prose figure.fig figcaption { margin-top: 10px; color: var(--ink-2); font: 12px/1.5 var(--mono); }
   .post .prose aside.sidenote { float: right; clear: right; width: calc(100cqw - var(--main-w) - 24px); margin: 0 calc(var(--main-w) - 100cqw) 18px 18px; padding-left: 14px; border-left: 1px solid var(--rule-strong); color: var(--ink-2); font: 300 14px/1.55 var(--serif); }
   .post .prose aside.sidenote::before { content: "note"; display: block; margin-bottom: 6px; color: var(--accent); font: 500 11px/1 var(--mono); }
