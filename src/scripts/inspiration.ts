@@ -11,7 +11,6 @@ const next = el<HTMLButtonElement>("#next");
 const sheet = el<HTMLDialogElement>("#sheet");
 const flyer = el<HTMLElement>("#flyer");
 const face = el<HTMLElement>("#face");
-const read = el<HTMLElement>("#sheet-read");
 const sheetNum = el<HTMLElement>("#sheet-num");
 const sheetKind = el<HTMLElement>("#sheet-kind");
 const sheetTitle = el<HTMLElement>("#sheet-title");
@@ -58,12 +57,21 @@ function layout(stagger = false) {
   const { width, cardW, cardH } = geo;
   const n = visible.length;
   const mid = (n - 1) / 2;
-  const spread = Math.min(4, 32 / Math.max(1, n));
-  // keep the outer cards' rotated corners (plus the hover nudge) inside the hand
-  const edge = (spread * mid * Math.PI) / 180;
-  const margin = cardH * Math.sin(edge) - (cardW / 2) * (1 - Math.cos(edge)) + (n > 1 ? 14 : 0);
-  const span = n > 1 ? Math.max(0, Math.min(width - cardW - 2 * margin, n * cardW * 0.56)) : 0;
+  const fullSpread = Math.min(4, 32 / Math.max(1, n));
+  // On narrower screens the fan flattens (down to half its angle) until each card shows at
+  // least a third of its face: less tilt means the outer cards need less room.
+  let spread = fullSpread;
+  let span = 0;
+  for (;;) {
+    // keep the outer cards' rotated corners (plus the hover nudge) inside the hand
+    const edge = (spread * mid * Math.PI) / 180;
+    const margin = cardH * Math.sin(edge) - (cardW / 2) * (1 - Math.cos(edge)) + (n > 1 ? 14 : 0);
+    span = n > 1 ? Math.max(0, Math.min(width - cardW - 2 * margin, n * cardW * 0.56)) : 0;
+    if (n < 2 || span / (n - 1) >= cardW * 0.34 || spread <= fullSpread * 0.5) break;
+    spread = Math.max(fullSpread * 0.5, spread - 0.1);
+  }
   const step = n > 1 ? span / (n - 1) : 0;
+  const arc = spread / fullSpread;
   const x0 = (width - cardW - span) / 2;
   const phone = mobile.matches;
 
@@ -75,7 +83,7 @@ function layout(stagger = false) {
   visible.forEach((id, index) => {
     const card = cards[id];
     const distance = index - mid;
-    const pose: Pose = { tx: x0 + index * step, ty: Math.pow(Math.abs(distance), 1.7) * 7 + 30, rot: distance * spread, sc: 1 };
+    const pose: Pose = { tx: x0 + index * step, ty: Math.pow(Math.abs(distance), 1.7) * 7 * arc + 30, rot: distance * spread, sc: 1 };
     let z = index + 1;
     let opacity = 1;
 
@@ -279,18 +287,25 @@ function fillFace(id: number) {
   }));
 }
 
+function fillPanel(id: number) {
+  const card = cards[id];
+  sheetKind.textContent = card.querySelector(".kind")!.textContent;
+  sheetTitle.textContent = card.querySelector(".title")!.textContent;
+  sheetBy.textContent = card.querySelector(".by")?.textContent || "";
+}
+
 function fillText(id: number) {
   const card = cards[id];
   const index = visible.indexOf(id);
   sheet.dataset.palette = card.dataset.palette;
   sheetNum.textContent = card.querySelector(".number")!.textContent;
-  sheetKind.textContent = card.querySelector(".kind")!.textContent;
-  sheetTitle.textContent = card.querySelector(".title")!.textContent;
-  sheetBy.textContent = card.querySelector(".by")?.textContent || "";
+  fillPanel(id);
   sheetWhy.textContent = card.dataset.why || "";
+  sheetWhy.scrollTop = 0;
   sheetPos.textContent = `${index + 1} / ${visible.length}`;
   sheetPrev.disabled = index === 0;
   sheetNext.disabled = index === visible.length - 1;
+  if (sheet.open) updateClip();
 }
 
 // size the panel to the card's proportions and remember the scale that fills it
@@ -301,9 +316,10 @@ function fitSheet() {
   const { cardW, cardH } = geo;
   let k: number, panelW: number, panelH: number;
   if (mobile.matches) {
+    // the card takes the top (less of it on short screens), the reading side the rest
     k = w / cardW;
     panelW = w;
-    panelH = Math.round(Math.min(h * 0.5, Math.max(h * 0.44, cardH * k * 0.6)));
+    panelH = Math.round(Math.min(h * 0.5, Math.max(h * 0.42, cardH * k * 0.6)));
   } else {
     // the panel is the card at full sheet height, unless that would crowd the reading side;
     // then the card is narrower and the sheet gets shorter to match it
@@ -318,8 +334,38 @@ function fitSheet() {
   sheet.style.setProperty("--panel-h", `${panelH}px`);
   flyer.style.width = `${cardW}px`;
   flyer.style.height = `${cardH}px`;
+  sheetK = k;
   return k;
 }
+
+// The sheet sets its label larger than the card's (and, on phones, over a shorter panel), so it
+// can reach down into the drawing. Work out how far the drawing must shrink, about its top, to
+// keep a clear gap above the label. `text` lays out another card's words to measure them first.
+let sheetK = 1;
+const ART_GAP = 24;
+function fitArt(id: number, text = false) {
+  const svg = cards[id].querySelector<SVGSVGElement>(".art svg")!;
+  const art = svg.parentElement!;
+  const box = svg.getBBox();
+  const inkBottom = art.offsetTop + Math.min(art.offsetHeight, (parseFloat(getComputedStyle(svg).width) / 400) * (box.y + box.height));
+  let labelTop: number;
+  if (text) {
+    const was = [sheetKind.textContent, sheetTitle.textContent, sheetBy.textContent];
+    fillPanel(id);
+    labelTop = sheetKind.offsetTop;
+    [sheetKind.textContent, sheetTitle.textContent, sheetBy.textContent] = was;
+  } else labelTop = sheetKind.offsetTop;
+  const fit = Math.max(0.5, Math.min(1, (labelTop - ART_GAP) / (sheetK * inkBottom)));
+  face.style.setProperty("--art-fit", fit < 0.995 ? `scale(${fit.toFixed(3)})` : "none");
+}
+
+// long reading text scrolls in its own region; a soft edge shows there's more below
+function updateClip() {
+  const more = sheetWhy.scrollHeight - sheetWhy.clientHeight - sheetWhy.scrollTop > 2;
+  sheetWhy.classList.toggle("is-clipped", more);
+  sheetWhy.tabIndex = sheetWhy.scrollHeight > sheetWhy.clientHeight + 2 ? 0 : -1;
+}
+sheetWhy.addEventListener("scroll", updateClip, { passive: true });
 
 // A transform that puts the (unscaled) flyer exactly over the card: where it is right now
 // (`live`, its computed transform, for take-off) or where it's headed in the hand (for landing).
@@ -380,19 +426,22 @@ function openSheet(id: number, keyboard: boolean) {
   pointerInHand = false;
   lastViewport = `${innerWidth}x${innerHeight}`;
   endStep();
+  hand.classList.add("is-reading");
   liftInHand(id);
   cards[id].classList.add("is-source");
   fillFace(id);
   fillText(id);
   sheet.showModal();
   const k = fitSheet();
+  fitArt(id);
+  updateClip();
   flyer.style.transition = "none";
   flyer.style.transform = reduceMotion.matches ? atRest(k) : onCard(id, live);
   void flyer.offsetWidth;
   flyer.style.transition = "";
   sheet.classList.add("is-open");
   flyer.style.transform = atRest(k);
-  (keyboard ? closeButton : read).focus({ preventScroll: true });
+  (keyboard ? closeButton : sheetWhy).focus({ preventScroll: true });
 }
 
 function finishClose() {
@@ -400,6 +449,7 @@ function finishClose() {
   state = "closed";
   sheet.close();
   sheet.classList.remove("is-open");
+  hand.classList.remove("is-reading");
   flyer.style.transform = "";
   if (openId < 0) return;
   const card = cards[openId];
@@ -414,6 +464,8 @@ function finishClose() {
 function closeSheet() {
   if (state !== "open") return;
   state = "closing";
+  // no focus ring flashing up on the reading text as Escape closes the sheet
+  if (document.activeElement === sheetWhy) sheetWhy.blur();
   endStep();
   sheet.classList.remove("is-open");
   if (reduceMotion.matches) { finishClose(); return; }
@@ -444,6 +496,7 @@ function stepSheet(direction: number) {
   ghost.dataset.palette = flyer.dataset.palette;
   flyer.append(ghost);
   fillFace(openId);
+  fitArt(openId, true);
   void ghost.offsetWidth;
   ghost.classList.add("is-gone");
   setTimeout(() => ghost.remove(), 400);
@@ -497,6 +550,8 @@ function onResize() {
     liftInHand(openId);
     sheet.classList.add("is-instant");
     flyer.style.transform = atRest(fitSheet());
+    fitArt(openId);
+    updateClip();
     void flyer.offsetWidth;
     sheet.classList.remove("is-instant");
   });
