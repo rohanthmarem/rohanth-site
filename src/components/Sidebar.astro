@@ -151,9 +151,15 @@ const items = [
       state = "covered";
     };
 
-    const update = () => {
-      const vel = scrollY - lastY;
+    // velocity comes from scroll events only: a layout update mid-scroll (lazy images resizing the
+    // body) must not read as "stopped" and unpark the menu for a frame
+    let vel = 0;
+    const onScroll = () => {
+      vel = scrollY - lastY;
       lastY = scrollY;
+      update();
+    };
+    const update = () => {
       if (!wide.matches) { if (state !== "follow") toFollow(0); return; }
       const sideTop = side.getBoundingClientRect().top + scrollY;
       const h = inner.offsetHeight;
@@ -197,7 +203,7 @@ const items = [
       else toCovered(); // deep inside a section (jump, resize, anchor): hide until clear
     };
 
-    addEventListener("scroll", update, { passive: true });
+    addEventListener("scroll", onScroll, { passive: true });
     addEventListener("resize", update);
     new ResizeObserver(update).observe(document.body);
     update();
