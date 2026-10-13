@@ -1,5 +1,51 @@
 # Changelog
 
+## Round 2 improvements — 2026-10-12
+
+Four agents (Opus) in parallel worktrees, merged and re-verified: a full regression sweep (18 pages ×
+5 widths × 2 themes, production build) found no issues beyond the known TensorForest images, and
+Lighthouse stayed level (desktop 100 everywhere; mobile 94–99, sidequests desktop page weight
+529 → 403 KB).
+
+### Sharing & caching
+- Every page has its own share image (1200×630): project photos for project pages, the editorial
+  cover for writing posts, the card fan for inspiration, photo rows for projects and sidequests, its
+  own card for 404 — on the site's paper with column lines, pixel title and mono label. Regenerate with
+  `node scripts/og.mjs` after adding a project or post.
+- The homepage shares just your photo, at full quality (the 460px source of the favicon).
+- New crisp favicons from that photo (ico 16/32/48, apple-touch, 192/512, manifest).
+- Fonts have content-hashed names and are cached for a year (`node scripts/hash-fonts.mjs` after
+  changing a font).
+- Viewport allows safe-area insets on notched phones.
+
+### Writing & posts
+- Writing list: the cursor preview sits above (or below) the hovered row and never covers its title;
+  thumbnails download at the right size for phones and desktop.
+- Tall portrait photos in posts fit on screen (~82% of the window height), dither still aligned.
+- Margin notes line up with the paragraph they belong to (markdown sidenotes, MDX `<Sidenote>`, and the
+  tweet card); consecutive notes stack; inline under their paragraph below 1024px.
+- Writing post headings: section heading > sub-heading > body, consistently.
+
+### Inspiration
+- Phone reading sheet fits the screen at 360–390px: prev/next pinned to the bottom (home-bar aware),
+  long text scrolls inside with a fade, close always reachable.
+- The card drawing always keeps ≥ 24px clear of the "person"/kind label, on cards and in the sheet.
+- Calmer fan at tablet widths (768–1100): smaller cards and tilt, more of each card visible.
+- Phones: nothing flashes behind a card while it opens or closes.
+
+### Sidequests & sidebar
+- Phone photo strips are sharp on 3× screens; desktop strip downloads are smaller.
+- Photo strips are keyboard-scrollable (Tab to focus, arrow keys) with a focus ring.
+- Sidebar: no overlap with full-width sections even on extremely fast scrolls — 90 wheel-scroll runs
+  (6 pages × 3 viewports × 5 speeds up to 480px/frame, down and up): zero overlap, never hidden while
+  there's room.
+
+### Still open
+- TensorForest images need the originals (left as is, by choice).
+- Keyboard scrolling of the sidequests strips verified in Chromium; worth a quick check in Safari/Firefox.
+- At 768 the 9-card fan is still dense by nature; fully readable titles there would need a different
+  layout (e.g. the phone stack).
+
 ## QA, polish & performance pass — 2026-10-12
 
 A full pass over the redesigned site by four agents working in parallel (each in its own
