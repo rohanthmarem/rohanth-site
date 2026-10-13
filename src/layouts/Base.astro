@@ -23,6 +23,9 @@ const {
 const fullTitle = title ? `${title} | rohanth marem` : "rohanth marem";
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = image ? new URL(image, Astro.site).href : undefined;
+// Vercel serves /_vercel/insights only on its own deployments; skip the script elsewhere
+// (local dev / preview) so it doesn't 404 on every page.
+const onVercel = Boolean(process.env.VERCEL);
 ---
 <!doctype html>
 <html lang="en">
@@ -73,7 +76,7 @@ const ogImage = image ? new URL(image, Astro.site).href : undefined;
       </main>
     </div>
     <Footer />
-    <Analytics />
+    {onVercel && <Analytics />}
     <script>
       import "../scripts/site";
     </script>
