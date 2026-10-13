@@ -27,8 +27,9 @@ const mark = "rohanth marem".split("");
       <div class="meta">
         <p><a href={commitUrl} target="_blank" rel="noopener" class="num"><span class="u u-in-out">last updated {updated}</span></a></p>
         <p class="toggles">
-          <button type="button" data-theme-toggle aria-label="Switch to dark mode"><span class="u u-in-out" data-theme-label>dark</span></button>
-          <button type="button" data-accent-shuffle aria-label="Shuffle the accent colour" title="shuffle the accent (shift-click resets)">✦</button>
+          <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch to dark mode" title="light / dark">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg>
+          </button>
         </p>
       </div>
       {cols.map((col, ci) => (
@@ -65,8 +66,10 @@ const mark = "rohanth marem".split("");
   /* 40px tall hit areas; the star gets a 40px square so it is tappable */
   .toggles button { font: 12px/1 var(--mono); color: var(--ink-3); min-height: 40px; transition: color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
   .toggles button:hover { color: var(--ink); }
+  .theme-toggle { display: grid; place-items: center; min-width: 40px; margin-left: -12px; }
+  .theme-toggle svg { width: 14px; height: 14px; transition: transform 420ms var(--ease-out-strong); }
+  :global([data-theme="dark"]) .theme-toggle svg { transform: rotate(180deg); }
   .toggles button:active { transform: scale(0.94); }
-  [data-accent-shuffle] { display: grid; place-items: center; min-width: 40px; margin-left: 2px; color: var(--accent) !important; font-size: 14px !important; }
   /* phones: the three link columns share one row, sized to their content */
   @media (max-width: 720px) {
     .frow { grid-template-columns: repeat(3, minmax(max-content, 1fr)); gap: 28px 16px; }
