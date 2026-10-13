@@ -263,10 +263,12 @@ const isShort = (note: (typeof notes)[number]) => note.text.join(" ").length + (
   .script-cap { grid-column: 2; align-self: start; padding: 4px 0 0 24px; display: flex; flex-direction: column; gap: 6px; font: 12px/1.45 var(--mono); color: var(--ink-3); }
   .cap-film { color: var(--ink-2); }
 
-  .slips { grid-column: 1 / -1; columns: 2; column-gap: 16px; }
-  .slip { break-inside: avoid; margin: 0 0 16px; padding: 24px 26px 20px; background: var(--surface); box-shadow: 0 0 0 1px var(--rule-strong); }
+  /* plain text sections in the reading column, separated by hairlines */
+  .slips { grid-column: 1; }
+  .slip { margin: 0; padding: 32px 0; border-top: 1px solid var(--rule); }
+  .slip:last-child { padding-bottom: 0; }
   .slip blockquote { margin: 0; }
-  .slip p { margin: 0; font: 300 16px/1.62 var(--serif); }
+  .slip p { margin: 0; font: 300 17px/1.7 var(--serif); }
   .slip p + p { margin-top: .7em; }
   .slip b { font-weight: 700; }
   .slip-short p { font-size: 20px; line-height: 1.45; letter-spacing: -.005em; }
@@ -291,8 +293,7 @@ const isShort = (note: (typeof notes)[number]) => note.text.join(" ").length + (
     .sl-character { margin-left: 30%; }
     .sl-paren { margin-left: 18%; }
     .sl-dialogue { margin-left: 8%; max-width: 88%; }
-    .slips { columns: 1; }
-    .slip { padding: 20px 20px 18px; }
+    .slip { padding: 26px 0; }
     .slip-short p { font-size: 19px; }
   }
 
