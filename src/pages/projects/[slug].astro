@@ -38,7 +38,7 @@ const neighbor = (other?: CollectionEntry<"projects">) => other && ({
 
 <Post entry={entry} kind="projects" headings={headings} previous={neighbor(previous)} next={neighbor(next)} hasBody={hasBody} duplicateBodyTitle={duplicateBodyTitle}>
   {showLeadImage && entry.data.image && <figure class="fig lead-figure">
-    <Image src={entry.data.image} alt={entry.id === "formulanull" ? "Formula Null racecar on a worktable" : `${entry.data.title} project image`} widths={[480, 720, 1080, 1440]} sizes="(max-width: 860px) 100vw, 900px" loading="eager" fetchpriority="high" class="img-outline" style={`object-position: ${entry.data.imagePosition ?? (entry.id === "formulanull" ? "50% 74%" : "center")}`} />
+    <Image src={entry.data.image} alt={entry.id === "formulanull" ? "Formula Null racecar on a worktable" : `${entry.data.title} project image`} widths={[480, 720, 1080, 1440]} width={Math.min(1440, entry.data.image.width)} sizes="(max-width: 500px) calc(100vw - 40px), (max-width: 1023px) min(640px, 92vw), (max-width: 1100px) 720px, 960px" loading="eager" fetchpriority="high" class="img-outline" style={`object-position: ${entry.data.imagePosition ?? (entry.id === "formulanull" ? "50% 74%" : "center")}`} />
     <figcaption>{entry.data.title}</figcaption>
   </figure>}
   {hasBody && <Content components={{ img: ProseImage, Highlight, Sidenote }} />}
