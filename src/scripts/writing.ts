@@ -54,24 +54,36 @@ if (viewSwitch && gridView && listView && peek) {
     let activeRow: HTMLElement | null = null;
     let lastX = 0;
     let lastY = 0;
-    const halfWidth = 150;
-    const halfHeight = 94; // 300 × 16:10
+    const width = 300;
+    const height = 188; // 300 × 16:10
+    const gap = 12;
+    const edge = 16;
+    // The preview follows the cursor sideways but sits above the hovered row (below it when the
+    // row is near the top of the window), so it never covers the title being pointed at.
     const place = (row: HTMLElement | null) => {
       if (!row) {
         peek!.classList.remove("is-on");
         activeRow = null;
         return;
       }
+      const fresh = !peek!.classList.contains("is-on");
       if (row !== activeRow) {
         const cover = row.querySelector<HTMLElement>(".archive-thumb");
         if (cover) peek!.replaceChildren(cover.cloneNode(true));
         activeRow = row;
       }
-      let x = lastX + 36 + halfWidth;
-      if (x + halfWidth > innerWidth - 16) x = lastX - 36 - halfWidth;
-      const y = Math.max(16 + halfHeight, Math.min(innerHeight - 16 - halfHeight, lastY));
-      peek!.style.left = `${x}px`;
-      peek!.style.top = `${y}px`;
+      let left = lastX + 28;
+      if (left + width > innerWidth - edge) left = lastX - 28 - width;
+      left = Math.max(edge, left);
+      const box = row.getBoundingClientRect();
+      let top = box.top - gap - height;
+      if (top < edge) top = Math.min(innerHeight - edge - height, box.bottom + gap);
+      // appearing: jump straight to the spot (only later moves glide)
+      peek!.classList.toggle("is-placing", fresh);
+      peek!.style.left = `${left + width / 2}px`;
+      peek!.style.top = `${top + height / 2}px`;
+      if (fresh) void peek!.offsetWidth;
+      peek!.classList.remove("is-placing");
       peek!.classList.add("is-on");
     };
     listView.addEventListener("pointermove", (event) => {
