@@ -68,8 +68,12 @@ const mark = "rohanth marem".split("");
   .toggles button:hover { color: var(--ink); }
   .toggles button:active { transform: scale(0.94); }
   [data-accent-shuffle] { display: grid; place-items: center; min-width: 40px; margin-left: 2px; color: var(--accent) !important; font-size: 14px !important; }
+  /* phones: the three link columns share one row, sized to their content */
   @media (max-width: 720px) {
-    .frow { grid-template-columns: 1fr 1fr; gap: 28px 20px; }
+    .frow { grid-template-columns: repeat(3, minmax(max-content, 1fr)); gap: 28px 16px; }
     .meta { grid-column: 1 / -1; }
+  }
+  @media (max-width: 339px) {
+    .frow { grid-template-columns: 1fr 1fr; }
   }
 </style>
