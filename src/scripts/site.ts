@@ -2,8 +2,7 @@
 //   mark.hl                 highlight sweeps in when scrolled into view
 //   [data-scramble-in]      text resolves left→right behind a few scrambled glyphs, once, in view
 //   [data-scramble-hover]   a scramble wave passes over the text on hover (from the old site)
-//   [data-theme-toggle]     light/dark, remembered
-//   [data-accent-shuffle]   ✦ picks a new accent hue, remembered (shift-click resets)
+//   [data-theme-toggle]     light/dark: follows the OS, the icon overrides it
 
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const root = document.documentElement;
@@ -90,54 +89,35 @@ document.querySelectorAll<HTMLElement>("[data-scramble-hover]").forEach((el) => 
   el.addEventListener("pointerleave", restore);
 });
 
-/* ── theme + accent ─────────────────────────────────────────── */
-function syncThemeLabel() {
+/* ── theme ──────────────────────────────────────────────────
+   Follows the OS by default (live). The footer icon flips it; picking the same theme as the
+   OS clears the override so it goes back to following the system. */
+const osDark = matchMedia("(prefers-color-scheme: dark)");
+function syncTheme() {
   const dark = root.dataset.theme === "dark";
-  document.querySelectorAll("[data-theme-label]").forEach((n) => (n.textContent = dark ? "light" : "dark"));
   document.querySelectorAll("[data-theme-toggle]").forEach((b) => b.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode"));
-  // browser chrome (address bar, overscroll) follows the chosen theme
+  // browser chrome (address bar, overscroll) follows the theme
   const paper = getComputedStyle(root).getPropertyValue("--paper").trim();
   if (paper) document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((m) => (m.content = paper));
 }
-syncThemeLabel();
+function setTheme(dark: boolean) {
+  if (dark) root.dataset.theme = "dark"; else delete root.dataset.theme;
+  syncTheme();
+  document.dispatchEvent(new CustomEvent("theme-change"));
+}
+syncTheme();
 document.querySelectorAll("[data-theme-toggle]").forEach((b) =>
   b.addEventListener("click", () => {
     const dark = root.dataset.theme !== "dark";
-    if (dark) root.dataset.theme = "dark"; else delete root.dataset.theme;
-    try { localStorage.setItem("theme", dark ? "dark" : "light"); } catch {}
-    applyAccent();
-    syncThemeLabel();
-    document.dispatchEvent(new CustomEvent("theme-change"));
+    try {
+      if (dark === osDark.matches) localStorage.removeItem("theme");
+      else localStorage.setItem("theme", dark ? "dark" : "light");
+    } catch {}
+    setTheme(dark);
   }),
 );
-
-// Accent is stored as a hue; lightness/chroma depend on the theme so it always reads on paper.
-function accentFor(h: number) {
-  return root.dataset.theme === "dark" ? `oklch(0.72 0.17 ${h})` : `oklch(0.5 0.24 ${h})`;
-}
-function applyAccent() {
-  let h: string | null = null;
-  try { h = localStorage.getItem("accent-h"); } catch {}
-  if (h) root.style.setProperty("--accent", accentFor(Number(h)));
-  else root.style.removeProperty("--accent");
-}
-// With no saved choice the theme follows the OS, live (e.g. scheduled dark mode at sunset).
-matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+osDark.addEventListener("change", (e) => {
   let saved: string | null = null;
   try { saved = localStorage.getItem("theme"); } catch {}
-  if (saved) return;
-  if (e.matches) root.dataset.theme = "dark"; else delete root.dataset.theme;
-  applyAccent();
-  syncThemeLabel();
-  document.dispatchEvent(new CustomEvent("theme-change"));
+  if (!saved) setTheme(e.matches);
 });
-document.querySelectorAll("[data-accent-shuffle]").forEach((b) =>
-  b.addEventListener("click", (e) => {
-    try {
-      if ((e as MouseEvent).shiftKey) localStorage.removeItem("accent-h");
-      else localStorage.setItem("accent-h", String(Math.floor(Math.random() * 360)));
-    } catch {}
-    applyAccent();
-    document.dispatchEvent(new CustomEvent("accent-change"));
-  }),
-);
