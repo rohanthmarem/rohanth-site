@@ -3,7 +3,8 @@ import Base from "../layouts/Base.astro";
 import InspoArt from "../components/InspoArt.astro";
 import { inspiration, clippings } from "../data/site";
 
-const palettes = [0, 1, 2, 3, 4];
+// blue, mint, charcoal, orange, cream — repeating, starting from blue
+const palettes = [2, 3, 4, 0, 1];
 const items = [
   ...inspiration.people.map((item) => ({ ...item, kind: "person", category: "people", by: "" })),
   ...inspiration.readings.map((item) => ({ ...item, category: "readings" })),
