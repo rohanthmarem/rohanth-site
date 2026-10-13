@@ -5,6 +5,7 @@
 //                                       use <Highlight dir="rtl" color="accent"> there)
 //   > **sidenote:** text             → <aside class="sidenote">text</aside> (sits in the right margin)
 //   a paragraph holding only an image → the image alone, so it can render as a <figure>
+//   ![alt](src)⏎_caption_            → the same, with the italic line as the figure's caption
 
 type Node = { type: string; value?: string; children?: Node[]; data?: Record<string, unknown>; [k: string]: unknown };
 
@@ -57,6 +58,22 @@ function toSidenote(node: Node) {
   node.data = { hName: "aside", hProperties: { className: ["sidenote"] } };
 }
 
+const textOf = (node: Node): string => node.value ?? (node.children ?? []).map(textOf).join("");
+
+// An image on its own, or an image + line break + an italic caption line (the common
+// "![alt](src)  \n_caption_" pattern): returns the image, captioned, so it renders as a <figure>.
+function figureImage(para: Node): Node | null {
+  if (para.type !== "paragraph") return null;
+  const kids = (para.children ?? []).filter((kid) => !(kid.type === "text" && !kid.value?.trim()));
+  if (kids.length === 1 && kids[0].type === "image") return kids[0];
+  if (kids.length === 3 && kids[0].type === "image" && kids[1].type === "break" && kids[2].type === "emphasis") {
+    const caption = textOf(kids[2]).trim();
+    if (caption && !kids[0].title) kids[0].title = caption;
+    return kids[0];
+  }
+  return null;
+}
+
 function walk(node: Node, parent?: Node) {
   const kids = node.children;
   if (!kids) return;
@@ -67,10 +84,9 @@ function walk(node: Node, parent?: Node) {
       if (parts) { kids.splice(i, 1, ...parts); i += parts.length - 1; continue; }
     }
     if (isSidenote(child)) toSidenote(child);
-    // unwrap image-only paragraphs
-    if (child.type === "paragraph" && child.children?.length === 1 && child.children[0].type === "image") {
-      kids[i] = child.children[0];
-    }
+    // unwrap image-only (and image + caption) paragraphs
+    const image = figureImage(child);
+    if (image) kids[i] = image;
     walk(kids[i], node);
   }
   void parent;

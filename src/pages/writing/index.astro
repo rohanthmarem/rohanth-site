@@ -90,6 +90,8 @@ const artFor = (id: string) => colorsById[id] ?? { bg: "var(--paper-2)", fg: "va
   .view-switch button:active { transform: scale(.97); }
   .views { margin-top: 44px; }
   .views[hidden] { display: none !important; }
+  .views.is-switching { animation: view-in 360ms var(--ease-out) both; }
+  @keyframes view-in { from { opacity: 0; transform: translateY(6px); } }
   .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 36px 24px; }
   .card { display: block; min-width: 0; transition: transform 520ms var(--ease-out-strong), opacity 360ms var(--ease-out); }
   .card:active { transform: scale(.985); }
@@ -107,12 +109,16 @@ const artFor = (id: string) => colorsById[id] ?? { bg: "var(--paper-2)", fg: "va
   .year-label { position: sticky; top: 24px; align-self: start; font: 44px/1 var(--pixel); }
   .year-label small { display: block; margin-top: 10px; font: 12px/1 var(--mono); color: var(--ink-3); }
   .year-group ul { list-style: none; margin: 0; padding: 0; }
-  .archive-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 24px; padding: 16px 0; border-top: 1px solid var(--rule); }
+  .archive-row { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 24px; padding: 16px 0; border-top: 1px solid var(--rule); }
   .archive-row:first-child { padding-top: 0; border-top: 0; }
   .archive-copy h2 { font: 300 26px/1.25 var(--serif); }
   .archive-copy a { display: inline-block; padding: 8px 0; margin: -8px 0; }
+  /* the whole row (cover thumb and date too) is the link's hit area */
+  .archive-copy a::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+  .archive-copy a:focus-visible { outline: 0; }
+  .archive-copy a:focus-visible::after { outline: 2px solid var(--accent); outline-offset: 2px; }
   .archive-date { font: 13px/1 var(--mono); color: var(--ink-3); white-space: nowrap; transition: color var(--dur-fast) var(--ease-out); }
-  .archive-row:hover .archive-date { color: var(--accent); }
+  .archive-row:is(:hover, :focus-within) .archive-date { color: var(--accent); }
   .archive-thumb { display: none; aspect-ratio: 16 / 9; width: 92px; }
   .archive-peek { display: none; position: fixed; z-index: 50; width: 300px; aspect-ratio: 16 / 10; pointer-events: none; overflow: hidden; box-shadow: var(--shadow-border-hover); opacity: 0; transform: translate(-50%, -50%) scale(.92); filter: blur(6px); transition: opacity 240ms var(--ease-out), transform 360ms var(--ease-out-strong), filter 240ms var(--ease-out); }
   .archive-peek.is-on { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(0); }
