@@ -23,7 +23,7 @@ for (const file of readdirSync(fontsDir)) {
 
 for (const path of referrers) {
   const before = readFileSync(path, "utf8");
-  const after = before.replace(/\/fonts\/([a-z0-9-]+)(?:\.[0-9a-f]{8})?\.(woff2?|ttf|otf)/g, (whole, base, ext) => {
+  const after = before.replace(/\/fonts\/([a-z0-9-]+)(?:\.[0-9a-f]{8})?\.(woff2?|ttf|otf)/g, (_whole, base, ext) => {
     const hashed = renames.get(`${base}.${ext}`);
     if (!hashed) throw new Error(`${path} references /fonts/${base}.${ext}, which is not in public/fonts`);
     return `/fonts/${hashed}`;
