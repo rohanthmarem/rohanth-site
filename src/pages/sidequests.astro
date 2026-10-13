@@ -179,7 +179,8 @@ const photos = [
     .feature figcaption, .karate-cap { padding: 9px 0 0; }
     .wings-set figure:last-child { padding-left: 0; margin: 28px 0 0 auto; width: 60%; max-width: none; }
     /* strips become horizontal scrollers at a shared height */
-    .strip { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin-right: calc(-1 * var(--page-pad)); padding-right: var(--page-pad); }
+    /* edge to edge, snapping to the text column; overscroll stays in the strip (no back-swipe) */
+    .strip { display: flex; gap: 10px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding-inline: var(--page-pad); scrollbar-width: none; margin-inline: calc(-1 * var(--page-pad)); padding-inline: var(--page-pad); }
     .strip::-webkit-scrollbar { display: none; }
     .strip figure { flex: none; scroll-snap-align: start; margin-top: 0 !important; }
     .strip :global(img) { height: 300px; width: auto; }
