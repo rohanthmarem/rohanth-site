@@ -231,7 +231,18 @@ const items = [
     };
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && menu.open) { e.preventDefault(); close(true); } });
     document.addEventListener("pointerdown", (e) => { if (!menu.contains(e.target as Node)) close(); });
-    menu.addEventListener("focusout", (e) => { if (!menu.contains(e.relatedTarget as Node)) close(); });
+    // Safari doesn't move focus to a link when it's tapped, so tapping a menu link blurs the
+    // summary with no new focus target. Closing on that blur would remove the link before the tap
+    // lands, so ignore blurs while a pointer is pressed inside the menu; keyboard tab-out still closes.
+    let pressing = false;
+    menu.addEventListener("pointerdown", () => { pressing = true; });
+    document.addEventListener("pointerup", () => setTimeout(() => { pressing = false; }, 0), true);
+    document.addEventListener("pointercancel", () => { pressing = false; }, true);
+    menu.addEventListener("focusout", (e) => {
+      if (pressing) return;
+      const next = e.relatedTarget as Node | null;
+      if (next && !menu.contains(next)) close();
+    });
     wide.addEventListener("change", () => { if (wide.matches) close(); });
   }
 </script>
