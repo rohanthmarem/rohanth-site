@@ -187,8 +187,9 @@ mark.hl {
   background-repeat: no-repeat;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
+  /* the band overhangs the words; the matching negative margin keeps the text spacing untouched */
   padding: 0 0.12em;
-  margin: 0 -0.04em;
+  margin: 0 -0.12em;
   background-size: 0% 100%;
   background-position: left center;
   transition: background-size var(--hl-dur, 900ms) var(--ease-out-strong) var(--hl-delay, 0ms);
@@ -218,7 +219,7 @@ html:not(.js) mark.hl { background-size: 100% 100%; }
 .cropmarks:is(:hover, :focus-within) > .cm { opacity: 1; transform: scale(1); }
 
 /* ── dithered post figures (see scripts/dither.ts) ─────────── */
-.dith-frame { position: relative; display: block; cursor: crosshair; }
+.dith-frame { position: relative; display: block; overflow: hidden; cursor: crosshair; }
 .dith-frame > img { display: block; width: 100%; height: auto; }
 .dith { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; image-rendering: pixelated; }
 
