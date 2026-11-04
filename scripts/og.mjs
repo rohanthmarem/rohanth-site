@@ -119,10 +119,18 @@ const cards = [
 // ---------- template ----------
 const esc = (s = "") => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const css = `
-@font-face { font-family: "Geist Pixel"; src: url("${font("geist-pixel-square")}"); }
-@font-face { font-family: "Ioskeley Mono"; src: url("${font("ioskeley-mono-regular")}"); font-weight: 400; }
-@font-face { font-family: "Ioskeley Mono"; src: url("${font("ioskeley-mono-medium")}"); font-weight: 500; }
-@font-face { font-family: "Merriweather"; src: url("${font("merriweather-latin")}"); font-weight: 300 600; }
+/* subset-fonts: start */
+@font-face { font-family: "Geist Pixel"; src: url("${font("geist-pixel-square-core")}") format("woff2"); unicode-range: U+0020-007E, U+00A0, U+00B7, U+2013-2014, U+2019, U+201C-201D, U+2026; }
+@font-face { font-family: "Geist Pixel"; src: url("${font("geist-pixel-square-ext")}") format("woff2"); unicode-range: U+00A9, U+2190, U+2192, U+2197; }
+@font-face { font-family: "Merriweather"; src: url("${font("merriweather-latin-core")}") format("woff2"); unicode-range: U+0020-007E, U+00A0, U+00B7, U+2013-2014, U+2019, U+201C-201D, U+2026; font-weight: 300 600; font-style: normal; }
+@font-face { font-family: "Merriweather"; src: url("${font("merriweather-latin-ext")}") format("woff2"); unicode-range: U+00A9; font-weight: 300 600; font-style: normal; }
+@font-face { font-family: "Merriweather"; src: url("${font("merriweather-italic-latin-core")}") format("woff2"); unicode-range: U+0020-007E, U+00A0, U+00B7, U+2013-2014, U+2019, U+201C-201D, U+2026; font-weight: 300 600; font-style: italic; }
+@font-face { font-family: "Merriweather"; src: url("${font("merriweather-italic-latin-ext")}") format("woff2"); unicode-range: U+00A9; font-weight: 300 600; font-style: italic; }
+@font-face { font-family: "Ioskeley Mono"; src: url("${font("ioskeley-mono-regular-core")}") format("woff2"); unicode-range: U+0020-007E, U+00A0, U+00B7, U+2011, U+2013-2014, U+2019, U+201C-201D, U+2026; font-weight: 400; }
+@font-face { font-family: "Ioskeley Mono"; src: url("${font("ioskeley-mono-regular-ext")}") format("woff2"); unicode-range: U+00A9, U+2190, U+2192, U+2197; font-weight: 400; }
+@font-face { font-family: "Ioskeley Mono"; src: url("${font("ioskeley-mono-medium-core")}") format("woff2"); unicode-range: U+0020-007E, U+00A0, U+00B7, U+2011, U+2013-2014, U+2019, U+201C-201D, U+2026; font-weight: 500; }
+@font-face { font-family: "Ioskeley Mono"; src: url("${font("ioskeley-mono-medium-ext")}") format("woff2"); unicode-range: U+00A9, U+2190, U+2192, U+2197; font-weight: 500; }
+/* subset-fonts: end */
 * { box-sizing: border-box; margin: 0; }
 html, body { width: ${W}px; height: ${H}px; overflow: hidden; }
 body { position: relative; background: #f6f7f9; color: #11141c; -webkit-font-smoothing: antialiased; }
