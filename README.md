@@ -23,7 +23,22 @@ Vercel deploys every push to `master`.
 - `src/lib/covers.ts` — generative line-art covers, drawn as SVG at build time.
 - `src/lib/terrain.ts` — luminance grids for the homepage project transition, computed at build time.
 - `src/plugins/remark.ts` — markdown extras (below).
-- `public/fonts/` — self-hosted, subset fonts: Geist Pixel, Merriweather, Ioskeley Mono.
+- `public/fonts/` — self-hosted subset fonts: Geist Pixel, Merriweather, Ioskeley Mono.
+  Each family is a small core file (preloaded) and an extended file the browser fetches only
+  when a page uses one of its characters. Masters and the generator are in `fonts/source/`
+  and `scripts/subset-fonts.py`.
+
+## Fonts
+
+The woff2 files are generated, not built. From the repo root, after `pip install fonttools brotli`:
+
+```bash
+python3 scripts/subset-fonts.py
+```
+
+Rerun that and commit the result when visible copy changes, when a file in `fonts/source/` is replaced, or when font CSS changes which family, weight, style, or OpenType feature a page applies. The script rewrites `public/fonts/`, the `@font-face` block in `src/styles/global.css`, the preloads in `src/layouts/Base.astro`, and the share-image faces in `scripts/og.mjs`. It does not run from `npm run build`.
+
+`font-display` stays `swap`, and the fallback stacks stay Merriweather → Georgia and Ioskeley Mono → ui-monospace. Merriweather's OFL reserves that name, so the subset files are renamed internally to Rohanth Text; the CSS family is still Merriweather.
 
 ## Writing in markdown
 

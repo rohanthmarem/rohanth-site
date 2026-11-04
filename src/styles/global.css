@@ -7,11 +7,18 @@
    interruptible transitions, blur-in entrances, reduced motion.
    ───────────────────────────────────────────────────────────── */
 
-@font-face { font-family: "Geist Pixel"; src: url("/fonts/geist-pixel-square.77844bda.woff2") format("woff2"); font-display: swap; }
-@font-face { font-family: "Merriweather"; src: url("/fonts/merriweather-latin.6b615f68.woff2") format("woff2"); font-weight: 300 600; font-style: normal; font-display: swap; }
-@font-face { font-family: "Merriweather"; src: url("/fonts/merriweather-italic-latin.c7f43a37.woff2") format("woff2"); font-weight: 300 600; font-style: italic; font-display: swap; }
-@font-face { font-family: "Ioskeley Mono"; src: url("/fonts/ioskeley-mono-regular.d2433ea3.woff2") format("woff2"); font-weight: 400; font-display: swap; }
-@font-face { font-family: "Ioskeley Mono"; src: url("/fonts/ioskeley-mono-medium.f2ebc565.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+/* subset-fonts: start */
+@font-face { font-family: "Geist Pixel"; src: url("/fonts/geist-pixel-square-core.c29dcb9c.woff2") format("woff2"); unicode-range: U+0020-007E, U+00A0, U+00B7, U+2013-2014, U+2019, U+201C-201D, U+2026; font-display: swap; }
+@font-face { font-family: "Geist Pixel"; src: url("/fonts/geist-pixel-square-ext.c59cc7c1.woff2") format("woff2"); unicode-range: U+00A9, U+2190, U+2192, U+2197; font-display: swap; }
+@font-face { font-family: "Merriweather"; src: url("/fonts/merriweather-latin-core.6618d0b0.woff2") format("woff2"); unicode-range: U+0020-007E, U+00A0, U+00B7, U+2013-2014, U+2019, U+201C-201D, U+2026; font-weight: 300 600; font-style: normal; font-display: swap; }
+@font-face { font-family: "Merriweather"; src: url("/fonts/merriweather-latin-ext.e60321db.woff2") format("woff2"); unicode-range: U+00A9; font-weight: 300 600; font-style: normal; font-display: swap; }
+@font-face { font-family: "Merriweather"; src: url("/fonts/merriweather-italic-latin-core.06d56165.woff2") format("woff2"); unicode-range: U+0020-007E, U+00A0, U+00B7, U+2013-2014, U+2019, U+201C-201D, U+2026; font-weight: 300 600; font-style: italic; font-display: swap; }
+@font-face { font-family: "Merriweather"; src: url("/fonts/merriweather-italic-latin-ext.5eee160e.woff2") format("woff2"); unicode-range: U+00A9; font-weight: 300 600; font-style: italic; font-display: swap; }
+@font-face { font-family: "Ioskeley Mono"; src: url("/fonts/ioskeley-mono-regular-core.09340a9d.woff2") format("woff2"); unicode-range: U+0020-007E, U+00A0, U+00B7, U+2011, U+2013-2014, U+2019, U+201C-201D, U+2026; font-weight: 400; font-display: swap; }
+@font-face { font-family: "Ioskeley Mono"; src: url("/fonts/ioskeley-mono-regular-ext.34a65738.woff2") format("woff2"); unicode-range: U+00A9, U+2190, U+2192, U+2197; font-weight: 400; font-display: swap; }
+@font-face { font-family: "Ioskeley Mono"; src: url("/fonts/ioskeley-mono-medium-core.8601baf2.woff2") format("woff2"); unicode-range: U+0020-007E, U+00A0, U+00B7, U+2011, U+2013-2014, U+2019, U+201C-201D, U+2026; font-weight: 500; font-display: swap; }
+@font-face { font-family: "Ioskeley Mono"; src: url("/fonts/ioskeley-mono-medium-ext.3dba6054.woff2") format("woff2"); unicode-range: U+00A9, U+2190, U+2192, U+2197; font-weight: 500; font-display: swap; }
+/* subset-fonts: end */
 
 :root {
   color-scheme: light;

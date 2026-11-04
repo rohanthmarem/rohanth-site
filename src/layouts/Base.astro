@@ -68,9 +68,11 @@ const onVercel = Boolean(process.env.VERCEL);
     <meta name="twitter:image" content={ogImage} />
     <meta name="theme-color" content="#f6f7f9" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0b0e15" media="(prefers-color-scheme: dark)" />
-    <link rel="preload" href="/fonts/geist-pixel-square.77844bda.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/fonts/merriweather-latin.6b615f68.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/fonts/ioskeley-mono-regular.d2433ea3.woff2" as="font" type="font/woff2" crossorigin />
+    <!-- subset-fonts: start -->
+    <link rel="preload" href="/fonts/geist-pixel-square-core.c29dcb9c.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/merriweather-latin-core.6618d0b0.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/ioskeley-mono-regular-core.09340a9d.woff2" as="font" type="font/woff2" crossorigin />
+    <!-- subset-fonts: end -->
     <script is:inline>
       // Theme before first paint: saved choice, else the OS preference.
       (function () {
