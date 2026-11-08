@@ -27,7 +27,8 @@ interface Props {
 const { entry, previous, next } = Astro.props;
 const { Content, headings } = await render(entry);
 const hasBody = Boolean(entry.body?.trim());
-const showLeadImage = Boolean(entry.data.image && (!hasBody || entry.id === "formulanull"));
+// a lead image when the write-up has none of its own (tensorforest's were hosted on a site that's gone)
+const showLeadImage = Boolean(entry.data.image && (!hasBody || ["formulanull", "tensorforest"].includes(entry.id)));
 const duplicateBodyTitle = entry.body?.trimStart().split("\n", 1)[0]?.replace(/^#\s*/, "").trim().toLowerCase() === entry.data.title.toLowerCase();
 const neighbor = (other?: CollectionEntry<"projects">) => other && ({
   title: other.data.title,

@@ -2,6 +2,8 @@
 // Left sidebar navigation (after cognition.com): follows the page on wide screens and steps
 // aside for full-width sections; a top bar with a menu on narrow ones. Pages can add to it through Base's "sidebar" slot (e.g. post contents).
 
+import ModeToggle from "./ModeToggle.astro";
+
 interface Props {
   current?: string;
 }
@@ -10,8 +12,6 @@ const items = [
   ["home", "/"],
   ["projects", "/projects"],
   ["writing", "/writing"],
-  ["inspiration", "/inspiration"],
-  ["sidequests", "/sidequests"],
 ] as const;
 ---
 <aside class="side">
@@ -25,12 +25,16 @@ const items = [
       </ul>
     </nav>
 
+    <ModeToggle class="side-mode" />
+
     <details class="side-menu">
       <summary>menu</summary>
       <ul>
         {items.map(([key, href]) => (
           <li><a href={href} aria-current={current === key ? "page" : undefined}>{key}</a></li>
         ))}
+        {/* phones have no spine at the edge: the notebook opens from here instead */}
+        <li><a href="/#notebook" data-nbo-open="notebook">notebook</a></li>
       </ul>
     </details>
 
@@ -56,6 +60,7 @@ const items = [
   .side-nav a[aria-current="page"] { color: var(--accent); }
   .side-nav a[aria-current="page"]::before { content: ""; position: absolute; left: -11px; top: 50%; width: 2px; height: 14px; transform: translateY(-50%); background: var(--accent); }
   .side-menu { display: none; }
+  .side-inner :global(.side-mode) { margin: -12px 0 0 -7px; color: var(--ink-3); }
   .side-extra:empty { display: none; }
   .side-extra { width: 100%; margin-top: 18px; }
 
@@ -64,8 +69,9 @@ const items = [
     .side { z-index: 5; }
     .side-inner, .side-inner.is-parked { position: static; margin-top: 0; flex-direction: row; align-items: center; justify-content: flex-end; gap: 16px; padding: 18px 0; max-height: none; overflow: visible; transform: none; transition: none; }
     .side-nav, .side-extra { display: none; }
+    .side-inner :global(.side-mode) { margin: 0; width: 40px; height: 40px; color: var(--ink); background: var(--paper); box-shadow: inset 0 0 0 1px var(--ink); }
     .side-menu { display: block; position: relative; }
-    .side-menu summary { list-style: none; min-height: 40px; min-width: 40px; display: grid; place-items: center; padding: 0 12px; font: 13px/1 var(--mono); box-shadow: inset 0 0 0 1px var(--ink); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
+    .side-menu summary { list-style: none; min-height: 40px; min-width: 40px; display: grid; place-items: center; padding: 0 12px; font: 13px/1 var(--mono); background: var(--paper); box-shadow: inset 0 0 0 1px var(--ink); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
     .side-menu summary::-webkit-details-marker { display: none; }
     .side-menu summary:active { transform: scale(0.96); }
     .side-menu[open] summary { background: var(--ink); color: var(--paper); }
@@ -244,5 +250,7 @@ const items = [
       if (next && !menu.contains(next)) close();
     });
     wide.addEventListener("change", () => { if (wide.matches) close(); });
+    // opening the notebook from the menu puts the menu away behind it
+    menu.addEventListener("click", (e) => { if ((e.target as Element).closest("[data-nbo-open]")) close(); });
   }
 </script>

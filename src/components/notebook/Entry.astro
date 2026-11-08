@@ -1,0 +1,18 @@
+---
+// A project, scrapbook style: the photo to one side, the handwriting wrapping around it.
+import Snap from "./Snap.astro";
+type Pic = { src: string; srcset: string; sizes: string; width: number; height: number };
+interface Props {
+  p: { title: string; date: Date; description: string; href: string; external: boolean; where: string; photo?: Pic };
+  side?: "left" | "right"; r?: number;
+}
+const { p, side = "left", r = -2 } = Astro.props;
+const stamp = p.date.toISOString().slice(0, 10).replaceAll("-", "");
+---
+<article class:list={["entry", side]}>
+  {p.photo && <Snap pic={p.photo} alt={p.title} r={r} w={46} />}
+  <h3>{p.title}</h3>
+  <span class="date">{stamp}</span>
+  <p>{p.description}</p>
+  <a class="go" href={p.href} target={p.external ? "_blank" : undefined} rel={p.external ? "noopener" : undefined}>{p.where}<i class:list={["arr", p.external && "up"]} aria-hidden="true"></i></a>
+</article>

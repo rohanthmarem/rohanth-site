@@ -16,14 +16,16 @@ Vercel deploys every push to `master`.
 
 ## Structure
 
-- `src/layouts/Base.astro` — head, fonts, theme (light/dark before paint), header, footer, analytics.
+- `src/layouts/Base.astro` — head, fonts, sidebar + footer (or `bare` for the homepage), analytics.
 - `src/layouts/Post.astro` — long-form layout for writing and project write-ups: contents, prose, margin notes.
-- `src/pages/` — `/`, `/projects`, `/projects/[slug]`, `/writing`, `/writing/[slug]`, `/inspiration`, `/sidequests`, `404`.
+- `src/pages/` — `/`, `/projects`, `/projects/[slug]`, `/writing`, `/writing/[slug]`, `404`. Inspiration and sidequests live in the notebook (`/#inspiration`, `/#sidequests`); their old URLs redirect there.
 - `src/data/site.ts` — links, inspiration, and the sidequests quest log.
+- `src/components/Notebook.astro` — the homepage cover, with every sticker selectable (traced in `src/data/notebook.ts`).
+- `src/components/NotebookOpen.astro` — the notebook opened flat: projects, writing, inspiration and sidequests scrapbooked into pages that turn (`#projects` etc. opens it at a section). Pages are laid out in `cqw`, so they scale with the book.
 - `src/lib/covers.ts` — generative line-art covers, drawn as SVG at build time.
 - `src/lib/terrain.ts` — luminance grids for the homepage project transition, computed at build time.
 - `src/plugins/remark.ts` — markdown extras (below).
-- `public/fonts/` — self-hosted, subset fonts: Geist Pixel, Merriweather, Ioskeley Mono.
+- `public/fonts/` — self-hosted, subset fonts: Geist Pixel, Merriweather, Geist Mono (subset from the `geist` npm package), and Rohanth Hand, a font traced from my own handwriting, for the notebook.
 
 ## Writing in markdown
 
@@ -88,3 +90,58 @@ Uses `GITHUB_TOKEN` if set, otherwise your `gh` CLI login. For example, to regis
 
 Optional env for both: `SITE_REPO` (default `rohanthmarem/rohanth-site`), `SITE_BRANCH`
 (default `master`), `SITE_URL` (default `https://rohanth.com`), `GITHUB_API_URL`.
+
+## Material studies
+
+`/iterations/` is an isolated gallery of 13 texture-led homepage explorations.
+Open a study for its responsive layout, adjust the texture slider, and use the
+stars to save a shortlist in this browser. Arrow keys browse open studies; Escape
+returns to the gallery. Direct links use a hash, e.g. `/iterations/#engraved`.
+
+The self-contained artifact is `public/iterations/index.html`. Regenerate it after
+editing `scripts/build-texture-studies.mjs` or `src/experiments/texture-studies/`:
+
+```bash
+node scripts/build-texture-studies.mjs
+```
+
+The gallery embeds its fonts and portrait, works without a server, and links to the
+existing live project and writing pages. It does not replace the homepage.
+
+Iteration 13, **Dot by Dot**, follows the paper palette and three-ink stippled
+lettering of [Trillium’s dotted-style branch](https://github.com/thetrilliumcompany/blog/tree/dotted-style)
+(reference commit `fb4353e30c4bb2b0bc9fa2fa9b3e7b33ad2be483`).
+Open `/iterations/dotted.html` directly, or `/iterations/#dotted`.
+Its projects/writing/sidequests tabs support arrow keys, Home, and End.
+
+`/iterations/left/` is the simplified top-left layout study. It renders the actual
+homepage component, preserving its copy, project ordering, images, and background.
+Its overrides are limited to `body#left-study`. To export it for inline review:
+
+```bash
+npm run build
+node scripts/export-left-study.mjs
+```
+
+The export is `public/iterations/left.html`; it includes the existing fonts,
+optimized project images, and bundled menu/carousel interactions.
+
+### Fresh directions after feedback
+
+`/iterations/reconsidered.html` is the latest three-direction exploration:
+Paper, Cloth, and Ink. These redesign the presentation from scratch while keeping
+the homepage bio verbatim and the nine original project photos in their order.
+The choices change typography, texture, and photo arrangement; they do not reuse
+the earlier wave background or decorative diagrams. Use `#paper`, `#cloth`, or
+`#ink` for a direct selection.
+
+Regenerate from the current built homepage with:
+
+```bash
+npm run build
+node scripts/build-reconsidered-studies.mjs
+```
+
+The design brief and reference roles are in
+`.context/refs/reconsidered-site/brief.txt`; implementation is in
+`src/experiments/reconsidered/`.

@@ -1,0 +1,874 @@
+---
+// The notebook, opened flat: the people, readings, shows and clippings that inspire me, kept the way a
+// commonplace book is, in handwriting. Sidequests too. (Projects and writing have their own pages.) Wide
+// screens get a two-page spread whose leaves turn in 3D; phones get one page at a time: the same turning
+// book, zoomed in on one side of the spread, panning across as the pages turn.
+//
+// Leaf k carries page 2k on its front (a right-hand page) and page 2k + 1 on its back (a left-hand
+// page). Leaf 0 is the front cover, the last leaf the back cover.
+import { getImage } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import Page from "./notebook/Page.astro";
+import Snap from "./notebook/Snap.astro";
+import Check from "./notebook/Check.astro";
+import { covers } from "../data/notebook";
+import { inspiration, clippings, quests, links } from "../data/site";
+import front from "../assets/notebook/front.jpg";
+import back from "../assets/notebook/back.jpg";
+import signature from "../assets/notebook/signature.svg?raw"; // traced from rohanth's own signature
+import runStart from "../assets/sidequests/run-start.webp";
+import bikeTrail from "../assets/sidequests/bike-trail.webp";
+import ironmanSignup from "../assets/sidequests/ironman-signup.webp";
+import foodKatsu from "../assets/sidequests/food-katsu.webp";
+import foodIndian from "../assets/sidequests/food-indian.webp";
+import foodUdon from "../assets/sidequests/food-udon.webp";
+import photoDumbo from "../assets/sidequests/photo-dumbo.webp";
+import photoWindow from "../assets/sidequests/photo-window.webp";
+import photoConcert from "../assets/sidequests/photo-concert.webp";
+import photoSf from "../assets/sidequests/photo-sf.webp";
+import wingsFilm from "../assets/sidequests/wings-film.webp";
+import karateReady from "../assets/sidequests/karate-ready.webp";
+import karateJump from "../assets/sidequests/karate-jump.webp";
+
+/** A photo for the pages. `share` is roughly how much of a page's width it takes, which sets `sizes`. */
+const pic = async (src: ImageMetadata, share: number) => {
+  const image = await getImage({ src, widths: [240, 400, 640, 960].filter((w) => w < src.width), format: "webp" as const, quality: 78 });
+  // a page is at most ~600px wide on a spread and ~92vw on a phone
+  return { src: image.src, srcset: image.srcSet.attribute, sizes: `(max-width: 760px) ${Math.round(92 * share)}vw, ${Math.round(600 * share)}px`, width: src.width, height: src.height };
+};
+
+const coverImage = (src: ImageMetadata) => getImage({ src, widths: [640, 960, 1268], format: "webp" as const, quality: 82 });
+const [frontImage, backImage] = await Promise.all([coverImage(front), coverImage(back)]);
+
+// The cover photos sit ~1% in from the hinge, and their spine edge catches a sliver of the table the
+// notebook was photographed on, so the pages behind could peek out mid-turn. The photo is trimmed back to
+// the cover's real edge, and a board in the cover's own colour (sampled from each photo) runs from there
+// out to the hinge, keeping the photo's rounded corners.
+const reshape = (poly: string, spineAtRight: boolean, fn: (x: number) => number) =>
+  poly.replace(/([\d.]+)% ([\d.]+)%/g, (_, x, y) => {
+    const n = Number(x);
+    return `${(spineAtRight ? n > 94 : n < 6) ? fn(n).toFixed(2) : n}% ${y}%`;
+  });
+const spineXs = (poly: string, spineAtRight: boolean) =>
+  [...poly.matchAll(/([\d.]+)% [\d.]+%/g)].map((m) => Number(m[1])).filter((x) => (spineAtRight ? x > 94 : x < 6));
+// where the cover's real spine edge is in each photo (front: from the left; back: from the right)
+const EDGE = { front: 1.6, back: 98.7 };
+const frontLeft = Math.min(...spineXs(covers.front.book, false));
+const backRight = Math.max(...spineXs(covers.back.book, true));
+const coverClip = {
+  front: reshape(covers.front.book, false, (x) => Math.max(x, EDGE.front)),
+  back: reshape(covers.back.book, true, (x) => Math.min(x, EDGE.back)),
+};
+const boardClip = {
+  front: reshape(covers.front.book, false, (x) => x - frontLeft),
+  back: reshape(covers.back.book, true, (x) => x + (100 - backRight)),
+};
+
+const [people, readings, media] = [inspiration.people, inspiration.readings, inspiration.media];
+const { scripts, notes } = clippings;
+
+/** Where each section starts: the tabs, the contents page and the #hash all come from here. */
+const sections = [
+  { key: "people", page: 3, colour: "#f4cf5d" },
+  { key: "readings", page: 4, colour: "#8fd0b2" },
+  { key: "watching", page: 6, colour: "#f3a493" },
+  { key: "clippings", page: 7, colour: "#c9b6ea" },
+  { key: "sidequests", page: 11, colour: "#9dbcf0" },
+];
+const quest = Object.fromEntries(quests.map((q) => [q.slug, q]));
+const [runStartPhoto, bikePhoto, signupPhoto] = await Promise.all([pic(runStart, 0.37), pic(bikeTrail, 0.24), pic(ironmanSignup, 0.54)]);
+const [katsuPhoto, indianPhoto, udonPhoto] = await Promise.all([pic(foodKatsu, 0.34), pic(foodIndian, 0.44), pic(foodUdon, 0.44)]);
+const [dumboPhoto, windowPhoto, concertPhoto, sfPhoto] = await Promise.all([pic(photoDumbo, 0.34), pic(photoWindow, 0.46), pic(photoConcert, 0.32), pic(photoSf, 0.34)]);
+const [wingsPhoto, karateReadyPhoto, karateJumpPhoto] = await Promise.all([pic(wingsFilm, 0.48), pic(karateReady, 0.3), pic(karateJump, 0.3)]);
+const ext = { target: "_blank", rel: "noopener" };
+---
+
+<dialog class="nbo" data-nbo aria-label="my notebook">
+  <div class="backdrop" data-nbo-chrome></div>
+  <button type="button" class="close" data-nbo-close data-nbo-chrome aria-label="close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" /></svg></button>
+
+  <div class="stage" data-nbo-stage tabindex="-1" autofocus>
+    <nav class="tabs" aria-label="Notebook sections">
+      {sections.map((s) => (
+        <a class="tab" href={`#${s.key}`} data-nbo-goto={s.key} style={`--tab:${s.colour}`}>{s.key}</a>
+      ))}
+    </nav>
+
+    <div class="book" data-nbo-book>
+      <div class="leaf cover-leaf">
+        <section class="side front cover" data-page="0" aria-label="front cover">
+          <span class="board" style={`clip-path:${boardClip.front};background:#8a3a52`}></span>
+          <img src={frontImage.src} srcset={frontImage.srcSet.attribute} sizes="(max-width: 760px) 92vw, 620px" width="1268" height="1834" alt="the front cover of my notebook" style={`clip-path:${coverClip.front}`} loading="lazy" draggable="false" />
+        </section>
+        <Page n={1} label="inside front cover" class="endpaper">
+          <div class="found">
+            <p class="small">in case of loss, please return to:</p>
+            <p class="line name"><span class="sig" role="img" aria-label="rohanth" set:html={signature} /> marem</p>
+            <p class="line"><a href={links.email}>{links.emailText}</a></p>
+            <p class="line">cs @ waterloo</p>
+          </div>
+          <p class="motto">i like to sidequest.</p>
+        </Page>
+      </div>
+
+      <div class="leaf">
+        <Page n={2}>
+          <h2 class="title">contents</h2>
+          <ol class="toc">
+            {sections.map((s) => (
+              <li><a href={`#${s.key}`} data-nbo-goto={s.key}><span>{s.key}</span><i></i><span>{s.page}</span></a></li>
+            ))}
+            <li><a href="#chat" data-nbo-goto="chat"><span>want to chat?</span><i></i><span>15</span></a></li>
+          </ol>
+          <div class="aside">
+            <span class="wide-only">click a page, or use the arrow keys, to turn it.</span>
+            <span class="narrow-only">tap or swipe to turn the page.</span>
+          </div>
+        </Page>
+        <Page n={3} section="people" class="dense">
+          <h2 class="title">inspiration</h2>
+          <p class="lede">people, readings and youtube rabbit-holes that rewired how i think.</p>
+          <h3 class="sub">people</h3>
+          {people.map((item) => (
+            <div class="inspo"><h4><mark>{item.name}</mark></h4><p>{item.why}</p></div>
+          ))}
+        </Page>
+      </div>
+
+      <div class="leaf">
+        <Page n={4} section="readings" class="dense">
+          <h3 class="sub">readings</h3>
+          {readings.slice(0, 2).map((item) => (
+            <div class="inspo"><h4><mark>{item.name}</mark> <span class="by">{item.kind} · {item.by}</span></h4><p>{item.why}</p></div>
+          ))}
+        </Page>
+        <Page n={5} class="dense">
+          {readings.slice(2).map((item) => (
+            <div class="inspo"><h4><mark>{item.name}</mark> <span class="by">{item.kind} · {item.by}</span></h4><p>{item.why}</p></div>
+          ))}
+        </Page>
+      </div>
+
+      <div class="leaf">
+        <Page n={6} section="watching">
+          <h3 class="sub">watching</h3>
+          {media.map((item) => (
+            <div class="inspo"><h4><mark>{item.name}</mark> <span class="by">{item.kind}</span></h4><p>{item.why}</p></div>
+          ))}
+        </Page>
+        <Page n={7} section="clippings" class="dense">
+          <h3 class="sub">clippings</h3>
+          {scripts.map((script, i) => (
+            <figure class="clip script" style={`--r:${i % 2 ? 1.5 : -1.2}deg`}>
+              {script.fragments.map((fragment) => fragment.map((line) => <p class={`sl sl-${line.kind}`}>{line.text}</p>))}
+              <figcaption>{script.href ? <a href={script.href} {...ext}>{script.film}</a> : script.film}{script.year && ` (${script.year})`}</figcaption>
+            </figure>
+          ))}
+        </Page>
+      </div>
+
+      <div class="leaf">
+        {[notes.slice(0, 2), notes.slice(2)].map((group, g) => (
+          <Page n={8 + g} class="dense">
+            {group.map((note, i) => (
+              <figure class="clip" style={`--r:${[-1, 1.2, -1.6, 0.8][(2 * g + i) % 4]}deg`}>
+                <blockquote cite={note.href}>{note.text.map((para, j) => <>{j > 0 && note.elided && <p class="elide">[…]</p>}<p>{para}</p></>)}</blockquote>
+                <figcaption>— <a href={note.href} {...ext}>{note.who}</a>{note.source && `, ${note.source}`}{note.via && <> (via <a href={note.via.href} {...ext}>{note.via.who}</a>)</>}</figcaption>
+              </figure>
+            ))}
+          </Page>
+        ))}
+      </div>
+
+      <div class="leaf">
+        {/* left blank, so sidequests opens on a fresh spread */}
+        <Page n={10} class="blank" />
+        <Page n={11} section="sidequests">
+          <h2 class="title">sidequests</h2>
+          <p class="lede">things i do for fun, or just because.</p>
+          <h3>{quest.ironman.title}</h3>
+          <p>{quest.ironman.note}</p>
+          <ul class="checks">
+            {quest.ironman.objectives.map((o) => <Check done={o.done}>{o.href ? <a href={o.href} {...ext}>{o.text}</a> : o.text}</Check>)}
+          </ul>
+          <div class="pile run">
+            <Snap pic={runStartPhoto} alt="runners crossing under the oakville 21.1 start / finish arch" w={37} r={-3} cap="oakville 21.1" />
+            <Snap pic={bikePhoto} alt="the view over my road bike's handlebars down a forest trail" w={24} r={4} cap="on the bike" />
+            <Snap pic={signupPhoto} alt="my ironman 70.3 musselman registration page counting down 245 days, next to me grinning on facetime" w={54} r={1.5} cap="signed up for my first 70.3!" class="signup" />
+          </div>
+        </Page>
+      </div>
+
+      <div class="leaf">
+        <Page n={12}>
+          <h3>{quest.food.title}</h3>
+          <p>{quest.food.note}</p>
+          <ul class="checks">
+            {quest.food.objectives.map((o) => <Check done={o.done}>{o.href ? <a href={o.href} {...ext}>{o.text}</a> : o.text}</Check>)}
+          </ul>
+          <div class="pile food">
+            <Snap pic={katsuPhoto} alt="katsu plates, chopsticks and orange slices from above" w={28} r={-4} cap="katsu" />
+            <Snap pic={indianPhoto} alt="an indian dinner spread with naan, curries and rice" w={32} r={3} cap="indian" />
+            <Snap pic={udonPhoto} alt="udon and japanese curry rice at a busy counter" w={32} r={-1.5} cap="udon + curry" />
+          </div>
+        </Page>
+        <Page n={13}>
+          <h3>{quest.film.title}</h3>
+          <p>{quest.film.note}</p>
+          <div class="pile photos">
+            <Snap pic={dumboPhoto} alt="the manhattan bridge between brick buildings in dumbo" w={28} r={-3} cap="dumbo" />
+            <Snap pic={windowPhoto} alt="the new york skyline at dusk through a car window" w={44} r={2.5} cap="nyc, through the window" />
+            <Snap pic={concertPhoto} alt="an arena concert from the upper seats, the stage lit orange" w={26} r={2} cap="concert" />
+            <Snap pic={sfPhoto} alt="three friends arm in arm on a san francisco street" w={28} r={-2.5} cap="sf" />
+          </div>
+        </Page>
+      </div>
+
+      <div class="leaf">
+        <Page n={14}>
+          <h3>{quest.wings.title}</h3>
+          <p>{quest.wings.note}</p>
+          <div class="stamps">
+            {quest.wings.stamps?.map((s, i) => <span class="stamp" style={`--r:${[-12, 8, -4][i % 3]}deg`}>{s.label}<svg class="bull" viewBox="0 0 32 24" aria-hidden="true"><path d="M3.5 2.5c.4 4.6 3.4 7 8 7.2M28.5 2.5c-.4 4.6-3.4 7-8 7.2" /><path d="M7.5 9.6 11 11.4M24.5 9.6 21 11.4" /><path d="M11.4 9.7h9.2l-.9 8.6c-.4 2.7-2 3.9-3.7 3.9s-3.3-1.2-3.7-3.9Z" /><path d="M14.2 18.6h.01M17.8 18.6h.01" /></svg></span>)}
+          </div>
+          <Snap pic={wingsPhoto} alt="me biting into a wing at the dfw airport buffalo wild wings, on film" w={37} r={-2} cap="DFW, on film" class="wings" />
+          <div class="karate">
+            <div>
+              <h3>karate</h3>
+              <p>10+ years.<br />2nd degree black belt.</p>
+            </div>
+            <Snap pic={karateReadyPhoto} alt="me standing ready in a white gi at nationals" w={24} r={-3} />
+            <Snap pic={karateJumpPhoto} alt="me mid-air during a jumping kata" w={24} r={2.5} cap="nationals 2026" />
+          </div>
+        </Page>
+        <Page n={15} section="chat" class="chat">
+          <h2 class="title">want to chat?</h2>
+          <p class="email"><a href={links.email}>{links.emailText}</a></p>
+          <ul class="elsewhere">
+            <li><a href={links.x} {...ext}>x / twitter<i class="arr up" aria-hidden="true"></i></a></li>
+            <li><a href={links.github} {...ext}>github<i class="arr up" aria-hidden="true"></i></a></li>
+            <li><a href={links.substack} {...ext}>substack<i class="arr up" aria-hidden="true"></i></a></li>
+          </ul>
+          <p class="sign" role="img" aria-label="rohanth" set:html={signature} />
+        </Page>
+      </div>
+
+      <div class="leaf cover-leaf">
+        <Page n={16} label="inside back cover" class="endpaper">
+          <a class="card" href={links.repo} {...ext}>this site's source<i class="arr up" aria-hidden="true"></i></a>
+          <div class="pocket" aria-hidden="true"></div>
+        </Page>
+        <section class="side back cover" data-page="17" aria-label="back cover" data-nbo-back>
+          <span class="board" style={`clip-path:${boardClip.back};background:#6e3242`}></span>
+          <img src={backImage.src} srcset={backImage.srcSet.attribute} sizes="(max-width: 760px) 92vw, 620px" width="1268" height="1834" alt="the back cover of my notebook, covered in stickers" style={`clip-path:${coverClip.back}`} loading="lazy" draggable="false" />
+          {/* the same pick-up-a-sticker trick as the front cover on the home page (Notebook.astro) */}
+          <div class="dim" style={`clip-path:${covers.back.book}`}></div>
+          {covers.back.stickers.map((s) => (
+            <button type="button" class="sticker" style={`--clip:${s.clip};--origin:${s.origin}`} aria-label={s.name} aria-pressed="false" data-name={s.name} data-note={s.note} data-href={s.href}>
+              <span class="hit"></span>
+              <span class="lift"><img src={backImage.src} srcset={backImage.srcSet.attribute} sizes="(max-width: 760px) 92vw, 620px" width="1268" height="1834" alt="" loading="lazy" decoding="async" draggable="false" /></span>
+            </button>
+          ))}
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <p class="sticker-caption" data-nbo-caption aria-live="polite"></p>
+
+  <div class="pager" data-nbo-chrome>
+    <button type="button" data-nbo-prev aria-label="previous page">←</button>
+    <span class="where sr-only" data-nbo-where aria-live="polite">cover</span>
+    <button type="button" data-nbo-next aria-label="next page">→</button>
+  </div>
+</dialog>
+
+<style is:global>
+  .nbo {
+    --pen: #1d2342;
+    --pen-blue: #2b47a8;
+    --pen-red: #c2382c;
+    --page: #f7f3ea;
+    --maroon: #6c2435;
+    /* the cover photo's shape; a spread is two of them side by side, with room for the tabs */
+    --ph: min(calc(100svh - 150px), calc((100vw - 300px) / 1.3828), 880px);
+    --pw: calc(var(--ph) * 0.6914);
+    position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none;
+    margin: 0; padding: 0; border: 0; background: transparent; color: var(--ink); overflow: hidden;
+  }
+  .nbo::backdrop { background: transparent; }
+  html.nbo-open { overflow: hidden; }
+  /* no backdrop blur: blurring the whole page behind every frame of the turn is what made it stutter */
+  .nbo .backdrop { position: absolute; inset: 0; background: color-mix(in srgb, var(--paper) 93%, transparent); }
+
+  .nbo .close { position: absolute; z-index: 3; top: 14px; right: 16px; display: grid; place-items: center; width: 48px; height: 48px; color: var(--ink-2); transition: color var(--dur-fast) var(--ease-out); }
+  .nbo .close svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
+  .nbo .close:hover { color: var(--ink); }
+  .nbo .pager { position: absolute; z-index: 3; left: 50%; bottom: 18px; translate: -50% 0; display: flex; align-items: center; gap: 6px; font: 13px/1 var(--mono); color: var(--ink-2); }
+  .nbo .pager button { width: 40px; height: 40px; font-size: 16px; color: var(--ink); transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
+  .nbo .pager button:disabled { opacity: 0.25; }
+  .nbo .pager button:active:not(:disabled) { transform: scale(0.92); }
+
+  .nbo .stage:focus { outline: none; }
+  .nbo .stage { position: absolute; left: 50%; top: calc(50% - 8px); width: calc(var(--pw) * 2); height: var(--ph); translate: -50% -50%; }
+
+  /* sticky index tabs stuck to the edge of the pages */
+  .nbo .tabs { position: absolute; left: 100%; top: 7%; display: flex; flex-direction: column; gap: 10px; transition: opacity 400ms var(--ease-out), translate 400ms var(--ease-out-strong); }
+  .nbo .stage.closed .tabs { opacity: 0; translate: -24px 0; pointer-events: none; }
+  .nbo .tab { display: block; margin-left: -10px; padding: 9px 16px 9px 20px; font: 13px/1 var(--mono); color: var(--pen); background: var(--tab); border-radius: 0 5px 5px 0; box-shadow: 0 1px 2px rgb(0 0 0 / 0.14), inset 8px 0 8px -6px rgb(0 0 0 / 0.16); transition: translate 260ms var(--ease-out-strong); }
+  .nbo .tab:hover, .nbo .tab[aria-current="true"] { translate: 8px 0; }
+
+  .nbo .book { position: relative; width: 100%; height: 100%; perspective: 2600px; }
+  .nbo .book.closed-front { transform: translateX(-25%); }
+  .nbo .book.closed-back { transform: translateX(25%); }
+  .nbo .leaf { position: absolute; left: 50%; top: 0; width: 50%; height: 100%; transform-origin: left center; transform-style: preserve-3d; }
+  /* no blanket will-change: a turning leaf gets its own layer from its animation, and only then */
+  .nbo .side { position: absolute; inset: 0; container-type: size; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .nbo .side.back { transform: rotateY(180deg); }
+  /* paper sits just inside the covers */
+  .nbo .leaf:not(.cover-leaf) .side { inset: 1.1% 1.3% 1.1% 0; }
+  .nbo .side:not(.cover) { box-shadow: 0 1px 1px rgb(0 0 0 / 0.08), 0 14px 30px -12px rgb(30 20 20 / 0.3); }
+  .nbo .side:not(.cover)[data-page] { cursor: pointer; }
+  .nbo .side.front:not(.cover) { border-radius: 0 6px 6px 0; }
+  .nbo .side.back:not(.cover) { border-radius: 6px 0 0 6px; }
+  .nbo .cover img { position: absolute; inset: 0; width: 100%; height: 100%; user-select: none; -webkit-user-select: none; filter: drop-shadow(0 18px 24px rgb(30 20 20 / 0.28)); }
+  .nbo .side.cover { cursor: pointer; }
+  .nbo .cover .board { position: absolute; inset: 0; background: var(--maroon); }
+
+  /* back cover stickers: a picked one keeps the light, everything else on the cover drops back */
+  .nbo .cover .dim { position: absolute; inset: 0; z-index: 1; background: rgb(24 16 14 / 0.56); opacity: 0; pointer-events: none; transition: opacity var(--dur) var(--ease-out); }
+  .nbo .cover.has-pick .dim { opacity: 1; }
+  /* the button is the size of the whole cover and lets clicks through; .hit is its real shape and
+     stays put while .lift moves, so a raised sticker can't slide out from under the pointer */
+  .nbo .cover .sticker { position: absolute; inset: 0; pointer-events: none; outline: none; -webkit-tap-highlight-color: transparent; }
+  .nbo .cover .hit { position: absolute; inset: 0; clip-path: var(--clip); pointer-events: auto; cursor: pointer; }
+  .nbo .cover .lift { position: absolute; inset: 0; pointer-events: none; transform-origin: var(--origin); transition: transform 280ms var(--ease-out-strong), filter 200ms var(--ease-out); }
+  .nbo .cover .lift img { clip-path: var(--clip); filter: none; }
+  .nbo .cover .sticker:is(:focus-visible, [aria-pressed="true"]) { z-index: 2; }
+  .nbo .cover .sticker:focus-visible .lift { transform: translateY(-1%) scale(1.03); filter: drop-shadow(0 0 0 var(--accent)) drop-shadow(0 0 3px var(--accent)) drop-shadow(0 10px 12px rgb(20 10 10 / 0.45)); }
+  .nbo .cover .sticker[aria-pressed="true"] .lift { transform: translateY(-1.2%) scale(1.06) rotate(-1.5deg); filter: drop-shadow(0 16px 18px rgb(20 10 10 / 0.5)); }
+  .nbo .cover .sticker:active .lift { transform: translateY(-0.4%) scale(1.01); }
+  @media (hover: hover) {
+    .nbo .cover .sticker:has(.hit:hover) { z-index: 2; }
+    .nbo .cover .sticker:has(.hit:hover):not([aria-pressed="true"]) .lift { transform: translateY(-1%) scale(1.03); filter: drop-shadow(0 10px 12px rgb(20 10 10 / 0.45)); }
+  }
+  /* its caption sits beside the closed back cover, bottom-aligned with it */
+  .nbo .sticker-caption {
+    position: absolute; z-index: 3; margin: 0;
+    left: calc(50% + var(--pw) / 2 + 32px); bottom: calc(50% + 8px - var(--ph) / 2);
+    width: min(300px, calc(50% - var(--pw) / 2 - 56px));
+    font: 13px/1.5 var(--mono); color: var(--ink); overflow-wrap: anywhere;
+    opacity: 0; translate: 0 4px; visibility: hidden; transition: opacity var(--dur) var(--ease-out), translate var(--dur) var(--ease-out), visibility 0s var(--dur);
+  }
+  .nbo .sticker-caption.on { opacity: 1; translate: none; visibility: visible; transition-delay: 0s; }
+  .nbo .sticker-caption .note { display: block; color: var(--ink-2); }
+  .nbo .sticker-caption a { color: var(--accent); white-space: nowrap; }
+
+  /* ── the paper ─────────────────────────────────────────── */
+  .nbo .paper {
+    position: absolute; inset: 0; overflow: hidden; border-radius: inherit;
+    padding: 9cqw 7.5cqw 8cqw 9cqw;
+    font: 4.2cqw/5.2cqw var(--hand); color: var(--pen);
+    background: radial-gradient(circle, rgb(60 60 76 / 0.36) 0.2cqw, transparent 0.28cqw) 1.2cqw 2.1cqw / 5.2cqw 5.2cqw, var(--page);
+  }
+  .nbo .side.back .paper { padding: 9cqw 9cqw 8cqw 7.5cqw; }
+  /* the gutter: pages darken into the spine */
+  .nbo .paper::after { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; }
+  .nbo .side.front .paper::after { background: linear-gradient(90deg, rgb(40 30 20 / 0.2), rgb(40 30 20 / 0.06) 3%, transparent 9%), linear-gradient(270deg, rgb(40 30 20 / 0.06), transparent 2%); }
+  .nbo .side.back .paper::after { background: linear-gradient(270deg, rgb(40 30 20 / 0.2), rgb(40 30 20 / 0.06) 3%, transparent 9%), linear-gradient(90deg, rgb(40 30 20 / 0.06), transparent 2%); }
+  .nbo .paper > * { position: relative; }
+  .nbo .paper p { margin: 0; }
+  /* links and titles are set in the site's own type (mono, serif); the writing is in hand */
+  .nbo .paper a { white-space: nowrap; font: 400 3.1cqw/1.5 var(--mono); color: var(--pen-blue); text-decoration: underline; text-decoration-thickness: 0.15cqw; text-underline-offset: 0.6cqw; }
+  .nbo .paper a:hover { color: var(--pen-red); }
+  .nbo .folio { position: absolute; bottom: 4cqw; font-size: 3.2cqw; opacity: 0.5; }
+  .nbo .side.front .folio { right: 6cqw; }
+  .nbo .side.back .folio { left: 6cqw; }
+
+  .nbo .title { font: 300 7.2cqw/1.15 var(--serif); letter-spacing: -0.01em; margin: 0 0 3.6cqw; }
+  .nbo .paper h3 { font: 5.6cqw/6cqw var(--hand); margin: 4cqw 0 0; }
+  .nbo .paper .sub { font-size: 4.8cqw; letter-spacing: 0.12em; text-transform: uppercase; margin: 2cqw 0 1cqw; }
+  .nbo .paper .date { display: block; font-size: 3.2cqw; line-height: 4cqw; opacity: 0.6; letter-spacing: 0.04em; }
+  .nbo .paper h3 .date { display: inline; margin-left: 1.5cqw; }
+  .nbo .lede { margin-bottom: 1cqw !important; }
+  .nbo mark { color: inherit; background: linear-gradient(rgb(255 222 70 / 0.72), rgb(255 222 70 / 0.72)) 0 75% / 100% 60% no-repeat; padding: 0 0.15em; margin: 0 -0.15em; }
+  .nbo .arr { display: inline-block; width: 1.1em; height: 0.75em; margin-left: 0.25em; vertical-align: -0.05em; background: currentColor; -webkit-mask: var(--arrow) no-repeat center / contain; mask: var(--arrow) no-repeat center / contain; --arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 18' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 9.6c7-.9 14.2-.8 22.6-.4M18.4 3.4c2.4 2.1 4.4 3.9 6.4 5.9-2.3 1.7-4.4 3.5-6.6 5.6'/%3E%3C/svg%3E"); }
+  .nbo .arr.up { rotate: -35deg; }
+
+  /* ── scrapbook bits ────────────────────────────────────── */
+  .nbo .snap { position: relative; z-index: 1; width: var(--w); margin: 0; padding: 1.3cqw; background: #fffefb; rotate: var(--r); box-shadow: 0 0.2cqw 0.4cqw rgb(0 0 0 / 0.12), 0 1.4cqw 2.4cqw -1cqw rgb(40 30 20 / 0.3); }
+  .nbo .snap img { display: block; width: 100%; height: auto; }
+  .nbo .snap.pola { padding: 1.8cqw 1.8cqw 0; }
+  .nbo .snap figcaption { padding: 1.4cqw 0 1.8cqw; font: 3.6cqw/1 var(--hand); text-align: center; color: var(--pen); }
+  /* a note jotted on the page itself */
+  .nbo .aside { margin-top: 6cqw; }
+  .nbo .narrow-only { display: none; }
+  .nbo .toc { margin: 0; padding: 0 0 0 1.2em; }
+  .nbo .toc li { padding-left: 1cqw; }
+  .nbo .toc li::marker { font: 3.6cqw var(--mono); color: var(--ink-3); }
+  .nbo .toc a { display: flex; align-items: baseline; gap: 1.6cqw; font-size: 3.6cqw; line-height: 2; color: var(--pen); text-decoration: none; }
+  @media (hover: hover) { .nbo .toc a:hover { color: var(--pen-blue); } }
+  .nbo .toc i { flex: 1; border-bottom: 0.45cqw dotted currentColor; opacity: 0.45; translate: 0 -0.8cqw; }
+
+  .nbo .dense .paper { font-size: 3.4cqw; line-height: 4.2cqw; }
+  .nbo .dense .title { margin-bottom: 2.6cqw; }
+  .nbo .inspo { margin-top: 1.8cqw; }
+  .nbo .inspo h4 { margin: 0 0 0.6cqw; font: 4.8cqw/5.4cqw var(--hand); }
+  .nbo .inspo .by { font-size: 3.2cqw; opacity: 0.6; white-space: nowrap; }
+
+  /* printed things, cut out and stuck in */
+  .nbo .clip { position: relative; margin: 4.6cqw 1cqw 0; padding: 3.6cqw 4cqw 2.8cqw; background: #fffdf7; rotate: var(--r); font: 300 3.1cqw/1.55 var(--serif); color: #2a2a2a; box-shadow: 0 0.2cqw 0.4cqw rgb(0 0 0 / 0.1), 0 1.4cqw 2.4cqw -1.2cqw rgb(40 30 20 / 0.3); }
+  .nbo .clip blockquote { margin: 0; }
+  .nbo .clip blockquote p + p { margin-top: 1.4cqw; }
+  .nbo .clip .elide { color: rgb(0 0 0 / 0.45); }
+  .nbo .clip figcaption { margin-top: 1.6cqw; font: 3.8cqw/1.2 var(--hand); color: var(--pen); }
+  .nbo .clip.script { font: 3.1cqw/1.5 var(--mono); }
+  .nbo .clip .sl-character { text-align: center; margin-top: 0; }
+  .nbo .clip .sl-dialogue { margin: 0.6cqw 6cqw 0; }
+
+  .nbo .checks { list-style: none; margin: 2cqw 0 0; padding: 0; }
+  .nbo .check { display: flex; gap: 1.8cqw; align-items: flex-start; margin-top: 0.6cqw; }
+  .nbo .check svg { flex: none; width: 5cqw; height: 5cqw; fill: none; stroke: var(--pen); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .nbo .check .tick { stroke: var(--pen-red); stroke-width: 2.4; }
+
+  .nbo .pile { position: relative; display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 3cqw 3.4cqw; margin-top: 7cqw; }
+  .nbo .pile .snap:nth-child(2n) { margin-top: 4cqw; }
+  .nbo .pile.food { flex-wrap: nowrap; gap: 0; }
+  .nbo .pile.food .snap + .snap { margin-left: -3cqw; }
+  /* the ironman page: three photos overlapping, the sign-up on top */
+  .nbo .pile.run { display: block; height: 57cqw; margin-top: 3cqw; }
+  .nbo .pile.run .snap { position: absolute; margin: 0; }
+  .nbo .pile.run .snap:nth-child(1) { left: 0; top: 2cqw; }
+  .nbo .pile.run .snap:nth-child(2) { right: 1cqw; top: -10cqw; }
+  .nbo .pile.run .signup { right: 0; top: 27cqw; z-index: 2; }
+  .nbo .stamps { display: flex; gap: 3.4cqw; margin: 5cqw 0 0 2cqw; }
+  .nbo .stamp { display: grid; place-content: center; width: 11.5cqw; height: 11.5cqw; border: 0.55cqw solid; border-radius: 50%; outline: 0.25cqw solid; outline-offset: 0.7cqw; color: rgb(194 46 40 / 0.78); font: 500 3.8cqw/1 var(--mono); text-align: center; rotate: var(--r); mix-blend-mode: multiply; }
+  /* a bull for buffalo wild wings, drawn in the same stamp ink */
+  .nbo .stamp .bull { width: 5.6cqw; height: 4.2cqw; margin: 0.6cqw auto 0; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .nbo .wings { position: absolute !important; right: 7cqw; top: 48cqw; }
+  .nbo .karate { position: absolute !important; left: 7.5cqw; right: 8cqw; bottom: 10cqw; display: flex; align-items: flex-end; gap: 3cqw; }
+  .nbo .karate > div { flex: 1; }
+  .nbo .karate .snap:last-child { margin-bottom: 3cqw; }
+
+  .nbo .chat .title { margin-top: 10cqw; }
+  .nbo .chat .email { margin-top: 6cqw; }
+  .nbo .chat .email a { font-size: 4.2cqw; }
+  .nbo .elsewhere { list-style: none; padding: 0; margin: 6cqw 0 0; }
+  .nbo .elsewhere li { margin-top: 1.6cqw; }
+  .nbo .sign { margin: 12cqw 0 0 auto !important; width: 40cqw; color: var(--pen); }
+  .nbo .sign svg { display: block; width: 100%; height: auto; }
+
+  /* the endpapers: plain paper pasted inside the maroon cover */
+  /* inset and rounded like the cover photo, so no square corner shows behind it */
+  .nbo .endpaper { background: var(--maroon); }
+  .nbo .cover-leaf .side.endpaper { inset: 0.7% 0.6% 0.7% 0; border-radius: 0 3% 3% 0 / 0 2% 2% 0; }
+  .nbo .cover-leaf .side.back.endpaper { border-radius: 3% 0 0 3% / 2% 0 0 2%; }
+  .nbo .endpaper .paper { inset: 1.6cqw 1.6cqw 1.6cqw 0; background: #f3eee2; }
+  .nbo .side.back.endpaper .paper { inset: 1.6cqw 0 1.6cqw 1.6cqw; }
+  .nbo .found { margin-top: 18cqw; padding: 5cqw; border: 0.3cqw solid rgb(29 35 66 / 0.5); }
+  .nbo .found .small { font: 2.8cqw/1.4 var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: rgb(29 35 66 / 0.7); }
+  .nbo .found .line.name { display: flex; align-items: flex-end; gap: 1.6cqw; font-size: 6.4cqw; line-height: 1; }
+  .nbo .found .sig { display: block; width: 22cqw; margin-bottom: 0.3cqw; color: var(--pen); }
+  .nbo .found .sig svg { display: block; width: 100%; height: auto; }
+  .nbo .found .line { margin-top: 3cqw; padding-bottom: 0.6cqw; border-bottom: 0.2cqw solid rgb(29 35 66 / 0.35); font-size: 5cqw; }
+  .nbo .motto { position: absolute !important; left: 10cqw; bottom: 16cqw; font-size: 6cqw; rotate: -4deg; }
+  /* the expanding pocket glued inside the back cover, with a card tucked in it */
+  .nbo .pocket { position: absolute !important; left: 6cqw; right: 6cqw; bottom: 6cqw; height: 50cqw; background: linear-gradient(#ebe4d2, #e2dac6); border-top: 0.3cqw solid rgb(0 0 0 / 0.1); border-radius: 0 0 1cqw 1cqw; box-shadow: 0 -0.4cqw 1cqw rgb(0 0 0 / 0.1), inset 0 1cqw 1.4cqw -1cqw rgb(0 0 0 / 0.16); pointer-events: none; }
+  .nbo .paper .card { position: absolute; left: 14cqw; bottom: 22cqw; width: 52cqw; height: 44cqw; padding: 4.4cqw 5cqw; rotate: -5deg; background: #fffdf7; color: var(--pen); text-decoration: none; box-shadow: 0 0.6cqw 1.4cqw rgb(0 0 0 / 0.15); transition: translate 300ms var(--ease-out-strong), color var(--dur-fast) var(--ease-out); }
+  .nbo .paper .card:hover { translate: 0 -3cqw; color: var(--pen-red); }
+
+  /* ── phones: the same book, one page in view ───────────── */
+  /* the spread is twice the screen wide; the book pans so the page being read sits in the middle, and the
+     facing page waits just off the edge, the way a book held close to your face works */
+  @media (max-width: 760px) {
+    .nbo { --pw: min(calc(100vw - 36px), calc((100svh - 200px) * 0.6914)); --ph: calc(var(--pw) / 0.6914); }
+    .nbo .backdrop { background: var(--paper); }
+    /* placed without a transform: one on the stage would trap the fixed tabs inside it */
+    .nbo .stage { left: calc(50% - var(--pw)); top: calc(50% + 24px - var(--ph) / 2); translate: none; }
+    .nbo .side:not(.cover)[data-page] { cursor: auto; }
+    /* sideways drags are page turns, not scrolls */
+    .nbo .book { touch-action: pan-y pinch-zoom; }
+    .nbo .tabs { position: fixed; left: 0; right: 0; top: 56px; padding: 0 12px 6px; overflow-x: auto; scrollbar-width: none; flex-direction: row; gap: 5px; opacity: 1 !important; translate: none !important; pointer-events: auto !important; }
+    .nbo .tab { flex: none; margin: 0; padding: 7px 7px; font-size: 11px; border-radius: 4px; box-shadow: 0 1px 2px rgb(0 0 0 / 0.14); }
+    .nbo .tab:hover, .nbo .tab[aria-current="true"] { translate: 0 3px; }
+    .nbo .close { top: 6px; right: 4px; }
+    .nbo .wide-only { display: none; }
+    /* under the page, above the pager; backed so it stays legible if a short screen squeezes it onto the cover */
+    .nbo .sticker-caption { left: 16px; right: 16px; bottom: 64px; width: auto; text-align: center; padding: 6px 10px; background: rgb(255 255 255 / 0.92); border-radius: 6px; }
+    .nbo .narrow-only { display: inline; }
+    /* and the writing a touch bigger, since the whole page is smaller in the hand */
+    .nbo .paper { font-size: 4.5cqw; line-height: 5.4cqw; }
+    .nbo .dense .paper { font-size: 3.6cqw; line-height: 4.15cqw; }
+    .nbo .dense .inspo { margin-top: 1.1cqw; }
+    .nbo .dense .title { margin-bottom: 1.6cqw; }
+    .nbo .dense .paper .sub { margin: 1.4cqw 0 0.6cqw; }
+    /* narrower margins buy the writing room */
+    .nbo .paper, .nbo .side.back .paper { padding: 7.5cqw 6.5cqw 7cqw 7.5cqw; }
+    .nbo .side.back .paper { padding: 7.5cqw 7.5cqw 7cqw 6.5cqw; }
+  }
+  @media (max-width: 380px) { .nbo .tab { padding: 7px 5px; font-size: 10.5px; } }
+  @media (prefers-reduced-motion: reduce) { .nbo .book, .nbo .tabs { transition: none !important; } }
+</style>
+
+<script>
+  import { fillCaption } from "../scripts/sticker-caption";
+
+  const dialog = document.querySelector<HTMLDialogElement>("[data-nbo]");
+  // set up once any page transition has finished (Base.astro), so it doesn't stall the notebook's slide
+  if (dialog) ((window as { __settled?: Promise<void> }).__settled ?? Promise.resolve()).then(() => {
+    const book = dialog.querySelector<HTMLElement>("[data-nbo-book]")!;
+    const stage = dialog.querySelector<HTMLElement>("[data-nbo-stage]")!;
+    const chrome = [...dialog.querySelectorAll<HTMLElement>("[data-nbo-chrome]")];
+    const where = dialog.querySelector<HTMLElement>("[data-nbo-where]")!;
+    const prevButton = dialog.querySelector<HTMLButtonElement>("[data-nbo-prev]")!;
+    const nextButton = dialog.querySelector<HTMLButtonElement>("[data-nbo-next]")!;
+    const leaves = [...book.querySelectorAll<HTMLElement>(".leaf")];
+    const sides = [...book.querySelectorAll<HTMLElement>(".side")]; // page order
+    const N = leaves.length;
+    const narrow = matchMedia("(max-width: 760px)");
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+    const homeBook = document.querySelector<HTMLElement>("[data-notebook] [data-book]");
+    const homeScene = homeBook?.parentElement;
+    const backCover = dialog.querySelector<HTMLElement>("[data-nbo-back]")!;
+    const caption = dialog.querySelector<HTMLElement>("[data-nbo-caption]")!;
+
+    // section name -> first page; "notebook" is the contents page, and "inspiration" opens on its first section
+    const starts: [string, number][] = [["notebook", 2], ["inspiration", 3], ...sides.filter((s) => s.dataset.section).map((s) => [s.dataset.section!, Number(s.dataset.page)] as [string, number])];
+    const sectionOf = (page: number) => starts.reduce((found, [key, start]) => (page >= start ? key : found), "notebook");
+    const leafFor = (page: number) => (page % 2 ? (page + 1) / 2 : page / 2);
+
+    let turned = 0; // leaves turned over to the left
+    let current = 0; // the page in view (the right-hand one on a spread)
+    let view: "L" | "R" = "R"; // phones: which side of the spread is in view
+    const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    // A page lifts slowly, falls quicker and settles; the book slides to centre on the same curve.
+    const TURN_EASE = "cubic-bezier(0.5, 0.05, 0.25, 1)";
+    const MOVE_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
+
+    // A leaf on the left stacks by index (later leaves on top), on the right the other way round.
+    // A turning leaf changes sides when it stands upright (90°), and that is exactly when its stacking
+    // order has to flip: it's a step in the same keyframes as the rotation, so the two can't drift.
+    const z = (k: number, left: boolean) => (left ? k : N - k);
+    const isLeft = leaves.map(() => false);
+    const running = new Map<HTMLElement, Animation>();
+
+    // Each side is hidden outright while it faces away. backface-visibility alone isn't enough: Safari lets
+    // anything on a page with its own layer (the tilted photos) show through, mirrored, from the far side.
+    const faces = (k: number) => [sides[2 * k], sides[2 * k + 1]] as const;
+    const faceKeys = (showing: boolean, after: boolean) => [
+      { offset: 0, opacity: showing ? 1 : 0 }, { offset: 0.5, opacity: showing ? 1 : 0 },
+      { offset: 0.5, opacity: after ? 1 : 0 }, { offset: 1, opacity: after ? 1 : 0 },
+    ];
+    const faceAnims = new Map<HTMLElement, Animation[]>();
+    function rest(k: number) {
+      leaves[k].style.transform = isLeft[k] ? "rotateY(-180deg)" : "";
+      leaves[k].style.zIndex = String(z(k, isLeft[k]));
+      const [front, back] = faces(k);
+      front.style.opacity = isLeft[k] ? "0" : "";
+      back.style.opacity = isLeft[k] ? "" : "0";
+    }
+    function turnLeaf(k: number, left: boolean, delay: number, duration: number) {
+      const leaf = leaves[k];
+      isLeft[k] = left;
+      rest(k); // where it ends up; the animation plays on top of this
+      const busyLeaf = running.get(leaf);
+      if (busyLeaf) {
+        // turned back (or forward again) mid-turn: run the same turn backwards from where it is
+        busyLeaf.reverse();
+        faceAnims.get(leaf)?.forEach((a) => a.reverse());
+        return;
+      }
+      const [from, to] = left ? [0, -180] : [-180, 0];
+      const anim = leaf.animate([
+        { offset: 0, transform: `rotateY(${from}deg)`, zIndex: z(k, !left) },
+        { offset: 0.5, transform: "rotateY(-90deg)", zIndex: z(k, !left) },
+        { offset: 0.5, transform: "rotateY(-90deg)", zIndex: z(k, left) },
+        { offset: 1, transform: `rotateY(${to}deg)`, zIndex: z(k, left) },
+      ], { duration, delay, easing: TURN_EASE, fill: "backwards" });
+      // the same timing and curve, so each side appears and disappears exactly as the leaf passes 90°
+      const [front, back] = faces(k);
+      const timing = { duration, delay, easing: TURN_EASE, fill: "backwards" as const };
+      // turning over, the front shows until 90° and the back after it; turning back, the reverse
+      const sideAnims = [front.animate(faceKeys(left, !left), timing), back.animate(faceKeys(!left, left), timing)];
+      faceAnims.set(leaf, sideAnims);
+      running.set(leaf, anim);
+      const done = () => { if (running.get(leaf) === anim) { running.delete(leaf); cull(); } };
+      // drop it once it's done: a reversed run would otherwise keep holding its start through `fill`
+      anim.onfinish = () => { done(); anim.cancel(); };
+      anim.oncancel = () => { done(); sideAnims.forEach((a) => a.cancel()); };
+      sideAnims.forEach((a) => (a.onfinish = () => a.cancel()));
+    }
+
+    /** Turn to `target` leaves over; returns how long until the turning is done. */
+    // Only draw the leaves that can be seen: both covers (they frame the book), the open spread, and
+    // anything turning along with the leaves either side of it. The rest lie flat under the top
+    // pages; drawing all 24 pages made the first frame enormous and overflowed GPU memory on retina
+    // screens, which is what showed up as pages blanking or clipping mid-turn.
+    function cull() {
+      const keep = new Set([0, N - 1, turned - 1, turned]);
+      // closed, only the cover shows: the pages under it are plain rectangles and would peek out past
+      // the photo's rounded, clipped edge
+      if (turned === 0 && !running.size) keep.clear(), keep.add(0);
+      if (turned === N && !running.size) keep.clear(), keep.add(N - 1);
+      leaves.forEach((leaf, k) => { if (running.has(leaf)) [k - 1, k, k + 1].forEach((i) => keep.add(i)); });
+      leaves.forEach((leaf, k) => (leaf.style.visibility = keep.has(k) ? "" : "hidden"));
+    }
+
+    /** `after` holds the turning back that long, on the animation clock (not a timer), so it can be
+     * lined up exactly with the stage moving when the book opens or closes. */
+    // phones: slide the book so one side of the spread is centred
+    function pan(to: "L" | "R", { animate = true, duration = 520, delay = 0, ease = MOVE_EASE } = {}) {
+      view = to;
+      book.style.transition = animate && !reduce.matches ? `transform ${duration}ms ${ease} ${delay}ms` : "none";
+      book.style.transform = to === "R" ? "translateX(-25%)" : "translateX(25%)";
+    }
+
+    function turnTo(target: number, { animate = true, quick = false, after = 0, side }: { animate?: boolean; quick?: boolean; after?: number; side?: "L" | "R" } = {}) {
+      target = Math.max(0, Math.min(N, target));
+      const moving = leaves.map((_, k) => k).filter((k) => (k < target) !== isLeft[k]);
+      if (target < turned) moving.reverse();
+      const duration = quick ? 620 : moving.length > 1 ? 720 : 860;
+      const stagger = moving.length > 1 ? Math.min(quick ? 40 : 75, (quick ? 220 : 420) / (moving.length - 1)) : 0;
+      if (!animate) {
+        running.forEach((a) => a.cancel());
+        leaves.forEach((_, k) => { isLeft[k] = k < target; rest(k); });
+      } else {
+        moving.forEach((k, i) => turnLeaf(k, k < target, after + i * stagger, duration));
+      }
+      // the closed book sits centred on its cover; it slides over as the cover (or back cover) turns
+      const shiftLeaf = target === 0 || turned === 0 ? 0 : target === N || turned === N ? N - 1 : -1;
+      const shiftAt = moving.indexOf(shiftLeaf);
+      const from = turned;
+      turned = target;
+      if (narrow.matches) {
+        // the view follows the page over: forward lands on its back (left), back lands on the right
+        const to = target === 0 ? "R" : target === N ? "L" : side ?? (target > from ? "L" : "R");
+        pan(to, { animate, duration: moving.length ? duration : 520, delay: after, ease: moving.length ? TURN_EASE : MOVE_EASE });
+      } else {
+        book.style.transform = "";
+        book.style.transition = animate ? `transform ${duration}ms ${TURN_EASE} ${after + Math.max(0, shiftAt) * stagger}ms` : "none";
+      }
+      book.classList.toggle("closed-front", turned === 0);
+      book.classList.toggle("closed-back", turned === N);
+      stage.classList.toggle("closed", turned === 0 || turned === N);
+      current = narrow.matches ? (view === "R" ? 2 * turned : 2 * turned - 1) : turned === N ? 2 * N - 1 : 2 * turned;
+      cull();
+      sync();
+      return animate && moving.length ? after + (moving.length - 1) * stagger + duration : 0;
+    }
+
+    // Stickers on the back cover can be picked up, like the front cover's on the home page. The pick
+    // only lives while the back cover is in view.
+    let picked: HTMLButtonElement | null = null;
+    function pick(s: HTMLButtonElement | null) {
+      picked?.setAttribute("aria-pressed", "false");
+      picked = s;
+      backCover.classList.toggle("has-pick", !!s);
+      caption.classList.toggle("on", !!s);
+      if (!s) return;
+      s.setAttribute("aria-pressed", "true");
+      fillCaption(caption, s.dataset);
+    }
+    backCover.querySelectorAll<HTMLButtonElement>(".sticker").forEach((s) =>
+      s.addEventListener("click", () => pick(s === picked ? null : s)),
+    );
+
+    function sync() {
+      const spread = !narrow.matches;
+      if (picked && (spread ? turned !== N : current !== 2 * N - 1)) pick(null);
+      sides.forEach((side, i) => (side.inert = spread ? i !== 2 * turned - 1 && i !== 2 * turned : i !== current));
+      const first = spread ? (turned === 0 ? 0 : turned === N ? 2 * N - 1 : 2 * turned - 1) : current;
+      const last = spread ? (turned === 0 || turned === N ? first : 2 * turned) : current;
+      where.textContent = first === 0 ? "cover" : first === 2 * N - 1 ? "back cover" : first === last ? `page ${first}` : `pages ${first}–${last}`;
+      prevButton.disabled = spread ? turned === 0 : current === 0;
+      nextButton.disabled = spread ? turned === N : current === 2 * N - 1;
+      // on a spread, a section that starts on the right-hand page wins over the one carrying on from the left
+      const startsAt = (page: number) => starts.some(([, start]) => start === page);
+      const section = sectionOf(spread ? (startsAt(first) || !startsAt(last) ? Math.max(first, 0) : last) : current);
+      dialog!.querySelectorAll<HTMLElement>(".tab").forEach((tab) => tab.setAttribute("aria-current", String(tab.dataset.nboGoto === section)));
+      if (dialog!.open && !busy && location.hash !== `#${section}`) history.replaceState(history.state, "", `#${section}`);
+    }
+
+    function goto(key: string, animate = true, after = 0) {
+      const page = starts.find(([k]) => k === key)?.[1] ?? 2;
+      return turnTo(leafFor(page), { animate: animate && !reduce.matches, after, side: page % 2 ? "L" : "R" });
+    }
+    const step = (by: 1 | -1) => {
+      if (!narrow.matches) { turnTo(turned + by, { animate: !reduce.matches }); return; }
+      // phones read one side at a time: from a left page, forward just moves across to the right one;
+      // from a right page it turns the leaf, and the view follows it over (and the reverse going back)
+      if (by > 0 ? current >= 2 * N - 1 : current <= 0) return;
+      if ((by > 0) === (view === "L")) {
+        pan(view === "L" ? "R" : "L");
+        current += by;
+        cull();
+        sync();
+      } else turnTo(turned + by, { animate: !reduce.matches });
+    };
+
+    /** The FLIP from the cover on the home page (or the spine at the edge of the inner pages) to the
+     * closed book in the dialog (or back again).
+     * Worked out from the stage's resting box, not measured, so it's right even mid-turn: closed, the
+     * cover is the right half of the spread slid back to the middle, i.e. centred on the stage. */
+    function fromHome() {
+      if (!homeBook) return null;
+      const home = homeBook.getBoundingClientRect();
+      if (!home.width || home.bottom < 0 || home.top > innerHeight) return null;
+      const box = stage.getBoundingClientRect();
+      const dx = home.left + home.width / 2 - (box.left + box.width / 2);
+      const dy = home.top + home.height / 2 - (box.top + box.height / 2);
+      return `translate(${dx}px, ${dy}px) scale(${home.width / (box.width / 2)})`;
+    }
+    const fade = (on: boolean, duration: number, delay = 0) =>
+      chrome.map((el) => el.animate([{ opacity: on ? 0 : 1 }, { opacity: on ? 1 : 0 }], { duration, delay, easing: "ease-out", fill: "both" }));
+
+    let busy = false; // opening or closing: the pages turn, but the URL shouldn't follow them
+    async function open(key: string, { instant = false } = {}) {
+      if (dialog!.open) return goto(key);
+      busy = true;
+      warm();
+      document.documentElement.classList.add("nbo-open");
+      dialog!.showModal();
+      const animate = !instant && !reduce.matches;
+      if (narrow.matches && animate) {
+        // the closed book rises into view, then opens to the section, a page at a time
+        turnTo(0, { animate: false });
+        fade(true, 300);
+        // the book, not the stage: a transform on the stage would drag the fixed tabs along with it
+        const rise = book.animate([{ opacity: 0, translate: "0 18px", scale: "0.97" }, { opacity: 1, translate: "0 0", scale: "1" }], { duration: 460, easing: MOVE_EASE });
+        const turning = goto(key, true, 260);
+        await Promise.all([rise.finished, wait(turning)]);
+      } else if (!animate) {
+        goto(key, false);
+      } else {
+        // one continuous move: the cover travels from the home page and starts opening on the way
+        turnTo(0, { animate: false });
+        const from = fromHome();
+        fade(true, 420);
+        if (from) homeScene!.style.visibility = "hidden";
+        const move = stage.animate(from ? [{ transform: from }, { transform: "none" }] : [{ opacity: 0, transform: "scale(0.96)" }, { opacity: 1, transform: "none" }], { duration: from ? 700 : 440, easing: MOVE_EASE });
+        const turning = goto(key, true, from ? 240 : 100);
+        await Promise.all([move.finished, wait(turning)]);
+      }
+      busy = false;
+      sync();
+    }
+
+    async function close() {
+      if (!dialog!.open || busy) return;
+      busy = true;
+      pick(null);
+      if (!reduce.matches) {
+        let fading: Animation[];
+        if (narrow.matches) {
+          // shut the book, then let it drop away
+          const delay = Math.max(0, turnTo(0, { quick: true }) - 200);
+          fading = fade(false, 260, delay);
+          await book.animate([{ opacity: 1 }, { opacity: 0, translate: "0 12px", scale: "0.98" }], { duration: 260, delay, easing: "ease-in", fill: "forwards" }).finished;
+        } else {
+          // the book closes and, while the cover is still coming down, heads back to the home page
+          const to = fromHome();
+          const turning = turnTo(0, { quick: true });
+          const delay = Math.max(0, turning - 320);
+          fading = fade(false, to ? 560 : 260, delay);
+          await stage.animate(to ? [{ transform: "none" }, { transform: to }] : [{ opacity: 1 }, { opacity: 0, transform: "scale(0.97)" }], { duration: to ? 660 : 260, delay, easing: to ? MOVE_EASE : "ease-in", fill: "forwards" }).finished;
+        }
+        if (homeScene) homeScene.style.visibility = "";
+        dialog!.close();
+        stage.getAnimations().forEach((a) => a.cancel());
+        book.getAnimations().forEach((a) => a.cancel());
+        fading.forEach((a) => a.cancel());
+      } else dialog!.close();
+      if (homeScene) homeScene.style.visibility = "";
+      document.documentElement.classList.remove("nbo-open");
+      busy = false;
+    }
+
+    // Load and decode every photo in the pages before they're needed, so nothing decodes mid-turn.
+    let warmed = false;
+    function warm() {
+      if (warmed) return;
+      warmed = true;
+      // the handwriting too: nothing on the page uses it until the notebook opens, so it isn't fetched before
+      document.fonts?.load('1em "Rohanth Hand"').catch(() => {});
+      dialog!.querySelectorAll("img").forEach((img) => { img.loading = "eager"; img.decode().catch(() => {}); });
+    }
+    const idle = (fn: () => void) => ("requestIdleCallback" in window ? requestIdleCallback(fn, { timeout: 4000 }) : setTimeout(fn, 2000));
+    // only the home page preloads; elsewhere the notebook is a sidetrack, so it waits for a hover
+    if (!document.querySelector("[data-spine]")) addEventListener("load", () => setTimeout(() => idle(warm), 1200), { once: true });
+    document.querySelectorAll("[data-nbo-open], [data-open-cover]").forEach((el) => el.addEventListener("pointerenter", warm, { once: true }));
+
+    // the URL follows the notebook (#readings …), so the back button closes it and links can open it
+    const valid = (key: string) => starts.some(([k]) => k === key);
+    const requestClose = () => {
+      if (history.state?.nbo) history.back();
+      else { history.replaceState(null, "", location.pathname + location.search); close(); }
+    };
+    const openFromLink = (key: string) => {
+      history.pushState({ nbo: true }, "", `#${key}`);
+      open(key);
+    };
+    document.addEventListener("nbo:open", (e) => openFromLink((e as CustomEvent<string>).detail));
+    addEventListener("popstate", () => {
+      const key = location.hash.slice(1);
+      if (valid(key)) open(key);
+      else close();
+    });
+
+    document.addEventListener("click", (e) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const target = e.target as Element;
+      const opener = target.closest<HTMLElement>("[data-nbo-open]");
+      if (opener) { e.preventDefault(); openFromLink(opener.dataset.nboOpen || "notebook"); return; }
+      const jump = target.closest<HTMLElement>("[data-nbo-goto]");
+      if (jump && dialog.contains(jump)) { e.preventDefault(); goto(jump.dataset.nboGoto!); }
+    });
+    dialog.querySelector("[data-nbo-close]")!.addEventListener("click", requestClose);
+    // Escape puts a picked sticker back first, and only closes the notebook after that
+    dialog.addEventListener("cancel", (e) => { e.preventDefault(); if (picked) pick(null); else requestClose(); });
+    prevButton.addEventListener("click", () => step(-1));
+    nextButton.addEventListener("click", () => step(1));
+    dialog.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && picked) { e.preventDefault(); e.stopPropagation(); const s = picked; pick(null); s.focus(); return; }
+      if (e.key === "ArrowRight") { e.preventDefault(); step(1); }
+      if (e.key === "ArrowLeft") { e.preventDefault(); step(-1); }
+    });
+    // a click anywhere but a sticker or its caption puts the sticker back (on the bare cover it also turns back);
+    // otherwise a click on the empty space around the notebook closes it
+    const around = [dialog, dialog.querySelector(".backdrop"), stage, book, stage.querySelector(".tabs"), dialog.querySelector(".pager")];
+    dialog.addEventListener("click", (e) => {
+      if (picked) { if (!(e.target as Element).closest(".sticker, [data-nbo-caption]")) pick(null); return; }
+      if (around.includes(e.target as Element)) requestClose();
+    });
+    // clicking a page (anywhere that isn't a link) turns it: the right page forward, the left one back.
+    // On a phone, with one page in view, a tap on its right half goes forward and its left half back.
+    let swiped = false;
+    book.addEventListener("click", (e) => {
+      if (swiped) { swiped = false; return; }
+      if ((e.target as Element).closest("a, button")) return;
+      if (narrow.matches) { step(e.clientX > innerWidth / 2 ? 1 : -1); return; }
+      const side = (e.target as Element).closest<HTMLElement>(".side");
+      const i = side ? sides.indexOf(side) : -1;
+      if (i === 2 * turned) step(1);
+      else if (i === 2 * turned - 1) step(-1);
+    });
+    // a swipe turns it on touch screens
+    let swipeX: number | null = null;
+    book.addEventListener("pointerdown", (e) => { if (e.pointerType !== "mouse") swipeX = e.clientX; });
+    book.addEventListener("pointerup", (e) => {
+      if (swipeX === null) return;
+      const dx = e.clientX - swipeX;
+      swipeX = null;
+      if (Math.abs(dx) > 40) { swiped = true; setTimeout(() => (swiped = false), 400); step(dx < 0 ? 1 : -1); }
+    });
+    narrow.addEventListener("change", () => {
+      const page = current;
+      turnTo(page ? leafFor(page) : 0, { animate: false, side: page % 2 ? "L" : "R" });
+    });
+
+    turnTo(0, { animate: false });
+    const initial = location.hash.slice(1);
+    if (valid(initial)) open(initial, { instant: true });
+  });
+</script>

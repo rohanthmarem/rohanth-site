@@ -1,7 +1,7 @@
 /* ─────────────────────────────────────────────────────────────
    rohanth.com — global styles
-   Paper + ink with one accent. Geist Pixel for display, Merriweather
-   for reading, Ioskeley Mono for UI and metadata.
+   Notebook paper + ink. Geist Pixel for display, Merriweather
+   for reading, Geist Mono for UI and metadata.
    Interface details follow jakub.kr/writing/details-that-make-interfaces-feel-better:
    balanced headings, tabular numbers, shadows over borders, image outlines,
    interruptible transitions, blur-in entrances, reduced motion.
@@ -10,15 +10,17 @@
 @font-face { font-family: "Geist Pixel"; src: url("/fonts/geist-pixel-square.77844bda.woff2") format("woff2"); font-display: swap; }
 @font-face { font-family: "Merriweather"; src: url("/fonts/merriweather-latin.6b615f68.woff2") format("woff2"); font-weight: 300 600; font-style: normal; font-display: swap; }
 @font-face { font-family: "Merriweather"; src: url("/fonts/merriweather-italic-latin.c7f43a37.woff2") format("woff2"); font-weight: 300 600; font-style: italic; font-display: swap; }
-@font-face { font-family: "Ioskeley Mono"; src: url("/fonts/ioskeley-mono-regular.d2433ea3.woff2") format("woff2"); font-weight: 400; font-display: swap; }
-@font-face { font-family: "Ioskeley Mono"; src: url("/fonts/ioskeley-mono-medium.f2ebc565.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+/* block, not swap: a moment of blank page beats a stranger's handwriting (on iPhones the fallback is a curly script) */
+@font-face { font-family: "Rohanth Hand"; src: url("/fonts/rohanth-hand.2f0c70ab.woff2") format("woff2"); font-display: block; }
+@font-face { font-family: "Geist Mono"; src: url("/fonts/geist-mono-regular.8f92513c.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url("/fonts/geist-mono-medium.5b6cb375.woff2") format("woff2"); font-weight: 500; font-display: swap; }
 
 :root {
   color-scheme: light;
-  /* cool white with a faint navy cast; ink is a deep navy-black */
-  --paper: #f6f7f9;
-  --paper-2: #eceef3;
-  --surface: #ffffff;
+  /* the colour of the notebook's pages; ink is a deep navy-black, like the pen */
+  --paper: #f4f0e6;
+  --paper-2: #eae5d8;
+  --surface: #fbf8f1;
   --ink: #11141c;
   --ink-2: rgb(17 20 28 / 0.64);
   --ink-3: rgb(17 20 28 / 0.5);
@@ -29,9 +31,11 @@
   --accent-ink: #ffffff;
   --hl: oklch(0.9 0.11 95);
 
-  --pixel: "Geist Pixel", "Ioskeley Mono", ui-monospace, monospace;
+  --pixel: "Geist Pixel", "Geist Mono", ui-monospace, monospace;
   --serif: "Merriweather", Georgia, serif;
-  --mono: "Ioskeley Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* the notebook's handwriting: a font traced from rohanth's own (see .context/handwriting-font) */
+  --hand: "Rohanth Hand", "Comic Sans MS", cursive;
+  --mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
@@ -56,28 +60,51 @@
   --title: 400 clamp(24px, 2.2vw, 30px)/1.15 var(--pixel);
 }
 
-[data-theme="dark"] {
+/* the white horizon (see WaveBackground): the homepage, and the inner pages with it in the corner */
+[data-theme="horizon"] {
+  --paper: #ffffff;
+  /* neutral greys instead of the old notebook creams */
+  --paper-2: #f1f1ef;
+  --surface: #fafafa;
+  /* let the horizon reach the window's edge; this page only scrolls on small screens */
+  scrollbar-gutter: auto;
+}
+/* dark mode: the system's setting, or the toggle (data-mode is set in Base's head, before first paint).
+   The horizon redraws in a night palette with the same --paper (horizon.js). */
+:root[data-mode="dark"] {
   color-scheme: dark;
-  --paper: #0b0e15;
-  --paper-2: #141823;
-  --surface: #181c27;
-  --ink: #eef1f6;
-  --ink-2: rgb(238 241 246 / 0.66);
-  --ink-3: rgb(238 241 246 / 0.52);
-  --rule: rgb(255 255 255 / 0.08);
-  --rule-strong: rgb(255 255 255 / 0.16);
-  --accent: #7b6dff;
-  --hl: oklch(0.45 0.09 95);
-  --shadow-border: 0 0 0 1px rgb(255 255 255 / 0.08);
-  --shadow-border-hover: 0 0 0 1px rgb(255 255 255 / 0.13);
+  --paper: #0c0c0e;
+  --paper-2: #1a1a1d;
+  --surface: #131316;
+  --ink: #ecebe6;
+  --ink-2: rgb(236 235 230 / 0.66);
+  --ink-3: rgb(236 235 230 / 0.48);
+  --rule: rgb(255 255 255 / 0.09);
+  --rule-strong: rgb(255 255 255 / 0.18);
+  --accent: #8c84ff;
+  --accent-ink: #0c0c0e;
+  --hl: oklch(0.42 0.08 90);
+  --shadow-border: 0 0 0 1px rgb(255 255 255 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.4), 0 2px 4px 0 rgb(0 0 0 / 0.3);
+  --shadow-border-hover: 0 0 0 1px rgb(255 255 255 / 0.13), 0 1px 2px -1px rgb(0 0 0 / 0.4), 0 2px 4px 0 rgb(0 0 0 / 0.3);
   --img-outline: rgb(255 255 255 / 0.1);
 }
+/* the notebook keeps its daylight ink: its pages are paper either way */
+:root[data-mode="dark"] .nbo .book {
+  --ink: #11141c; --ink-2: rgb(17 20 28 / 0.64); --ink-3: rgb(17 20 28 / 0.5);
+  --accent: #2200ff; --accent-ink: #ffffff; --hl: oklch(0.9 0.11 95);
+}
+/* the light/dark switch: it names the mode it switches to */
+[data-mode-toggle] .to-light, [data-mode="dark"] [data-mode-toggle] .to-dark { display: none; }
+[data-mode="dark"] [data-mode-toggle] .to-light { display: revert; }
+/* the open white page doesn't need the old frame's column rules */
+[data-theme="horizon"] .lines { display: none; }
 
 /* ── reset + base ─────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; scrollbar-gutter: stable; }
 body {
   margin: 0;
+  isolation: isolate;
   background: var(--paper);
   color: var(--ink);
   font: 17px/1.65 var(--serif);
@@ -96,17 +123,6 @@ p, li, figcaption, dd { text-wrap: pretty; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
 .wrap { max-width: var(--col); margin: 0 auto; padding: 0 var(--page-pad); }
-
-/* film grain over the whole page (after casperdong.com): a static fractal-noise tile drawn by
-   the browser from inline SVG (no image request), fixed so it doesn't scroll, never interactive */
-body::after {
-  content: ""; position: fixed; inset: 0; z-index: 90; pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
-  background-size: 220px 220px;
-  opacity: var(--grain, .06);
-}
-[data-theme="dark"] { --grain: .05; }
-@media print { body::after { display: none; } }
 
 /* the old site's + cursor, everywhere except where you type */
 html, body, *, *::before, *::after { cursor: crosshair; }
@@ -171,6 +187,20 @@ input, textarea, [contenteditable] { cursor: text; }
 
 /* ── entrances (one-shot keyframes, staggered 100ms) ──────── */
 @keyframes enter { from { transform: translateY(8px); filter: blur(8px); opacity: 0; } }
+/* page to page: the notebook cover slides over to the spine at the right edge (and back) */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+  ::view-transition-group(notebook) { animation-duration: 900ms; animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); transform-origin: 0 0; }
+  /* the same cover on both pages: one image slides over (or back), instead of two crossfading on the way */
+  ::view-transition-old(notebook) { animation: none; opacity: 0; }
+  ::view-transition-new(notebook) { animation: none; }
+  /* arriving by a view transition, the crossfade is the entrance: nothing rises or blurs in after it */
+  .vt-in [data-enter] { animation: none; }
+  /* the old page lets go quickly and the new one settles in; the horizon is drawn the same on both at
+     the switch (horizon.js), so only the content changes, and the band then glides to its new spot */
+  /* both halves of the crossfade on one clock, so the unchanged background never dips */
+  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 340ms; animation-timing-function: cubic-bezier(0.33, 0, 0.2, 1); }
+}
 [data-enter] { animation: enter var(--dur-enter) var(--ease-out) both; animation-delay: calc(100ms * var(--stagger, 0)); }
 
 /* ── underline animations (fancycomponents ports) ─────────── */
@@ -239,4 +269,26 @@ html:not(.js) mark.hl { background-size: 100% 100%; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 1ms !important; animation-delay: 0ms !important; transition-duration: 1ms !important; scroll-behavior: auto !important; }
+}
+
+/* Plain cursors: pointers mean something now that the homepage stickers can be picked up. */
+.lines { display: none; }
+html, body, *, *::before, *::after { cursor: auto; }
+a, button, summary, [role="button"], a *, button * { cursor: pointer; }
+input, textarea, [contenteditable] { cursor: text; }
+/* Give all card copy one inset, including descriptions and nested dates. */
+.content .card-copy { padding: 14px 0 0; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+html body .content .card-copy :is(h2, h3, p, time, .card-date) { margin: 0; }
+html body .content .card-copy :is(h2, h3) { line-height: 1.35; font-weight: 400; overflow-wrap: anywhere; }
+html body .content .card-copy :is(p, time, .card-date) { line-height: 1.55; }
+.content .card-copy .destination { max-width: 100%; overflow-wrap: anywhere; line-height: 1.5; }
+.content .page-head h1 { overflow-wrap: anywhere; }
+.content .head-copy { min-width: 0; }
+html body .content > .views, html body .content > .grid { margin-top: 32px; }
+html body .content .grid { gap: 24px; }
+@media (max-width: 1023px) {
+  .content { padding-top: 24px; }
+}
+@media print {
+  :root, :root[data-mode="dark"] { color-scheme: light; --paper: white; --ink: black; --ink-2: #333; --ink-3: #555; }
 }

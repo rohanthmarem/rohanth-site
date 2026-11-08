@@ -1,0 +1,129 @@
+---
+// The notebook: both covers, flippable, with every sticker cut out of the photo so it can be picked up.
+// Each sticker repeats the cover image behind a clip-path (traced in data/notebook.ts): nothing extra to
+// download, and clipped elements only take clicks inside their shape, so overlaps just work.
+import { getImage } from "astro:assets";
+import { covers } from "../data/notebook";
+import front from "../assets/notebook/front.jpg";
+
+const options = { widths: [640, 960, 1268], format: "webp" as const, quality: 82 };
+const sizes = "(max-width: 899px) min(92vw, 520px), 620px";
+const faces = [
+  { key: "front", cover: covers.front, image: await getImage({ src: front, ...options }) },
+];
+---
+<figure class="nb" data-notebook>
+  <div class="scene">
+    {/* an index tab tucked under the cover: the way in that doesn't mean dodging stickers */}
+    <a class="pull" href="#notebook" data-nbo-open="notebook">open</a>
+    <div class="book" data-book>
+      {faces.map(({ key, cover, image }) => (
+        <div class={`face ${key}`} data-face={key} inert={key === "back"}>
+          <div class="shadow" data-open-cover><img class="base" src={image.src} srcset={image.srcSet.attribute} sizes={sizes} width="1268" height="1834" alt={`the ${cover.label} of my notebook, covered in stickers`} fetchpriority={key === "front" ? "high" : undefined} draggable="false" style={`clip-path:${cover.book}`} /></div>
+          <div class="dim" style={`clip-path:${cover.book}`}></div>
+          {cover.stickers.map((s) => (
+            <button type="button" class="sticker" style={`--clip:${s.clip};--origin:${s.origin}`} aria-label={s.name} aria-pressed="false" data-name={s.name} data-note={s.note} data-href={s.href}>
+              <span class="hit"></span>
+              <span class="lift"><img src={image.src} srcset={image.srcSet.attribute} sizes={sizes} width="1268" height="1834" alt="" decoding="async" draggable="false" /></span>
+            </button>
+          ))}
+        </div>
+      ))}
+    </div>
+  </div>
+  <a class="open-book" href="#notebook" data-nbo-open="notebook">open book</a>
+  <figcaption class="bar">
+    <p class="caption" data-caption aria-live="polite"></p>
+  </figcaption>
+</figure>
+
+<style>
+  .nb { margin: 0; width: 100%; }
+  .scene { position: relative; perspective: 2200px; }
+  /* named so a view transition can carry the cover off to the spine on the inner pages (NotebookSpine) */
+  .book { view-transition-name: notebook; position: relative; z-index: 1; aspect-ratio: 1268 / 1834; transform-style: preserve-3d; transition: transform 800ms var(--ease-out-strong); }
+  .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .shadow { position: absolute; inset: 0; filter: drop-shadow(0 2px 3px rgb(30 25 25 / 0.3)) drop-shadow(0 22px 34px rgb(30 25 25 / 0.26)); }
+  .face img { position: absolute; inset: 0; width: 100%; height: 100%; user-select: none; -webkit-user-select: none; }
+
+  /* a selected sticker keeps the light; everything else on the cover drops back */
+  .dim { position: absolute; inset: 0; z-index: 1; background: rgb(24 16 14 / 0.56); opacity: 0; pointer-events: none; transition: opacity var(--dur) var(--ease-out); }
+  .face.has-pick .dim { opacity: 1; }
+
+  /* the button itself is the size of the whole cover and lets clicks through; .hit is its real shape.
+     .hit stays put while .lift moves, so a raised sticker can't slide out from under the pointer. */
+  .sticker { position: absolute; inset: 0; pointer-events: none; outline: none; -webkit-tap-highlight-color: transparent; }
+  .hit { position: absolute; inset: 0; clip-path: var(--clip); pointer-events: auto; cursor: pointer; }
+  .lift { position: absolute; inset: 0; pointer-events: none; transform-origin: var(--origin); transition: transform 280ms var(--ease-out-strong), filter 200ms var(--ease-out); }
+  .lift img { clip-path: var(--clip); }
+  .sticker:is(:focus-visible, [aria-pressed="true"]) { z-index: 2; }
+  .sticker:focus-visible .lift { transform: translateY(-1%) scale(1.03); filter: drop-shadow(0 0 0 var(--accent)) drop-shadow(0 0 3px var(--accent)) drop-shadow(0 10px 12px rgb(20 10 10 / 0.45)); }
+  .sticker[aria-pressed="true"] .lift { transform: translateY(-1.2%) scale(1.06) rotate(-1.5deg); filter: drop-shadow(0 16px 18px rgb(20 10 10 / 0.5)); }
+  .sticker:active .lift { transform: translateY(-0.4%) scale(1.01); }
+  @media (hover: hover) {
+    .sticker:has(.hit:hover) { z-index: 2; }
+    .sticker:has(.hit:hover):not([aria-pressed="true"]) .lift { transform: translateY(-1%) scale(1.03); filter: drop-shadow(0 10px 12px rgb(20 10 10 / 0.45)); }
+  }
+
+  /* the bare cover (between the stickers) opens the notebook */
+  .shadow { cursor: pointer; }
+  /* the tab sticks out past the cover's right edge (~98.7% across, near the top) and slides out on hover */
+  .pull {
+    position: absolute; z-index: 0; top: 9%; left: 97.6%; padding: 22px 11px 22px 15px;
+    writing-mode: vertical-rl; font: 13px/1 var(--mono); letter-spacing: 0.04em; color: #1d2342;
+    background: #f4cf5d; border-radius: 0 5px 5px 0; box-shadow: 0 1px 2px rgb(0 0 0 / 0.16), inset 8px 0 8px -6px rgb(0 0 0 / 0.18);
+    transition: translate 260ms var(--ease-out-strong), background-color var(--dur-fast) var(--ease-out);
+  }
+  .pull:hover, .pull:focus-visible { translate: 8px 0; }
+  .pull:active { translate: 4px 0; }
+  .pull:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  /* phones get their own way in, so a tap on the cover is only ever about the stickers */
+  .open-book { display: none; }
+  @media (max-width: 899px) {
+    .shadow { cursor: auto; }
+    .pull { display: none; }
+    .open-book { display: block; margin-top: 20px; padding: 14px 16px; text-align: center; font: 500 14px/1 var(--mono); letter-spacing: 0.02em; color: var(--paper); background: var(--ink); transition: background-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); -webkit-tap-highlight-color: transparent; }
+    .open-book:active { transform: scale(0.98); background: var(--accent); }
+  }
+  .bar { margin-top: 16px; min-height: 60px; font: 13px/1.5 var(--mono); }
+  .caption { margin: 0; min-width: 0; color: var(--ink); }
+  .caption :global(.note) { color: var(--ink-2); }
+  .caption :global(.note) { display: block; }
+  .caption :global(a) { color: var(--accent); white-space: nowrap; }
+</style>
+
+<script>
+  import { fillCaption } from "../scripts/sticker-caption";
+
+  document.querySelectorAll<HTMLElement>("[data-notebook]").forEach((nb) => {
+    const caption = nb.querySelector<HTMLElement>("[data-caption]")!;
+    let picked: HTMLButtonElement | null = null;
+
+    const pick = (s: HTMLButtonElement | null) => {
+      picked?.setAttribute("aria-pressed", "false");
+      picked?.parentElement?.classList.remove("has-pick");
+      picked = s;
+      if (!s) return caption.replaceChildren();
+      s.setAttribute("aria-pressed", "true");
+      s.parentElement?.classList.add("has-pick");
+      fillCaption(caption, s.dataset);
+    };
+
+    nb.querySelectorAll<HTMLButtonElement>(".sticker").forEach((s) =>
+      s.addEventListener("click", () => pick(s === picked ? null : s)),
+    );
+    // a click on the bare cover puts a picked sticker back, or else opens the notebook (NotebookOpen.astro)
+    nb.querySelector("[data-open-cover]")?.addEventListener("click", () => {
+      if (picked) pick(null);
+      else if (!matchMedia("(max-width: 899px)").matches) document.dispatchEvent(new CustomEvent("nbo:open", { detail: "notebook" }));
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && picked) { const s = picked; pick(null); s.focus(); }
+    });
+    // clicking the cover or the page puts the sticker back; the caption stays clickable
+    document.addEventListener("click", (e) => {
+      const t = e.target as Element;
+      if (picked && !t.closest(".sticker, [data-caption], [data-open-cover]")) pick(null);
+    });
+  });
+</script>

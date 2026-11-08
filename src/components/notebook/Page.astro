@@ -1,0 +1,11 @@
+---
+// One side of a leaf. `n` is the page number: even pages sit on the right (a leaf's front), odd on the left.
+interface Props { n: number; section?: string; label?: string; class?: string }
+const { n, section, label, class: extra } = Astro.props;
+---
+<section class:list={["side", n % 2 ? "back" : "front", extra]} data-page={n} data-section={section} aria-label={label ?? `page ${n}`}>
+  <div class="paper">
+    <slot />
+    {!label && <span class="folio" aria-hidden="true">{n}</span>}
+  </div>
+</section>

@@ -1,0 +1,23 @@
+import { readFileSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+const original=readFileSync('dist/index.html','utf8');
+const hero=original.match(/<section class="hero"[\s\S]*?<\/section>/)[0];
+let photos=original.match(/<ul class="rail"[\s\S]*?<\/ul>/)[0];
+const photoSources=[];
+photos=photos.replace(/<img\b[^>]*>/g,tag=>{
+ const src=tag.match(/\bsrc="([^"]+)"/)[1];
+ const srcset=tag.match(/\bsrcset="([^"]+)"/)?.[1];
+ const chosen=srcset?.split(',').map(s=>s.trim().split(/\s+/)).find(([,w])=>w===(photoSources.length===0?'760w':'480w'))?.[0]||src;
+ photoSources.push(src);
+ const data=readFileSync(resolve('dist','.'+chosen)).toString('base64');
+ return tag.replace(/\bsrc="[^"]+"/,()=>`src="data:image/webp;base64,${data}"`).replace(/\s(?:srcset|sizes|loading)="[^"]*"/g,'');
+});
+const nav=`<nav aria-label="Primary"><a href="https://rohanth.com/projects">projects</a><a href="https://rohanth.com/writing">writing</a><a href="https://rohanth.com/inspiration">inspiration</a><a href="https://rohanth.com/sidequests">sidequests</a></nav>`;
+const css=readFileSync('src/experiments/reconsidered/style.css','utf8');
+const js=readFileSync('src/experiments/reconsidered/client.js','utf8');
+const font=readFileSync('public/fonts/merriweather-latin.6b615f68.woff2').toString('base64');
+const content=`<header class="navigation">${nav}<details><summary>menu</summary>${nav}</details></header><main class="page">${hero}<section class="projects" id="projects" aria-label="projects"><div class="project-head"><h2>projects</h2><div class="arrows"><button type="button" data-step="-1" aria-label="previous projects">←</button><button type="button" data-step="1" aria-label="next projects">→</button></div></div>${photos}</section></main>`;
+const html=`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Rohanth — three fresh directions</title><style>@font-face{font-family:StudySerif;src:url(data:font/woff2;base64,${font});font-weight:300 600;font-display:swap}${css}</style></head><body><div class="review"><div class="picker" role="group" aria-label="Choose design direction"><button type="button" data-pick="paper" aria-pressed="true">01 · paper</button><button type="button" data-pick="cloth" aria-pressed="false">02 · cloth</button><button type="button" data-pick="ink" aria-pressed="false">03 · ink</button></div><div class="design-frame"><div class="specimen" data-design="paper">${content}</div></div><p class="sr-only" aria-live="polite" id="direction-status">Paper direction selected.</p></div><script>${js}</script></body></html>`;
+const final=html.replace(/href="\/(?!\/)([^"]*)"/g,(_,p)=>`href="https://rohanth.com/${p}"`);
+writeFileSync('public/iterations/reconsidered.html',final);
+console.log(`Built 3 fresh directions with ${photoSources.length} original photos (${Math.round(Buffer.byteLength(final)/1024)} KB).`);

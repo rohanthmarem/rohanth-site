@@ -205,7 +205,6 @@ if (figures.length) {
     matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`).addEventListener("change", () => { rebuild(); watchDpr(); }, { once: true });
   };
   watchDpr();
-  document.addEventListener("theme-change", () => figures.forEach((f) => f.paint()));
 }
 
 // plain (non-dithered) post images that fail to load are dropped too

@@ -2,13 +2,10 @@
 // HTML template in headless Chromium. Base.astro picks the file from the page's path
 // ("/" -> home, "/projects/x" -> projects-x, "/writing" -> writing, ...).
 //
-//   node scripts/og.mjs [--site http://127.0.0.1:4321 | --port 4498] [--only slug,slug]
+//   node scripts/og.mjs [--only slug,slug]
 //
-// The inspiration card fan is captured from the live page, so it needs a running site:
-// pass --site, or the script starts `astro dev` on a spare port and stops it afterwards.
-// Home's image is the avatar itself (scripts/favicons.mjs), not rendered here.
+// Home's is a video with its own script (scripts/og-video.mjs), not rendered here.
 // Env: CHROMIUM_PATH (browser binary), PLAYWRIGHT_CORE (path to playwright-core).
-import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { homedir, tmpdir } from "node:os";
@@ -50,12 +47,11 @@ const font = (prefix) => {
 const projects = entries("content/projects");
 const writings = entries("content/writings");
 const cover = (id) => (existsSync(at("src/assets/writing", `${id}.webp`)) ? at("src/assets/writing", `${id}.webp`) : undefined);
-const sq = (name) => at("src/assets/sidequests", `${name}.webp`);
 const projectImage = (project) => (project.image ? at("content/projects", project.image) : undefined);
 
 // ---------- cards ----------
 // layouts: "split" (text left, one image right), "strip" (text top, a row of images bleeding
-// off the bottom-right), "fan" (text top, the inspiration card fan along the bottom), "plain".
+// off the bottom-right), "plain".
 const cards = [
   {
     slug: "projects",
@@ -73,29 +69,8 @@ const cards = [
     text: "essays, lists and the occasional rant.",
     images: writings.map((w) => cover(w.id)).filter(Boolean).map((src) => ({ src, ratio: 16 / 9 })),
   },
-  {
-    slug: "inspiration",
-    layout: "fan",
-    label: "inspiration",
-    title: "inspirations",
-    text: "people, readings and youtube rabbit-holes that rewired how i think.",
-  },
-  {
-    slug: "sidequests",
-    layout: "strip",
-    label: "sidequests",
-    title: "sidequests",
-    text: "running, food, photos, airport wings and karate.",
-    images: [
-      { src: sq("run-start") },
-      { src: sq("food-katsu") },
-      { src: sq("photo-dumbo") },
-      { src: sq("wings-film") },
-      { src: sq("karate-jump") },
-    ],
-  },
   { slug: "404", layout: "plain", label: "404", title: "404", text: "looks like this page wandered off." },
-  { slug: "default", layout: "plain", label: "rohanth.com", title: "rohanth marem", text: "cs @ uwaterloo — i like to sidequest." },
+  { slug: "default", layout: "plain", label: "rohanth.com", title: "rohanth marem", text: "cs @ waterloo — i like to sidequest." },
   ...projects.map((p) => ({
     slug: `projects-${p.id}`,
     layout: projectImage(p) ? "split" : "plain",
@@ -120,8 +95,8 @@ const cards = [
 const esc = (s = "") => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const css = `
 @font-face { font-family: "Geist Pixel"; src: url("${font("geist-pixel-square")}"); }
-@font-face { font-family: "Ioskeley Mono"; src: url("${font("ioskeley-mono-regular")}"); font-weight: 400; }
-@font-face { font-family: "Ioskeley Mono"; src: url("${font("ioskeley-mono-medium")}"); font-weight: 500; }
+@font-face { font-family: "Geist Mono"; src: url("${font("geist-mono-regular")}"); font-weight: 400; }
+@font-face { font-family: "Geist Mono"; src: url("${font("geist-mono-medium")}"); font-weight: 500; }
 @font-face { font-family: "Merriweather"; src: url("${font("merriweather-latin")}"); font-weight: 300 600; }
 * { box-sizing: border-box; margin: 0; }
 html, body { width: ${W}px; height: ${H}px; overflow: hidden; }
@@ -131,12 +106,12 @@ body { position: relative; background: #f6f7f9; color: #11141c; -webkit-font-smo
 .line::before, .line::after { content: ""; position: absolute; left: 0; width: 1px; height: 10px; background: rgb(17 24 48 / 0.18); }
 .line::before { top: 12px; }
 .line::after { bottom: 12px; }
-.label { position: absolute; left: 120px; top: 64px; font: 400 17px/1 "Ioskeley Mono", monospace; color: rgb(17 20 28 / 0.64); display: flex; gap: 14px; }
+.label { position: absolute; left: 120px; top: 64px; font: 400 17px/1 "Geist Mono", monospace; color: rgb(17 20 28 / 0.64); display: flex; gap: 14px; }
 .label b { font-weight: 400; color: #2200ff; }
 .label i { font-style: normal; color: rgb(17 20 28 / 0.32); }
 h1 { font: 400 var(--size, 64px)/1.06 "Geist Pixel", monospace; letter-spacing: -0.01em; }
 p { margin-top: 22px; font: 300 25px/1.45 "Merriweather", serif; color: rgb(17 20 28 / 0.64); }
-.meta { position: absolute; left: 120px; bottom: 60px; font: 400 16px/1 "Ioskeley Mono", monospace; color: rgb(17 20 28 / 0.5); }
+.meta { position: absolute; left: 120px; bottom: 60px; font: 400 16px/1 "Geist Mono", monospace; color: rgb(17 20 28 / 0.5); }
 .img { position: absolute; z-index: 4; overflow: hidden; background: #eceef3; box-shadow: 0 0 0 1px rgb(17 24 48 / 0.1); }
 .img img { width: 100%; height: 100%; object-fit: cover; display: block; }
 /* accent crop marks on the lead image */
@@ -191,14 +166,6 @@ function render(card) {
         <p>${esc(card.text)}</p>
       </div>
       ${tiles.join("")}`;
-  } else if (card.layout === "fan") {
-    body = `${lines([64, 120, 1136])}
-      ${label(card)}
-      <div style="position:absolute;left:120px;top:126px;width:900px">
-        <h1>${esc(card.title)}</h1>
-        <p>${esc(card.text)}</p>
-      </div>
-      <img src="${fileUrl(card.fan)}" style="position:absolute;left:50%;transform:translateX(-50%);top:290px;width:1040px;z-index:4">`;
   } else {
     body = `${lines([64, 120, 1136])}
       ${label(card)}
@@ -230,55 +197,11 @@ const executablePath = [process.env.CHROMIUM_PATH, "/tmp/shots/chromium/chrome-m
 const { chromium } = loadPlaywright();
 const browser = await chromium.launch({ headless: true, executablePath });
 
-// The inspiration fan, captured from the real page (light theme, no frame, no grain).
-async function captureFan(dest) {
-  let site = flag("--site");
-  let server;
-  if (!site) {
-    const port = Number(flag("--port") ?? 4498);
-    site = `http://127.0.0.1:${port}`;
-    server = spawn("npx", ["astro", "dev", "--port", String(port), "--host", "127.0.0.1"], { cwd: root, stdio: "ignore", detached: true });
-    for (let i = 0; i < 60; i++) {
-      try {
-        if ((await fetch(site)).ok) break;
-      } catch {}
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    }
-  }
-  try {
-    const page = await browser.newPage({ viewport: { width: 1280, height: 1100 }, deviceScaleFactor: 2 });
-    await page.addInitScript(() => localStorage.setItem("theme", "light"));
-    await page.goto(`${site}/inspiration`, { waitUntil: "load" });
-    await page.evaluate(() => document.fonts.ready);
-    await page.addStyleTag({ content: ".lines, .side { visibility: hidden !important; } body::after { content: none !important; } html, body, .frame, main, .table { background: transparent !important; }" });
-    await page.waitForTimeout(2500); // let the deal-in animation settle
-    // the cards overhang #hand; clip to the union of the cards themselves (+ room for the shadow)
-    const box = await page.evaluate(() => {
-      const rects = [...document.querySelectorAll("#hand .card")].map((card) => card.getBoundingClientRect());
-      const x = Math.min(...rects.map((r) => r.left)), y = Math.min(...rects.map((r) => r.top));
-      return { x, y, right: Math.max(...rects.map((r) => r.right)), bottom: Math.max(...rects.map((r) => r.bottom)) };
-    });
-    const pad = 24;
-    await page.screenshot({
-      path: dest,
-      omitBackground: true,
-      clip: { x: Math.max(0, box.x - pad), y: box.y - pad, width: Math.min(1280, box.right + pad) - Math.max(0, box.x - pad), height: box.bottom - box.y + pad * 2 },
-    });
-    await page.close();
-  } finally {
-    if (server) process.kill(-server.pid); // the whole group: npx and the astro process under it
-  }
-}
-
 const work = mkdtempSync(join(tmpdir(), "og-"));
 mkdirSync(at("public/og"), { recursive: true });
 try {
   const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
   for (const card of cards) {
-    if (card.layout === "fan") {
-      card.fan = join(work, "fan.png");
-      await captureFan(card.fan);
-    }
     const html = join(work, `${card.slug}.html`);
     writeFileSync(html, render(card));
     await page.goto(fileUrl(html), { waitUntil: "load" });

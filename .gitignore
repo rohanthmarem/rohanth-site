@@ -6,3 +6,6 @@ node_modules/
 !.env.example
 
 .claude/worktrees/
+
+# working notes and reference material, not part of the site
+.context/

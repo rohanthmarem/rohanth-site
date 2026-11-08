@@ -1,0 +1,27 @@
+---
+/** `corner`: the inner pages' version. The band is tucked into the top-right corner and scrolls away
+ * with the page head, so it never runs behind cards or reading text. */
+import horizon from "../scripts/horizon.js?raw";
+interface Props { corner?: boolean }
+const { corner = false } = Astro.props;
+---
+<!-- Static, pixel-sampled atmospheric horizon. Never animates or intercepts input. -->
+<div class:list={["wave-background", { corner }]} aria-hidden="true"><canvas data-horizon={corner ? "corner" : ""}></canvas></div>
+
+<style>
+  .wave-background { position: fixed; inset: 0; height: 100lvh; z-index: -1; pointer-events: none; overflow: hidden; background: var(--paper); }
+  .wave-background::before { content: ""; position: absolute; inset: 0; background: linear-gradient(154deg, #fff 10%, #cde4f2 28%, #6096b9 35%, #d6c496 38%, #f43a12 39%, #fff 42%); }
+  canvas { position: absolute; width: 100%; height: 100%; image-rendering: pixelated; }
+  :global([data-mode="dark"]) .wave-background::before { background: linear-gradient(154deg, #0c0c0e 10%, #16243c 28%, #3a6aa0 35%, #d6ac78 38%, #ec3a12 39%, #0c0c0e 42%); }
+  .wave-background.corner { position: absolute; height: 100svh; }
+  .wave-background.corner::before { display: none; }
+  /* stacked layout: scroll with the page, or the text would pass over the band */
+  @media (max-width: 899px) {
+    :global(body) { position: relative; }
+    .wave-background:not(.corner) { position: absolute; height: 100%; }
+  }
+  @media print { .wave-background { display: none; } }
+</style>
+
+{/* inline, right after the canvas, so it draws before the page first paints (see the script) */}
+<script is:inline set:html={horizon} />

@@ -4,6 +4,9 @@ import { join } from "node:path";
 import Analytics from "@vercel/analytics/astro";
 import Sidebar from "../components/Sidebar.astro";
 import Footer from "../components/Footer.astro";
+import WaveBackground from "../components/WaveBackground.astro";
+import NotebookSpine from "../components/NotebookSpine.astro";
+import NotebookOpen from "../components/NotebookOpen.astro";
 import "../styles/global.css";
 
 interface Props {
@@ -13,21 +16,33 @@ interface Props {
   image?: string;
   /** keep the page out of search results (404, drafts) */
   noindex?: boolean;
+  bodyId?: string;
+  /** just the page: no sidebar or footer (the homepage) */
+  bare?: boolean;
+  /** white paper and browser chrome, for pages on the horizon background (every page but a bare one) */
+  horizon?: boolean;
 }
 
 const {
   title,
-  description = "Rohanth Marem — cs @ uwaterloo. Projects, writing, inspiration and sidequests.",
+  description = "Rohanth Marem — cs @ waterloo. Projects, writing, inspiration and sidequests.",
   current,
   image,
   noindex = false,
+  bodyId,
+  bare = false,
+  horizon: _horizon,
 } = Astro.props;
+// the inner pages share the homepage's white paper, with the horizon tucked into the corner
+const horizon = _horizon ?? !bare;
 const fullTitle = title ? `${title} | rohanth marem` : "rohanth marem";
 const canonical = new URL(Astro.url.pathname, Astro.site);
 
 // Share image: public/og/<slug>.jpg from the path ("/" -> home, "/projects/x" -> projects-x),
-// made by scripts/og.mjs. Home is the square avatar ("summary" card); everything else is a
-// 1200x630 card; pages without one fall back to og/default.jpg. An explicit `image` prop wins.
+// made by scripts/og.mjs; everything is a 1200x630 card, and pages without one fall back to
+// og/default.jpg. An explicit `image` prop wins. Home is the horizon with its sparks moving, as a
+// video (scripts/og-video.mjs) with its still as the image. A preview can't know the viewer's light or
+// dark setting, so it's the dark one; home-light.mp4/.jpg are the daytime pair.
 const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/+$/, "");
 const ogSlug = path === "" ? "home" : path.slice(1).replaceAll("/", "-");
 const ogFile = (slug: string) => existsSync(join(process.cwd(), "public/og", `${slug}.jpg`));
@@ -35,15 +50,16 @@ const isHome = ogSlug === "home";
 const og = image
   ? { src: image, width: undefined, height: undefined }
   : isHome
-    ? { src: "/og/home.jpg", width: 460, height: 460 }
+    ? { src: "/og/home-dark.jpg", width: 1200, height: 630 }
     : { src: `/og/${ogFile(ogSlug) ? ogSlug : "default"}.jpg`, width: 1200, height: 630 };
 const ogImage = new URL(og.src, Astro.site).href;
+const ogVideo = isHome && !image ? new URL("/og/home-dark.mp4", Astro.site).href : undefined;
 // Vercel serves /_vercel/insights only on its own deployments; skip the script elsewhere
 // (local dev / preview) so it doesn't 404 on every page.
 const onVercel = Boolean(process.env.VERCEL);
 ---
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme={horizon ? "horizon" : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -64,38 +80,106 @@ const onVercel = Boolean(process.env.VERCEL);
     {og.width && <meta property="og:image:width" content={String(og.width)} />}
     {og.height && <meta property="og:image:height" content={String(og.height)} />}
     <meta property="og:image:alt" content={isHome ? "Rohanth Marem" : fullTitle} />
-    <meta name="twitter:card" content={isHome ? "summary" : "summary_large_image"} />
+    {ogVideo && (
+      <>
+        <meta property="og:video" content={ogVideo} />
+        <meta property="og:video:secure_url" content={ogVideo} />
+        <meta property="og:video:type" content="video/mp4" />
+        <meta property="og:video:width" content="1200" />
+        <meta property="og:video:height" content="630" />
+      </>
+    )}
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={ogImage} />
-    <meta name="theme-color" content="#f6f7f9" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0b0e15" media="(prefers-color-scheme: dark)" />
-    <link rel="preload" href="/fonts/geist-pixel-square.77844bda.woff2" as="font" type="font/woff2" crossorigin />
+    <meta name="theme-color" content={horizon ? "#ffffff" : "#f4f0e6"} />
+    <link rel="preload" href="/fonts/geist-mono-regular.8f92513c.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/merriweather-latin.6b615f68.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/fonts/ioskeley-mono-regular.d2433ea3.woff2" as="font" type="font/woff2" crossorigin />
     <script is:inline>
-      // Theme before first paint: saved choice, else the OS preference.
-      (function () {
-        var d = document.documentElement;
-        d.classList.add("js");
-        try {
-          var t = localStorage.getItem("theme");
-          if (t === "dark" || (!t && matchMedia("(prefers-color-scheme: dark)").matches)) d.dataset.theme = "dark";
-          // browser chrome follows the chosen theme, not just the OS one
-          if (t) document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.content = t === "dark" ? "#0b0e15" : "#f6f7f9"; });
-        } catch (e) {}
+      document.documentElement.classList.add("js");
+      // Arriving by a view transition (page to page, see global.css). Work that would stall it waits for
+      // window.__settled: the band's full redraw, the sparks, the notebook's setup.
+      window.__settled = new Promise((settle) => {
+        if (!("onpagereveal" in window)) return addEventListener("DOMContentLoaded", () => settle(), { once: true });
+        addEventListener("pagereveal", (e) => {
+          const vt = e.viewTransition;
+          if (!vt) return settle();
+          document.documentElement.classList.add("vt-in");
+          vt.finished.then(settle, settle);
+          // The notebook's move between the home page and the spine, as a transform alone: the browser's
+          // own version also animates its width and height, which can't run off the main thread, so any
+          // work there made it stutter. Same path and timing, now entirely on the compositor.
+          vt.ready.then(() => {
+            const move = document.getAnimations().find((a) => a.effect?.pseudoElement === "::view-transition-group(notebook)");
+            const start = move?.effect.getKeyframes()[0];
+            if (!start?.width) return;
+            // where it lands: read with the move skipped to its end (mid-move the style reads where it is)
+            const group = getComputedStyle(document.documentElement, "::view-transition-group(notebook)");
+            move.currentTime = move.effect.getTiming().duration;
+            const end = { transform: group.transform, width: parseFloat(group.width), height: parseFloat(group.height) };
+            move.currentTime = 0;
+            const sx = parseFloat(start.width) / end.width, sy = parseFloat(start.height) / end.height;
+            move.effect.setKeyframes([{ transform: `${start.transform} scale(${sx}, ${sy})` }, { transform: end.transform }]);
+          }, () => {});
+        }, { once: true });
+      });
+    </script>
+    {/* light or dark before first paint: the toggle's choice if there is one, else the system's.
+        A choice that matches the system is forgotten, so the page goes back to following it. */}
+    <script is:inline define:vars={{ day: horizon ? "#ffffff" : "#f4f0e6" }}>
+      (() => {
+        const root = document.documentElement;
+        const system = matchMedia("(prefers-color-scheme: dark)");
+        const saved = () => { try { return localStorage.getItem("mode"); } catch { return null; } };
+        const set = (mode) => {
+          if (root.dataset.mode === mode) return;
+          root.dataset.mode = mode;
+          document.querySelector('meta[name="theme-color"]')?.setAttribute("content", mode === "dark" ? "#0c0c0e" : day);
+          document.dispatchEvent(new Event("modechange"));
+        };
+        // a crossfade, so the page and the horizon change together
+        const change = (mode) => {
+          if (root.dataset.mode === mode) return;
+          if (!document.startViewTransition || matchMedia("(prefers-reduced-motion: reduce)").matches) set(mode);
+          else document.startViewTransition(() => set(mode));
+        };
+        set(saved() || (system.matches ? "dark" : "light"));
+        system.addEventListener("change", () => { if (!saved()) change(system.matches ? "dark" : "light"); });
+        // a page brought back by the back button, or switched in another tab, catches up with the choice
+        const follow = () => set(saved() || (system.matches ? "dark" : "light"));
+        addEventListener("pageshow", (event) => { if (event.persisted) follow(); });
+        addEventListener("storage", (event) => { if (event.key === "mode" || event.key === null) follow(); });
+        document.addEventListener("click", (event) => {
+          if (!event.target.closest?.("[data-mode-toggle]")) return;
+          const next = root.dataset.mode === "dark" ? "light" : "dark";
+          try {
+            if (next === (system.matches ? "dark" : "light")) localStorage.removeItem("mode");
+            else localStorage.setItem("mode", next);
+          } catch {}
+          change(next);
+        });
       })();
     </script>
     <slot name="head" />
   </head>
-  <body>
+  <body id={bodyId}>
     <a class="skip sr-only" href="#main">skip to content</a>
-    <div class="frame">
-      <div class="lines" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-      <Sidebar current={current}><slot name="sidebar" /></Sidebar>
-      <main id="main" class="content">
-        <slot />
-      </main>
-    </div>
-    <Footer />
+    {bare ? (
+      <main id="main"><slot /></main>
+    ) : (
+      <>
+        <WaveBackground corner />
+        <div class="frame">
+          <div class="lines" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+          <Sidebar current={current}><slot name="sidebar" /></Sidebar>
+          <main id="main" class="content">
+            <slot />
+          </main>
+        </div>
+        <Footer />
+        <NotebookSpine />
+        <NotebookOpen />
+      </>
+    )}
     {onVercel && <Analytics />}
     <script>
       import "../scripts/site";

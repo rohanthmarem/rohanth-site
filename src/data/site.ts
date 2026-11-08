@@ -3,6 +3,7 @@
 export const links = {
   github: "https://github.com/rohanthmarem",
   x: "https://x.com/rohanth",
+  linkedin: "https://www.linkedin.com/in/rohanthmarem",
   email: "mailto:hello@rohanth.com",
   emailText: "hello@rohanth.com",
   substack: "https://rohanth.substack.com/",
@@ -16,18 +17,17 @@ export const links = {
 export const nav = [
   { key: "projects", href: "/projects" },
   { key: "writing", href: "/writing" },
-  { key: "inspiration", href: "/inspiration" },
 ] as const;
 
 /** Org marks shown inline in the homepage about. Swap the SVGs for real logos. */
 export const orgs = {
   uwaterloo: { name: "uwaterloo", href: "https://uwaterloo.ca" },
-  phoebe: { name: "phoebe", href: undefined },
-  extrian: { name: "extrian", href: undefined },
+  phoebe: { name: "phoebe", href: "https://www.phoebe.work" },
+  extrian: { name: "extrian", href: "https://extrian.com" },
   tbc: { name: "teen builders club", href: links.tbc },
 } as const;
 
-/** Which hand-drawn card illustration (src/components/InspoArt.astro) each inspiration uses. */
+/** The card illustration each inspiration had on the old standalone page (kept with the data). */
 export type InspoArtId = "f1" | "builder" | "network" | "shannon" | "tennis" | "superlinear" | "gears" | "film" | "imagination" | "avatar";
 
 export const inspiration: Record<"people" | "readings" | "media", { name: string; art: InspoArtId; why: string; by?: string; kind?: string }[]> = {
@@ -145,6 +145,7 @@ export const quests: Quest[] = [
     status: "active",
     objectives: [
       { text: "run two half-marathons", done: true, href: links.strava },
+      { text: "sign up for my first 70.3", done: true },
       { text: "become an ironman by 21" },
     ],
   },

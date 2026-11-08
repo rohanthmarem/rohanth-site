@@ -1,8 +1,10 @@
-import "./dither";
+// after any page transition has finished (Base.astro), so none of this stalls it
+const settled = (window as { __settled?: Promise<void> }).__settled ?? Promise.resolve();
+settled.then(() => import("./dither"));
 const post = document.querySelector<HTMLElement>(".post");
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
 
-if (post) {
+if (post) settled.then(() => {
   const bar = post.querySelector<HTMLElement>(".progress i");
   const article = post.querySelector<HTMLElement>(".post-content");
   let frame = 0;
@@ -154,4 +156,5 @@ if (post) {
       figures.forEach((figure) => figure.classList.add("is-in"));
     }
   }
-}
+});
+export {};

@@ -1,0 +1,116 @@
+---
+import {getCollection} from 'astro:content';
+import {Image} from 'astro:assets';
+import type {ImageMetadata} from 'astro';
+import WaveBackground from '../../components/WaveBackground.astro';
+import '../../styles/global.css';
+import '../../experiments/layouts.css';
+import '../../experiments/minimal.css';
+const { minimal = false } = Astro.props;
+const covers = import.meta.glob<ImageMetadata>('../../assets/writing/horizon/*.png', {eager:true,import:'default'});
+const writings = (await getCollection('writings')).sort((a,b)=>b.data.date.getTime()-a.data.date.getTime());
+const projects = (await getCollection('projects')).filter(p=>p.data.image).sort((a,b)=>b.data.date.getTime()-a.data.date.getTime());
+const items = [
+ ...writings.map(p=>({section:'writing',title:p.data.title,description:p.data.description,date:p.data.date,image:covers[`../../assets/writing/horizon/${p.id}.png`],href:`/writing/${p.id}`,kind:'Essay',position:'center'})),
+ ...projects.map(p=>({section:'projects',title:p.data.title,description:p.data.description,date:p.data.date,image:p.data.image!,position:p.data.imagePosition,href:p.body?.trim()&&!p.data.link?`/projects/${p.id}`:p.data.link||`/projects/${p.id}`,kind:p.data.tags?.[0]||'Project'}))
+];
+---
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+ <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+ <meta name="robots" content="noindex"/><meta name="theme-color" content="#0b0d0e"/>
+ <title>Layout studies · rohanth marem</title>
+ <link rel="icon" href="/favicon.ico"/>
+</head>
+<body class="layout-lab" data-layout={minimal ? "minimal" : "editorial"} data-initial-layout={minimal ? "minimal" : "editorial"} data-section="writing">
+ <WaveBackground/>
+ <div class="lab-tools" aria-label="Layout comparison" hidden={minimal}>
+  <a class="lab-back" href="/writing/">← current site</a>
+  <div class="lab-picker" role="group" aria-label="Design direction">
+   <button data-layout-choice="editorial" aria-pressed="true">01 <span>Editorial</span></button>
+   <button data-layout-choice="index" aria-pressed="false">02 <span>Index</span></button>
+   <button data-layout-choice="posters" aria-pressed="false">03 <span>Gallery</span></button>
+   <button data-layout-choice="descent" aria-pressed="false">04 <span>Descent</span></button>
+  </div>
+  <span class="lab-status">layout studies / 04</span>
+ </div>
+ <div class="lab-shell">
+  <header class="lab-mast">
+   <a class="lab-brand" href="?layout=editorial&section=home" data-section-choice="home">rohanth marem<span>cs @ uwaterloo</span></a>
+   <nav aria-label="Preview section">
+    <a href="?section=home" data-section-choice="home">about</a>
+    <a href="?section=writing" data-section-choice="writing" aria-current="page">writing</a>
+    <a href="?section=projects" data-section-choice="projects">projects</a>
+   </nav>
+   <a class="lab-contact" href="mailto:hello@rohanth.com">say hello ↗</a>
+  </header>
+  <main id="lab-main">
+   <header class="lab-heading">
+    <div class="lab-eyebrow"><span class="lab-dot"></span><span data-eyebrow>Notes, arguments & things learned</span></div>
+    <div class="lab-title-row"><h1 data-page-title>Writing<span>.</span></h1><span class="lab-section-number" aria-hidden="true">01—03</span></div>
+    <p class="lab-deck" data-page-deck>A few things I’ve been thinking about.</p>
+    <a class="lab-substack" href="https://rohanth.substack.com/">also on substack ↗</a>
+   </header>
+   <section class="lab-about" aria-label="About Rohanth" hidden>
+    <p class="lab-about-lead">I build things.<br/>Sometimes they fly.<br/><em>Sometimes they crash.</em></p>
+    <div class="lab-about-copy">
+     <p>I like to sidequest.</p>
+     <p>Previously engineering at <strong>Phoebe</strong>, building agents for home healthcare, and <strong>Extrian</strong>, scaling voice data collection to 10,000 users.</p>
+     <p>I’ve built autonomous drones for soil carbon research, won Hack the North, and learned a lot by making things that didn’t quite work the first time.</p>
+     <a href="mailto:hello@rohanth.com">Let’s make something interesting ↗</a>
+    </div>
+   </section>
+   <div class="lab-collection-label"><span data-collection-label>Selected writing</span><span data-count>03 pieces</span></div>
+   <div class="lab-entries">
+    {items.map((item,i)=>(
+     <article class="lab-entry" data-kind={item.section} hidden={item.section!=='writing'}>
+      <a class="lab-entry-link" href={item.href}>
+       <div class="lab-art"><Image src={item.image} alt="" widths={[480,800,1200]} sizes="(max-width: 700px) 90vw, 60vw" loading={i===0?'eager':'lazy'} style={`object-position:${item.position||'center'}`}/><span class="lab-art-label" aria-hidden="true">{item.kind}</span></div>
+       <div class="lab-entry-copy">
+        <div class="lab-entry-meta"><span>{item.kind}</span><time datetime={item.date.toISOString().slice(0,10)}>{item.date.toLocaleDateString('en-US',{month:'short',year:'numeric',timeZone:'UTC'})}</time></div>
+        <h2>{item.title}</h2>
+        <p>{item.description}</p>
+        <span class="lab-read">{item.section==='writing'?'Read essay':'Explore project'} <span aria-hidden="true">↗</span></span>
+       </div>
+       <span class="lab-entry-arrow" aria-hidden="true">↗</span>
+      </a>
+     </article>
+    ))}
+   </div>
+   <footer class="lab-footer"><span>Always a work in progress.</span><a href="https://github.com/rohanthmarem">github ↗</a><a href="mailto:hello@rohanth.com">hello@rohanth.com ↗</a></footer>
+  </main>
+ </div>
+ <aside class="lab-verdict" aria-label="Design notes" hidden={minimal}><span data-direction-name>01 / Editorial</span><p data-direction-note>An asymmetric lead story followed by open spreads.</p></aside>
+ <script>
+  const body=document.body;
+  const titles={writing:['Writing','Notes, arguments & things learned','A few things I’ve been thinking about.','Selected writing'],projects:['Selected work','Built, crashed, raced & occasionally won','Ideas made real, usually with a few wrong turns.','Projects'],home:['Rohanth Marem','Engineering & other curiosities','cs @ uwaterloo — i like to sidequest.','A few things I’ve built']};
+  const directions={minimal:['Minimal','A quiet, unboxed list.'],editorial:['01 / Editorial','An asymmetric lead story followed by open spreads. Image scale and typography create the hierarchy, without individual boxes.'],index:['02 / Index','No panels. The horizon shapes the masthead, then gives way to generous typographic rows and clear image previews.'],posters:['03 / Gallery','Photographs lead, captions follow. An open two-column wall with no overlay text, gradient panels, borders, or category chips.'],descent:['04 / Descent','Artwork steps down the diagonal, with text on the open page. A deliberate composition for a small collection; a simple stack on phones.']};
+  function render(){
+   const params=new URLSearchParams(location.search);
+   const layout=(params.get('layout')||body.dataset.initialLayout||'editorial') as keyof typeof directions;
+   const section=(params.get('section')||'writing') as keyof typeof titles;
+   const l=layout in directions?layout:'editorial',s=section in titles?section:'writing';
+   body.dataset.layout=l;body.dataset.section=s;
+   document.querySelectorAll<HTMLElement>('[data-layout-choice]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.layoutChoice===l)));
+   document.querySelectorAll<HTMLElement>('[data-section-choice]').forEach(el=>{if(el.dataset.sectionChoice===s)el.setAttribute('aria-current','page');else el.removeAttribute('aria-current');});
+   const [title,eyebrow,deck,label]=titles[s];
+   document.querySelector('[data-page-title]')!.textContent=l==='minimal'?(s==='home'?'about':s):title+'.';
+   document.querySelector('[data-eyebrow]')!.textContent=eyebrow;
+   document.querySelector('[data-page-deck]')!.textContent=deck;
+   document.querySelector<HTMLElement>('[data-page-deck]')!.hidden=s==='home';
+   document.querySelector('[data-collection-label]')!.textContent=label;
+   document.querySelector<HTMLElement>('.lab-about')!.hidden=s!=='home';
+   document.querySelector<HTMLElement>('.lab-substack')!.hidden=s!=='writing';
+   let count=0;
+   document.querySelectorAll<HTMLElement>('.lab-entry').forEach(el=>{const show=el.dataset.kind===(s==='home'?'projects':s)&&(s!=='home'||count<3);el.hidden=!show;el.classList.remove('lab-feature');if(show){count++;el.style.setProperty('--entry-order',String(count));el.querySelector('.lab-entry-arrow')!.setAttribute('data-number',String(count).padStart(2,'0'));if(count===1)el.classList.add('lab-feature');}});
+   document.querySelector('[data-count]')!.textContent=String(count).padStart(2,'0')+(s==='writing'?' pieces':' projects');
+   document.querySelector('.lab-section-number')!.textContent='01—'+String(count).padStart(2,'0');
+   document.querySelector('[data-direction-name]')!.textContent=directions[l][0];
+   document.querySelector('[data-direction-note]')!.textContent=directions[l][1];
+  }
+  document.querySelectorAll<HTMLElement>('[data-layout-choice], [data-section-choice]').forEach(el=>el.addEventListener('click',e=>{e.preventDefault();const url=new URL(location.href);if(el.dataset.layoutChoice)url.searchParams.set('layout',el.dataset.layoutChoice);if(el.dataset.sectionChoice)url.searchParams.set('section',el.dataset.sectionChoice);history.pushState({},'',url);render();}));
+  addEventListener('popstate',render);render();
+ </script>
+</body>
+</html>

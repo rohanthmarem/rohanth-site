@@ -2,10 +2,8 @@
 //   mark.hl                 highlight sweeps in when scrolled into view
 //   [data-scramble-in]      text resolves left→right behind a few scrambled glyphs, once, in view
 //   [data-scramble-hover]   a scramble wave passes over the text on hover (from the old site)
-//   [data-theme-toggle]     light/dark: follows the OS, the icon overrides it
 
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-const root = document.documentElement;
 
 function inView(els: Iterable<Element>, fn: (el: Element) => void, threshold = 0.6) {
   const io = new IntersectionObserver(
@@ -87,37 +85,4 @@ document.querySelectorAll<HTMLElement>("[data-scramble-hover]").forEach((el) => 
     }, 40);
   });
   el.addEventListener("pointerleave", restore);
-});
-
-/* ── theme ──────────────────────────────────────────────────
-   Follows the OS by default (live). The footer icon flips it; picking the same theme as the
-   OS clears the override so it goes back to following the system. */
-const osDark = matchMedia("(prefers-color-scheme: dark)");
-function syncTheme() {
-  const dark = root.dataset.theme === "dark";
-  document.querySelectorAll("[data-theme-toggle]").forEach((b) => b.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode"));
-  // browser chrome (address bar, overscroll) follows the theme
-  const paper = getComputedStyle(root).getPropertyValue("--paper").trim();
-  if (paper) document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((m) => (m.content = paper));
-}
-function setTheme(dark: boolean) {
-  if (dark) root.dataset.theme = "dark"; else delete root.dataset.theme;
-  syncTheme();
-  document.dispatchEvent(new CustomEvent("theme-change"));
-}
-syncTheme();
-document.querySelectorAll("[data-theme-toggle]").forEach((b) =>
-  b.addEventListener("click", () => {
-    const dark = root.dataset.theme !== "dark";
-    try {
-      if (dark === osDark.matches) localStorage.removeItem("theme");
-      else localStorage.setItem("theme", dark ? "dark" : "light");
-    } catch {}
-    setTheme(dark);
-  }),
-);
-osDark.addEventListener("change", (e) => {
-  let saved: string | null = null;
-  try { saved = localStorage.getItem("theme"); } catch {}
-  if (!saved) setTheme(e.matches);
 });

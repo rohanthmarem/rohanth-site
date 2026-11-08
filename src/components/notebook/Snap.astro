@@ -1,0 +1,10 @@
+---
+// A photo stuck into the notebook: a plain print, or a polaroid with a handwritten caption.
+type Pic = { src: string; srcset: string; sizes: string; width: number; height: number };
+interface Props { pic: Pic; alt: string; r?: number; w: number; cap?: string; class?: string; style?: string }
+const { pic, alt, r = 0, w, cap, class: extra, style = "" } = Astro.props;
+---
+<figure class:list={["snap", cap && "pola", extra]} style={`--r:${r}deg;--w:${w}cqw;${style}`}>
+  <img src={pic.src} srcset={pic.srcset} sizes={pic.sizes} width={pic.width} height={pic.height} alt={alt} loading="lazy" decoding="async" draggable="false" />
+  {cap && <figcaption>{cap}</figcaption>}
+</figure>
