@@ -304,7 +304,7 @@ const ext = { target: "_blank", rel: "noopener" };
   .nbo .close { position: absolute; z-index: 3; top: 14px; right: 16px; display: grid; place-items: center; width: 48px; height: 48px; color: var(--ink-2); transition: color var(--dur-fast) var(--ease-out); }
   .nbo .close svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
   .nbo .close:hover { color: var(--ink); }
-  .nbo .pager { position: absolute; z-index: 3; left: 50%; bottom: 18px; translate: -50% 0; display: flex; align-items: center; gap: 6px; font: 13px/1 var(--mono); color: var(--ink-2); }
+  .nbo .pager { position: absolute; z-index: 3; left: 50%; bottom: 18px; translate: -50% 0; display: flex; align-items: center; gap: 6px; font: 13px/1 var(--sans); color: var(--ink-2); }
   .nbo .pager button { width: 40px; height: 40px; font-size: 16px; color: var(--ink); transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
   .nbo .pager button:disabled { opacity: 0.25; }
   .nbo .pager button:active:not(:disabled) { transform: scale(0.92); }
@@ -315,7 +315,7 @@ const ext = { target: "_blank", rel: "noopener" };
   /* sticky index tabs stuck to the edge of the pages */
   .nbo .tabs { position: absolute; left: 100%; top: 7%; display: flex; flex-direction: column; gap: 10px; transition: opacity 400ms var(--ease-out), translate 400ms var(--ease-out-strong); }
   .nbo .stage.closed .tabs { opacity: 0; translate: -24px 0; pointer-events: none; }
-  .nbo .tab { display: block; margin-left: -10px; padding: 9px 16px 9px 20px; font: 13px/1 var(--mono); color: var(--pen); background: var(--tab); border-radius: 0 5px 5px 0; box-shadow: 0 1px 2px rgb(0 0 0 / 0.14), inset 8px 0 8px -6px rgb(0 0 0 / 0.16); transition: translate 260ms var(--ease-out-strong); }
+  .nbo .tab { display: block; margin-left: -10px; padding: 9px 16px 9px 20px; font: 500 13px/1 var(--sans); color: var(--pen); background: var(--tab); border-radius: 0 5px 5px 0; box-shadow: 0 1px 2px rgb(0 0 0 / 0.14), inset 8px 0 8px -6px rgb(0 0 0 / 0.16); transition: translate 260ms var(--ease-out-strong); }
   .nbo .tab:hover, .nbo .tab[aria-current="true"] { translate: 8px 0; }
 
   .nbo .book { position: relative; width: 100%; height: 100%; perspective: 2600px; }
@@ -357,7 +357,7 @@ const ext = { target: "_blank", rel: "noopener" };
     position: absolute; z-index: 3; margin: 0;
     left: calc(50% + var(--pw) / 2 + 32px); bottom: calc(50% + 8px - var(--ph) / 2);
     width: min(300px, calc(50% - var(--pw) / 2 - 56px));
-    font: 13px/1.5 var(--mono); color: var(--ink); overflow-wrap: anywhere;
+    font: 13px/1.5 var(--sans); color: var(--ink); overflow-wrap: anywhere;
     opacity: 0; translate: 0 4px; visibility: hidden; transition: opacity var(--dur) var(--ease-out), translate var(--dur) var(--ease-out), visibility 0s var(--dur);
   }
   .nbo .sticker-caption.on { opacity: 1; translate: none; visibility: visible; transition-delay: 0s; }
@@ -378,8 +378,8 @@ const ext = { target: "_blank", rel: "noopener" };
   .nbo .side.back .paper::after { background: linear-gradient(270deg, rgb(40 30 20 / 0.2), rgb(40 30 20 / 0.06) 3%, transparent 9%), linear-gradient(90deg, rgb(40 30 20 / 0.06), transparent 2%); }
   .nbo .paper > * { position: relative; }
   .nbo .paper p { margin: 0; }
-  /* links and titles are set in the site's own type (mono, serif); the writing is in hand */
-  .nbo .paper a { white-space: nowrap; font: 400 3.1cqw/1.5 var(--mono); color: var(--pen-blue); text-decoration: underline; text-decoration-thickness: 0.15cqw; text-underline-offset: 0.6cqw; }
+  /* links and titles are set in the site's own type (sans, serif); the writing is in hand */
+  .nbo .paper a { white-space: nowrap; font: 400 3.3cqw/1.5 var(--sans); color: var(--pen-blue); text-decoration: underline; text-decoration-thickness: 0.15cqw; text-underline-offset: 0.6cqw; }
   .nbo .paper a:hover { color: var(--pen-red); }
   .nbo .folio { position: absolute; bottom: 4cqw; font-size: 3.2cqw; opacity: 0.5; }
   .nbo .side.front .folio { right: 6cqw; }
@@ -466,7 +466,7 @@ const ext = { target: "_blank", rel: "noopener" };
   .nbo .endpaper .paper { inset: 1.6cqw 1.6cqw 1.6cqw 0; background: #f3eee2; }
   .nbo .side.back.endpaper .paper { inset: 1.6cqw 0 1.6cqw 1.6cqw; }
   .nbo .found { margin-top: 18cqw; padding: 5cqw; border: 0.3cqw solid rgb(29 35 66 / 0.5); }
-  .nbo .found .small { font: 2.8cqw/1.4 var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: rgb(29 35 66 / 0.7); }
+  .nbo .found .small { font: 500 2.8cqw/1.4 var(--sans); text-transform: uppercase; letter-spacing: 0.08em; color: rgb(29 35 66 / 0.7); }
   .nbo .found .line.name { display: flex; align-items: flex-end; gap: 1.6cqw; font-size: 6.4cqw; line-height: 1; }
   .nbo .found .sig { display: block; width: 22cqw; margin-bottom: 0.3cqw; color: var(--pen); }
   .nbo .found .sig svg { display: block; width: 100%; height: auto; }
@@ -723,6 +723,19 @@ const ext = { target: "_blank", rel: "noopener" };
     const fade = (on: boolean, duration: number, delay = 0) =>
       chrome.map((el) => el.animate([{ opacity: on ? 0 : 1 }, { opacity: on ? 1 : 0 }], { duration, delay, easing: "ease-out", fill: "both" }));
 
+    // The dialog's first frame is a heavy one (every page laid out, the photos rastered), and WebKit starts
+    // an animation's clock when it's created rather than when it's first painted: by the time that frame
+    // is up the opening is several hundred ms in, so the move and the first turn are mostly skipped. Every
+    // animation in the dialog is held on its first frame until that frame has been painted, then let go.
+    const nextFrame = () => new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
+    async function holdFirstFrame() {
+      const held = dialog!.getAnimations({ subtree: true });
+      held.forEach((a) => a.pause());
+      await nextFrame();
+      await nextFrame();
+      held.forEach((a) => { if (a.playState === "paused") a.play(); });
+    }
+
     let busy = false; // opening or closing: the pages turn, but the URL shouldn't follow them
     async function open(key: string, { instant = false } = {}) {
       if (dialog!.open) return goto(key);
@@ -738,6 +751,7 @@ const ext = { target: "_blank", rel: "noopener" };
         // the book, not the stage: a transform on the stage would drag the fixed tabs along with it
         const rise = book.animate([{ opacity: 0, translate: "0 18px", scale: "0.97" }, { opacity: 1, translate: "0 0", scale: "1" }], { duration: 460, easing: MOVE_EASE });
         const turning = goto(key, true, 260);
+        await holdFirstFrame();
         await Promise.all([rise.finished, wait(turning)]);
       } else if (!animate) {
         goto(key, false);
@@ -749,6 +763,7 @@ const ext = { target: "_blank", rel: "noopener" };
         if (from) homeScene!.style.visibility = "hidden";
         const move = stage.animate(from ? [{ transform: from }, { transform: "none" }] : [{ opacity: 0, transform: "scale(0.96)" }, { opacity: 1, transform: "none" }], { duration: from ? 700 : 440, easing: MOVE_EASE });
         const turning = goto(key, true, from ? 240 : 100);
+        await holdFirstFrame();
         await Promise.all([move.finished, wait(turning)]);
       }
       busy = false;

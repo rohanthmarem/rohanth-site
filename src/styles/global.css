@@ -1,7 +1,8 @@
 /* ─────────────────────────────────────────────────────────────
    rohanth.com — global styles
    Notebook paper + ink. Geist Pixel for display, Merriweather
-   for reading, Geist Mono for UI and metadata.
+   for reading, Menlo for code and figures, the system sans
+   (SF Pro on Apple devices) for small UI text.
    Interface details follow jakub.kr/writing/details-that-make-interfaces-feel-better:
    balanced headings, tabular numbers, shadows over borders, image outlines,
    interruptible transitions, blur-in entrances, reduced motion.
@@ -12,8 +13,6 @@
 @font-face { font-family: "Merriweather"; src: url("/fonts/merriweather-italic-latin.c7f43a37.woff2") format("woff2"); font-weight: 300 600; font-style: italic; font-display: swap; }
 /* block, not swap: a moment of blank page beats a stranger's handwriting (on iPhones the fallback is a curly script) */
 @font-face { font-family: "Rohanth Hand"; src: url("/fonts/rohanth-hand.2f0c70ab.woff2") format("woff2"); font-display: block; }
-@font-face { font-family: "Geist Mono"; src: url("/fonts/geist-mono-regular.8f92513c.woff2") format("woff2"); font-weight: 400; font-display: swap; }
-@font-face { font-family: "Geist Mono"; src: url("/fonts/geist-mono-medium.5b6cb375.woff2") format("woff2"); font-weight: 500; font-display: swap; }
 
 :root {
   color-scheme: light;
@@ -31,11 +30,14 @@
   --accent-ink: #ffffff;
   --hl: oklch(0.9 0.11 95);
 
-  --pixel: "Geist Pixel", "Geist Mono", ui-monospace, monospace;
+  --pixel: "Geist Pixel", Menlo, ui-monospace, monospace;
   --serif: "Merriweather", Georgia, serif;
   /* the notebook's handwriting: a font traced from rohanth's own (see .context/handwriting-font) */
   --hand: "Rohanth Hand", "Comic Sans MS", cursive;
-  --mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* Menlo on Macs; the rest get their own clean system mono */
+  --mono: Menlo, ui-monospace, SFMono-Regular, Monaco, Consolas, "Liberation Mono", monospace;
+  /* SF Pro on Apple devices via the system stack (Apple's licence doesn't allow serving the files) */
+  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Segoe UI", Roboto, sans-serif;
 
   --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
@@ -174,7 +176,7 @@ input, textarea, [contenteditable] { cursor: text; }
 .num { font-variant-numeric: tabular-nums; }
 .muted { color: var(--ink-2); }
 .faint { color: var(--ink-3); }
-.label { font: 500 12px/1 var(--mono); letter-spacing: 0.06em; text-transform: lowercase; color: var(--ink-3); }
+.label { font: 500 12px/1 var(--sans); letter-spacing: 0.06em; text-transform: lowercase; color: var(--ink-3); }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .img-outline { outline: 1px solid var(--img-outline); outline-offset: -1px; }
 .pressable { transition: transform var(--dur-fast) var(--ease-out); }

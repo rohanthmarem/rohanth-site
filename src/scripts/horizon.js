@@ -216,11 +216,12 @@
   try { firstVisit = !sessionStorage.getItem("horizon-in"); sessionStorage.setItem("horizon-in", "1"); } catch {}
 
   const same = (a, b) => Math.abs(a.at - b.at) < 1e-3 && Math.abs(a.slope - b.slope) < 1e-3 && a.scale === b.scale;
+  // page to page: lift the band off where it was and glide it over to here
+  const glide = (from) => ({ from, duration: 1150, ease: (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2), glow: 0.55 });
   let motion = null;
   if (!reduce && !quietField && line.scale === 1) {
     if (from && from.scale === 1 && !same(from, line)) {
-      // page to page: lift the band off where it was and glide it over to here
-      motion = { from, duration: 1150, ease: (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2), glow: 0.55 };
+      motion = glide(from);
     } else if (!from && firstVisit) {
       // the load-in: up across the window from below, sky first, then the burn, then clean white behind it
       motion = { from: { ...line, at: line.at + 1 + 0.5 / line.scale }, duration: 1700, ease: (x) => 1 - Math.pow(1 - x, 4), spreadFrom: 1.9, wave: 0.03 };
@@ -230,6 +231,22 @@
   // the shader covers the static field while it plays, so the slow pixel loop waits until the band has
   // landed (play() calls it), instead of stalling the page transition partway through
   if (!animating) draw();
+
+  // Back (or forward) to a page kept in the browser's back/forward cache: this script doesn't run again,
+  // so nothing read the band's spot that the page we just left saved on its way out. Left there, it went
+  // stale and the next page loaded within a few seconds glided from the wrong place, or not at all (say
+  // home -> writing -> back -> writing again: no glide). Read it here instead, and glide from it.
+  addEventListener("pageshow", (event) => {
+    if (!event.persisted) return;
+    let back = null;
+    try {
+      back = JSON.parse(sessionStorage.getItem(KEY) || "null");
+      sessionStorage.removeItem(KEY);
+    } catch {}
+    line = geometry();
+    if (reduce || quietField || line.scale !== 1 || !back || Date.now() - back.t > 4000 || back.w !== innerWidth || back.scale !== 1 || same(back, line)) return;
+    play(glide(back));
+  });
 
   let resize;
   const redraw = () => { clearTimeout(resize); resize = setTimeout(draw, 150); };
