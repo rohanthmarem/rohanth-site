@@ -70,7 +70,7 @@ const faces = [
   /* the tab sticks out past the cover's right edge (~98.7% across, near the top) and slides out on hover */
   .pull {
     position: absolute; z-index: 0; top: 9%; left: 97.6%; padding: 22px 11px 22px 15px;
-    writing-mode: vertical-rl; font: 13px/1 var(--mono); letter-spacing: 0.04em; color: #1d2342;
+    writing-mode: vertical-rl; font: 500 13px/1 var(--sans); letter-spacing: 0.04em; color: #1d2342;
     background: #f4cf5d; border-radius: 0 5px 5px 0; box-shadow: 0 1px 2px rgb(0 0 0 / 0.16), inset 8px 0 8px -6px rgb(0 0 0 / 0.18);
     transition: translate 260ms var(--ease-out-strong), background-color var(--dur-fast) var(--ease-out);
   }
@@ -82,10 +82,10 @@ const faces = [
   @media (max-width: 899px) {
     .shadow { cursor: auto; }
     .pull { display: none; }
-    .open-book { display: block; margin-top: 20px; padding: 14px 16px; text-align: center; font: 500 14px/1 var(--mono); letter-spacing: 0.02em; color: var(--paper); background: var(--ink); transition: background-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); -webkit-tap-highlight-color: transparent; }
+    .open-book { display: block; margin-top: 20px; padding: 14px 16px; text-align: center; font: 500 15px/1 var(--sans); letter-spacing: 0.01em; color: var(--paper); background: var(--ink); transition: background-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); -webkit-tap-highlight-color: transparent; }
     .open-book:active { transform: scale(0.98); background: var(--accent); }
   }
-  .bar { margin-top: 16px; min-height: 60px; font: 13px/1.5 var(--mono); }
+  .bar { margin-top: 16px; min-height: 60px; font: 13px/1.5 var(--sans); }
   .caption { margin: 0; min-width: 0; color: var(--ink); }
   .caption :global(.note) { color: var(--ink-2); }
   .caption :global(.note) { display: block; }

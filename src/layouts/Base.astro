@@ -92,18 +92,25 @@ const onVercel = Boolean(process.env.VERCEL);
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={ogImage} />
     <meta name="theme-color" content={horizon ? "#ffffff" : "#f4f0e6"} />
-    <link rel="preload" href="/fonts/geist-mono-regular.8f92513c.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/merriweather-latin.6b615f68.woff2" as="font" type="font/woff2" crossorigin />
     <script is:inline>
       document.documentElement.classList.add("js");
       // Arriving by a view transition (page to page, see global.css). Work that would stall it waits for
       // window.__settled: the band's full redraw, the sparks, the notebook's setup.
-      window.__settled = new Promise((settle) => {
+      // Everything that moves (the notebook, the horizon's sparks) starts from this promise, so it must
+      // always settle: if a transition never reports back, or pagereveal never fires, the whole page would
+      // otherwise stand still. The page-to-page transition is at most ~0.9s, so 1.5s is only a cap.
+      window.__settled = new Promise((resolve) => {
+        let done = false;
+        const settle = () => { if (!done) { done = true; resolve(); } };
+        const cap = () => setTimeout(settle, 1500);
+        addEventListener("load", cap, { once: true });
         if (!("onpagereveal" in window)) return addEventListener("DOMContentLoaded", () => settle(), { once: true });
         addEventListener("pagereveal", (e) => {
           const vt = e.viewTransition;
           if (!vt) return settle();
           document.documentElement.classList.add("vt-in");
+          cap();
           vt.finished.then(settle, settle);
           // The notebook's move between the home page and the spine, as a transform alone: the browser's
           // own version also animates its width and height, which can't run off the main thread, so any
