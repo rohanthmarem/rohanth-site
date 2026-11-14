@@ -14,9 +14,9 @@ const faces = [
 ---
 <figure class="nb" data-notebook>
   <div class="scene">
-    {/* an index tab tucked under the cover: the way in that doesn't mean dodging stickers */}
-    <a class="pull" href="#notebook" data-nbo-open="notebook">open</a>
     <div class="book" data-book>
+      {/* Keep the tab in the same view-transition snapshot as the cover. */}
+      <a class="pull" href="#notebook" data-nbo-open="notebook">open</a>
       {faces.map(({ key, cover, image }) => (
         <div class={`face ${key}`} data-face={key} inert={key === "back"}>
           <div class="shadow" data-open-cover><img class="base" src={image.src} srcset={image.srcSet.attribute} sizes={sizes} width="1268" height="1834" alt={`the ${cover.label} of my notebook, covered in stickers`} fetchpriority={key === "front" ? "high" : undefined} draggable="false" style={`clip-path:${cover.book}`} /></div>

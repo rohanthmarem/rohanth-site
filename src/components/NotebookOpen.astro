@@ -507,6 +507,8 @@ const ext = { target: "_blank", rel: "noopener" };
     .nbo .side.back .paper { padding: 7.5cqw 7.5cqw 7cqw 6.5cqw; }
   }
   @media (max-width: 380px) { .nbo .tab { padding: 7px 5px; font-size: 10.5px; } }
+  /* Tabs only appear once the book has reached its resting position, including on phones. */
+  .nbo .stage.moving .tabs { visibility: hidden; opacity: 0 !important; pointer-events: none !important; transition: none; }
   @media (prefers-reduced-motion: reduce) { .nbo .book, .nbo .tabs { transition: none !important; } }
 </style>
 
@@ -740,6 +742,7 @@ const ext = { target: "_blank", rel: "noopener" };
     async function open(key: string, { instant = false } = {}) {
       if (dialog!.open) return goto(key);
       busy = true;
+      stage.classList.add("moving");
       warm();
       document.documentElement.classList.add("nbo-open");
       dialog!.showModal();
@@ -766,6 +769,7 @@ const ext = { target: "_blank", rel: "noopener" };
         await holdFirstFrame();
         await Promise.all([move.finished, wait(turning)]);
       }
+      stage.classList.remove("moving");
       busy = false;
       sync();
     }
@@ -773,6 +777,7 @@ const ext = { target: "_blank", rel: "noopener" };
     async function close() {
       if (!dialog!.open || busy) return;
       busy = true;
+      stage.classList.add("moving");
       pick(null);
       if (!reduce.matches) {
         let fading: Animation[];
@@ -797,6 +802,7 @@ const ext = { target: "_blank", rel: "noopener" };
       } else dialog!.close();
       if (homeScene) homeScene.style.visibility = "";
       document.documentElement.classList.remove("nbo-open");
+      stage.classList.remove("moving");
       busy = false;
     }
 
