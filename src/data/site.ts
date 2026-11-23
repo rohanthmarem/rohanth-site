@@ -23,7 +23,7 @@ export const nav = [
 export const orgs = {
   uwaterloo: { name: "uwaterloo", href: "https://uwaterloo.ca" },
   phoebe: { name: "phoebe", href: "https://www.phoebe.work" },
-  extrian: { name: "extrian", href: "https://extrian.com" },
+  interact: { name: "interact", href: "https://interact.inc" },
   tbc: { name: "teen builders club", href: links.tbc },
 } as const;
 
